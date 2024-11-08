@@ -1,0 +1,31 @@
+[package]
+name = "cosmian_kms_python"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+name = "cosmian_kms"
+
+[dependencies]
+cloudproof = { workspace = true }
+cosmian_kmip = { workspace = true }
+cosmian_config = { path = "../config" }
+cosmian_kms_rest_client = { path = "../kms_rest_client" }
+pyo3 = { workspace = true, features = [
+  "extension-module",
+  "abi3",
+  "abi3-py37",
+  "generate-import-lib",
+] }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"] }
+serde_json = { workspace = true }
+
+# Added with build.rs to fix build issues on MacOS
+# see https://github.com/PyO3/pyo3/issues/1857
+[build-dependencies]
+pyo3-build-config = "0.20"

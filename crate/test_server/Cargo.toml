@@ -1,0 +1,49 @@
+[package]
+name = "kms_test_server"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+# doc test linking as a separate binary is extremely slow
+# and is not needed for internal lib
+doctest = false
+
+[[bench]]
+name = "benches"
+harness = false
+
+[dependencies]
+actix-server = { workspace = true }
+base64 = { workspace = true }
+cosmian_kmip = { workspace = true }
+cosmian_kms_rest_client = { path = "../kms_rest_client" }
+cosmian_findex_rest_client = { path = "../findex_rest_client" }
+cosmian_config = { path = "../config" }
+cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli", features = [
+  "insecure",
+], default-features = false }
+cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "chore/move_cli", features = [
+  "insecure",
+], default-features = false }
+# cosmian_kms_server = { path = "../../../kms_alt/crate/server", features = [
+#   "insecure",
+# ], default-features = false }
+# cosmian_findex_server = { path = "../../../../github/findex-server/crate/server", features = [
+#   "insecure",
+# ], default-features = false }
+cosmian_logger = { workspace = true }
+serde_json = { workspace = true }
+tempfile = "3.1"
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+tracing = { workspace = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = [
+  "html_reports",
+  "async_tokio",
+], default-features = false }
+zeroize = { workspace = true }

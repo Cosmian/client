@@ -1,0 +1,93 @@
+use std::io;
+
+use thiserror::Error;
+
+pub(crate) mod result;
+
+#[derive(Error, Debug)]
+pub enum FindexRestClientError {
+    #[error(transparent)]
+    Base64DecodeError(#[from] base64::DecodeError),
+
+    #[error("Invalid conversion: {0}")]
+    Conversion(String),
+
+    #[error("{0}")]
+    Default(String),
+
+    #[error("Not Supported: {0}")]
+    NotSupported(String),
+
+    #[error(transparent)]
+    PemError(#[from] pem::PemError),
+
+    #[error("Ratls Error: {0}")]
+    RatlsError(String),
+
+    #[error("REST Request Failed: {0}")]
+    RequestFailed(String),
+
+    #[error("REST Response Conversion Failed: {0}")]
+    ResponseFailed(String),
+
+    #[error("TTLV Error: {0}")]
+    TtlvError(String),
+
+    #[error("Unexpected Error: {0}")]
+    UnexpectedError(String),
+
+    #[error(transparent)]
+    UrlError(#[from] url::ParseError),
+}
+
+impl From<reqwest::Error> for FindexRestClientError {
+    fn from(e: reqwest::Error) -> Self {
+        Self::Default(format!("{e}: Details: {e:?}"))
+    }
+}
+
+impl From<reqwest::header::InvalidHeaderValue> for FindexRestClientError {
+    fn from(e: reqwest::header::InvalidHeaderValue) -> Self {
+        Self::Default(e.to_string())
+    }
+}
+
+impl From<io::Error> for FindexRestClientError {
+    fn from(e: io::Error) -> Self {
+        Self::Default(e.to_string())
+    }
+}
+
+impl From<der::Error> for FindexRestClientError {
+    fn from(e: der::Error) -> Self {
+        Self::Default(e.to_string())
+    }
+}
+
+/// Construct a server error from a string.
+#[macro_export]
+macro_rules! findex_client_error {
+    ($msg:literal) => {
+        $crate::FindexRestClientError::Default(::core::format_args!($msg).to_string())
+    };
+    ($err:expr $(,)?) => ({
+        $crate::FindexRestClientError::Default($err.to_string())
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        $crate::FindexRestClientError::Default(::core::format_args!($fmt, $($arg)*).to_string())
+    };
+}
+
+/// Return early with an error if a condition is not satisfied.
+#[macro_export]
+macro_rules! findex_client_bail {
+    ($msg:literal) => {
+        return ::core::result::Result::Err($crate::findex_client_error!($msg))
+    };
+    ($err:expr $(,)?) => {
+        return ::core::result::Result::Err($err)
+    };
+    ($fmt:expr, $($arg:tt)*) => {
+        return ::core::result::Result::Err($crate::findex_client_error!($fmt, $($arg)*))
+    };
+}
