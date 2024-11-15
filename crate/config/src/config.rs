@@ -5,6 +5,8 @@ use std::{
     path::PathBuf,
 };
 
+use cosmian_findex_config::FindexClientConfig;
+use cosmian_kms_config::KmsClientConfig;
 use serde::{Deserialize, Serialize};
 #[cfg(target_os = "linux")]
 use tracing::info;
@@ -46,112 +48,20 @@ fn get_home_folder() -> Option<PathBuf> {
 fn get_default_conf_path() -> Result<PathBuf, ConfigError> {
     get_home_folder()
         .ok_or_else(|| ConfigError::NotSupported("unable to determine the home folder".to_owned()))
-        .map(|home| home.join(".cosmian/kms.json"))
-}
-
-/// used for serialization
-const fn not(b: &bool) -> bool {
-    !*b
-}
-
-/// The configuration that is used by the Login command
-/// to perform the `OAuth2` authorize code flow and obtain an access token.
-#[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
-pub struct Oauth2Conf {
-    /// The client ID of the `OAuth2` application.
-    /// This is obtained from the `OAuth2` provider.
-    pub client_id: String,
-    /// The client secret of the `OAuth2` application.
-    /// This is obtained from the `OAuth2` provider.
-    pub client_secret: String,
-    /// The URL of the `OAuth2` provider's authorization endpoint.
-    /// For example, for Google, this is `https://accounts.google.com/o/oauth2/v2/auth`.
-    pub authorize_url: String,
-    /// The URL of the `OAuth2` provider's token endpoint.
-    /// For example, for Google, this is `https://oauth2.googleapis.com/token`.
-    pub token_url: String,
-    /// The scopes to request.
-    /// For example, for Google, this is `["openid", "profile"]`.
-    pub scopes: Vec<String>,
-}
-
-/// The configuration that is used by the google command
-/// to perform actions over Gmail API.
-#[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
-pub struct GmailApiConf {
-    pub account_type: String,
-    pub project_id: String,
-    pub private_key_id: String,
-    pub private_key: String,
-    pub client_email: String,
-    pub client_id: String,
-    pub auth_uri: String,
-    pub token_uri: String,
-    pub auth_provider_x509_cert_url: String,
-    pub client_x509_cert_url: String,
-    pub universe_domain: String,
-}
-
-#[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
-pub struct HttpClientConf {
-    // accept_invalid_certs is useful if the cli needs to connect to an HTTPS KMS server
-    // running an invalid or unsecure SSL certificate
-    #[serde(default)]
-    #[serde(skip_serializing_if = "not")]
-    pub accept_invalid_certs: bool,
-    pub server_url: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub verified_cert: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub access_token: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ssl_client_pkcs12_path: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ssl_client_pkcs12_password: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kms_database_secret: Option<String>,
-    pub oauth2_conf: Option<Oauth2Conf>,
-}
-impl Default for HttpClientConf {
-    fn default() -> Self {
-        Self {
-            accept_invalid_certs: false,
-            server_url: "http://0.0.0.0:9998".to_owned(),
-            verified_cert: None,
-            access_token: None,
-            kms_database_secret: None,
-            ssl_client_pkcs12_path: None,
-            ssl_client_pkcs12_password: None,
-            oauth2_conf: None,
-        }
-    }
+        .map(|home| home.join(".cosmian/cosmian.json"))
 }
 
 #[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
 pub struct ClientConf {
-    pub kms_client_conf: HttpClientConf,
-    pub findex_client_conf: Option<HttpClientConf>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub gmail_api_conf: Option<GmailApiConf>,
-    /// will output the JSON KMIP request and response
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub print_json: Option<bool>,
+    pub kms_config: KmsClientConfig,
+    pub findex_config: Option<FindexClientConfig>,
 }
 
 impl Default for ClientConf {
     fn default() -> Self {
         Self {
-            kms_client_conf: HttpClientConf {
-                server_url: "http://0.0.0.0:9998".to_owned(),
-                ..HttpClientConf::default()
-            },
-            // findex_client_conf: HttpClientConf {
-            //     server_url: "http://0.0.0.0:6666".to_owned(),
-            //     ..HttpClientConf::default()
-            // },
-            findex_client_conf: None,
-            gmail_api_conf: None,
-            print_json: None,
+            kms_config: KmsClientConfig::default(),
+            findex_config: Some(FindexClientConfig::default()),
         }
     }
 }
@@ -165,26 +75,26 @@ impl Default for ClientConf {
 ///     "accept_invalid_certs": false,
 ///     "server_url": "http://127.0.0.1:9998",
 ///     "access_token": "AA...AAA",
-///     "kms_database_secret": "BB...BBB",
+///     "database_secret": "BB...BBB",
 ///     "ssl_client_pkcs12_path": "/path/to/client.p12",
 ///     "ssl_client_pkcs12_password": "password"
 /// }
 /// ```
-/// The path to the configuration file is specified through the `KMS_CLI_CONF` environment variable.
+/// The path to the configuration file is specified through the `COSMIAN_CLI_CONF` environment variable.
 /// If the environment variable is not set, a default path is used.
 /// If the configuration file does not exist at the path, a new file is created with default values.
 ///
 /// This function returns a KMS client configured according to the settings specified in the configuration file.
-pub const KMS_CLI_CONF_ENV: &str = "KMS_CLI_CONF";
+pub const COSMIAN_CLI_CONF_ENV: &str = "COSMIAN_CLI_CONF";
 #[cfg(target_os = "linux")]
-pub(crate) const KMS_CLI_CONF_DEFAULT_SYSTEM_PATH: &str = "/etc/cosmian/kms.json";
+pub(crate) const COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH: &str = "/etc/cosmian/cosmian.json";
 
 impl ClientConf {
     pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, ConfigError> {
         trace!("Getting configuration file location");
         // Obtain the configuration file path from:
         // - the `--conf` arg
-        // - the environment variable corresponding to `KMS_CLI_CONF_ENV`
+        // - the environment variable corresponding to `COSMIAN_CLI_CONF_ENV`
         // - default to a pre-determined path
         if let Some(conf_path) = conf {
             if !conf_path.exists() {
@@ -193,12 +103,12 @@ impl ClientConf {
                 )))
             }
             return Ok(conf_path)
-        } else if let Ok(conf_path) = env::var(KMS_CLI_CONF_ENV).map(PathBuf::from) {
+        } else if let Ok(conf_path) = env::var(COSMIAN_CLI_CONF_ENV).map(PathBuf::from) {
             // Error if the specified file does not exist
             if !conf_path.exists() {
                 return Err(ConfigError::NotSupported(format!(
-                    "Configuration file {conf_path:?} specified in {KMS_CLI_CONF_ENV} environment \
-                     variable does not exist"
+                    "Configuration file {conf_path:?} specified in {COSMIAN_CLI_CONF_ENV} \
+                     environment variable does not exist"
                 )))
             }
             return Ok(conf_path)
@@ -214,26 +124,27 @@ impl ClientConf {
         match user_conf_path {
             Err(_) => {
                 // no user home, this may be the system attempting a load
-                let default_system_path = PathBuf::from(KMS_CLI_CONF_DEFAULT_SYSTEM_PATH);
+                let default_system_path = PathBuf::from(COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH);
                 if default_system_path.exists() {
                     info!(
-                        "No active user, using configuration at {KMS_CLI_CONF_DEFAULT_SYSTEM_PATH}"
+                        "No active user, using configuration at \
+                         {COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH}"
                     );
                     return Ok(default_system_path)
                 }
                 config_bail!(
-                    "no configuration found at {KMS_CLI_CONF_DEFAULT_SYSTEM_PATH}, and no current \
-                     user, bailing out"
+                    "no configuration found at {COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH}, and no \
+                     current user, bailing out"
                 );
             }
             Ok(user_conf) => {
-                // the user home exists, if there is no conf file, check /etc/cosmian/kms.json
+                // the user home exists, if there is no conf file, check /etc/cosmian/cosmian.json
                 if !user_conf.exists() {
-                    let default_system_path = PathBuf::from(KMS_CLI_CONF_DEFAULT_SYSTEM_PATH);
+                    let default_system_path = PathBuf::from(COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH);
                     if default_system_path.exists() {
                         info!(
                             "Linux user conf path is at: {user_conf:?} but is empty, using \
-                             {KMS_CLI_CONF_DEFAULT_SYSTEM_PATH} instead"
+                             {COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH} instead"
                         );
                         return Ok(default_system_path)
                     }
@@ -290,30 +201,33 @@ impl ClientConf {
 mod tests {
     use std::{env, fs, path::PathBuf};
 
-    use cosmian_logger::log_utils::log_init;
+    use cosmian_logger::log_init;
 
-    use super::{get_default_conf_path, ClientConf, KMS_CLI_CONF_ENV};
+    use super::{get_default_conf_path, ClientConf, COSMIAN_CLI_CONF_ENV};
 
     #[test]
     pub(crate) fn test_load() {
         log_init(None);
         // valid conf
         unsafe {
-            env::set_var(KMS_CLI_CONF_ENV, "../../test_data/configs/kms.json");
+            env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.json");
         }
         let conf_path = ClientConf::location(None).unwrap();
         assert!(ClientConf::load(&conf_path).is_ok());
 
         // another valid conf
         unsafe {
-            env::set_var(KMS_CLI_CONF_ENV, "../../test_data/configs/kms_partial.json");
+            env::set_var(
+                COSMIAN_CLI_CONF_ENV,
+                "../../test_data/configs/cosmian_partial.json",
+            );
         }
         let conf_path = ClientConf::location(None).unwrap();
         assert!(ClientConf::load(&conf_path).is_ok());
 
         // Default conf file
         unsafe {
-            env::remove_var(KMS_CLI_CONF_ENV);
+            env::remove_var(COSMIAN_CLI_CONF_ENV);
         }
         let _ = fs::remove_file(get_default_conf_path().unwrap());
         let conf_path = ClientConf::location(None).unwrap();
@@ -322,7 +236,7 @@ mod tests {
 
         // invalid conf
         unsafe {
-            env::set_var(KMS_CLI_CONF_ENV, "../../test_data/configs/kms.bad");
+            env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.bad");
         }
         let conf_path = ClientConf::location(None).unwrap();
         let e = ClientConf::load(&conf_path).err().unwrap().to_string();
@@ -330,10 +244,12 @@ mod tests {
 
         // with a file
         unsafe {
-            env::remove_var(KMS_CLI_CONF_ENV);
+            env::remove_var(COSMIAN_CLI_CONF_ENV);
         }
         let conf_path =
-            ClientConf::location(Some(PathBuf::from("../../test_data/configs/kms.json"))).unwrap();
+            ClientConf::location(Some(PathBuf::from("../../test_data/configs/cosmian.json")))
+                .unwrap();
+
         assert!(ClientConf::load(&conf_path).is_ok());
     }
 }

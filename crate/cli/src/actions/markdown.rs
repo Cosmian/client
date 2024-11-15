@@ -2,7 +2,7 @@ use std::{fmt::Write, fs::File, io::Write as io_Write, path::PathBuf};
 
 use clap::{builder::StyledStr, Command, Parser};
 
-use crate::error::result::CliResult;
+use crate::error::result::CosmianResult;
 
 /// Generate the CLI documentation as markdown
 #[derive(Parser, Debug)]
@@ -19,7 +19,7 @@ impl MarkdownAction {
     ///
     /// Returns an error if there is an issue creating or writing to the markdown file.
     #[allow(clippy::print_stdout)]
-    pub fn process(&self, cmd: &Command) -> CliResult<()> {
+    pub fn process(&self, cmd: &Command) -> CosmianResult<()> {
         let mut output = String::new();
         writeln!(
             output,
@@ -34,7 +34,12 @@ impl MarkdownAction {
     }
 }
 
-fn write_command(out: &mut dyn Write, index: &str, parent: &str, cmd: &Command) -> CliResult<()> {
+fn write_command(
+    out: &mut dyn Write,
+    index: &str,
+    parent: &str,
+    cmd: &Command,
+) -> CosmianResult<()> {
     if !parent.is_empty() {
         writeln!(out, "---")?;
         writeln!(out)?;
@@ -131,7 +136,7 @@ fn write_subcommands<'a>(
     parent_index: &str,
     parent_command: &str,
     cmd: &'a Command,
-) -> CliResult<Vec<&'a Command>> {
+) -> CosmianResult<Vec<&'a Command>> {
     let mut sc = Vec::new();
     for (i, sub_command) in cmd.get_subcommands().enumerate() {
         if i == 0 {
@@ -164,7 +169,7 @@ fn write_subcommands<'a>(
     Ok(sc)
 }
 
-fn to_md(out: &mut dyn Write, ss: &StyledStr) -> CliResult<()> {
+fn to_md(out: &mut dyn Write, ss: &StyledStr) -> CosmianResult<()> {
     let s = ss.to_string();
     let split = s.split('\n');
     let mut in_list = false;

@@ -5,25 +5,15 @@ use assert_cmd::cargo::CargoError;
 use cloudproof::reexport::crypto_core::CryptoCoreError;
 use cloudproof_findex::{db_interfaces::DbInterfaceError, reexport::cosmian_findex};
 use cosmian_config::ConfigError;
-use cosmian_findex_rest_client::FindexRestClientError;
-use cosmian_kms_rest_client::{
-    cosmian_kmip::{
-        kmip::{kmip_operations::ErrorReason, ttlv::error::TtlvError},
-        KmipError,
-    },
-    KmsRestClientError,
-};
 use hex::FromHexError;
 use pem::PemError;
 use thiserror::Error;
-
-use crate::actions::kms::google::GoogleApiError;
 
 pub mod result;
 
 // Each error type must have a corresponding HTTP status code (see `kmip_endpoint.rs`)
 #[derive(Error, Debug)]
-pub enum CliError {
+pub enum CosmianError {
     // When a user requests an endpoint which does not exist
     #[error("Not Supported route: {0}")]
     RouteNotFound(String),
@@ -44,10 +34,6 @@ pub enum CliError {
     #[error("Invalid Request: {0}")]
     InvalidRequest(String),
 
-    // Any errors on KMIP format due to mistake of the user
-    #[error("{0}: {1}")]
-    KmipError(ErrorReason, String),
-
     // Any errors related to a bad behavior of the server but not related to the user input
     #[error("Server error: {0}")]
     ServerError(String),
@@ -63,14 +49,6 @@ pub enum CliError {
     // Conversion errors
     #[error("Conversion error: {0}")]
     Conversion(String),
-
-    // When the KMS client returns an error
-    #[error("{0}")]
-    KmsClientError(String),
-
-    // When the Findex client returns an error
-    #[error("{0}")]
-    FindexClientError(String),
 
     // Invalid configuration file
     #[error("{0}")]
@@ -91,190 +69,134 @@ pub enum CliError {
     // When an error occurs fetching Gmail API
     #[error("Error interacting with Gmail API: {0}")]
     GmailApiError(String),
+
+    #[error(transparent)]
+    KmsClientError(#[from] cosmian_kms_client::KmsClientError),
+
+    #[error(transparent)]
+    KmsCliError(#[from] cosmian_kms_cli::error::CliError),
+
+    #[error(transparent)]
+    FindexClientError(#[from] cosmian_findex_client::FindexClientError),
+
+    #[error(transparent)]
+    FindexCliError(#[from] cosmian_findex_cli::error::CliError),
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+
+    #[error(transparent)]
+    CsvError(#[from] csv::Error),
 }
 
-impl CliError {
-    #[must_use]
-    pub fn reason(&self, reason: ErrorReason) -> Self {
-        match self {
-            Self::KmipError(_r, e) => Self::KmipError(reason, e.clone()),
-            e => Self::KmipError(reason, e.to_string()),
-        }
-    }
-}
+// todo(manu): remove all unnecessary conversions
 
-impl From<TtlvError> for CliError {
-    fn from(e: TtlvError) -> Self {
-        Self::KmipError(ErrorReason::Codec_Error, e.to_string())
-    }
-}
-
-impl From<der::Error> for CliError {
+impl From<der::Error> for CosmianError {
     fn from(e: der::Error) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<cloudproof::reexport::crypto_core::reexport::pkcs8::Error> for CliError {
+impl From<cloudproof::reexport::crypto_core::reexport::pkcs8::Error> for CosmianError {
     fn from(e: cloudproof::reexport::crypto_core::reexport::pkcs8::Error) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<cloudproof::reexport::cover_crypt::Error> for CliError {
+impl From<cloudproof::reexport::cover_crypt::Error> for CosmianError {
     fn from(e: cloudproof::reexport::cover_crypt::Error) -> Self {
         Self::InvalidRequest(e.to_string())
     }
 }
 
-impl From<TryFromSliceError> for CliError {
+impl From<TryFromSliceError> for CosmianError {
     fn from(e: TryFromSliceError) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<std::io::Error> for CliError {
-    fn from(e: std::io::Error) -> Self {
-        Self::ServerError(e.to_string())
-    }
-}
-
-impl From<serde_json::Error> for CliError {
+impl From<serde_json::Error> for CosmianError {
     fn from(e: serde_json::Error) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<Utf8Error> for CliError {
+impl From<Utf8Error> for CosmianError {
     fn from(e: Utf8Error) -> Self {
         Self::Default(e.to_string())
     }
 }
 
-impl From<std::string::FromUtf8Error> for CliError {
+impl From<std::string::FromUtf8Error> for CosmianError {
     fn from(e: std::string::FromUtf8Error) -> Self {
         Self::Default(e.to_string())
     }
 }
 
-impl From<reqwest::Error> for CliError {
-    fn from(e: reqwest::Error) -> Self {
-        Self::Default(format!("{e}: Details: {e:?}"))
-    }
-}
-
-impl From<TryFromIntError> for CliError {
+impl From<TryFromIntError> for CosmianError {
     fn from(e: TryFromIntError) -> Self {
         Self::Default(format!("{e}: Details: {e:?}"))
     }
 }
 
-impl From<csv::Error> for CliError {
-    fn from(e: csv::Error) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
-
-impl From<cosmian_findex::Error<DbInterfaceError>> for CliError {
+impl From<cosmian_findex::Error<DbInterfaceError>> for CosmianError {
     fn from(e: cosmian_findex::Error<DbInterfaceError>) -> Self {
         Self::Cryptographic(e.to_string())
     }
 }
 
-impl From<DbInterfaceError> for CliError {
+impl From<DbInterfaceError> for CosmianError {
     fn from(e: DbInterfaceError) -> Self {
         Self::Cryptographic(e.to_string())
     }
 }
 
-impl From<uuid::Error> for CliError {
+impl From<uuid::Error> for CosmianError {
     fn from(e: uuid::Error) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<CryptoCoreError> for CliError {
+impl From<CryptoCoreError> for CosmianError {
     fn from(e: CryptoCoreError) -> Self {
         Self::Cryptographic(e.to_string())
     }
 }
 
-impl From<ConfigError> for CliError {
+impl From<ConfigError> for CosmianError {
     fn from(e: ConfigError) -> Self {
         Self::Configuration(e.to_string())
     }
 }
 
 #[cfg(test)]
-impl From<CargoError> for CliError {
+impl From<CargoError> for CosmianError {
     fn from(e: CargoError) -> Self {
         Self::Default(e.to_string())
     }
 }
 
-impl From<KmipError> for CliError {
-    fn from(e: KmipError) -> Self {
-        match e {
-            KmipError::InvalidKmipValue(r, s)
-            | KmipError::InvalidKmipObject(r, s)
-            | KmipError::KmipError(r, s) => Self::KmipError(r, s),
-            KmipError::KmipNotSupported(_, s)
-            | KmipError::NotSupported(s)
-            | KmipError::Default(s)
-            | KmipError::OpenSSL(s)
-            | KmipError::InvalidSize(s)
-            | KmipError::InvalidTag(s)
-            | KmipError::Derivation(s)
-            | KmipError::ConversionError(s)
-            | KmipError::IndexingSlicing(s)
-            | KmipError::ObjectNotFound(s) => Self::NotSupported(s),
-        }
-    }
-}
-
-impl From<base64::DecodeError> for CliError {
+impl From<base64::DecodeError> for CosmianError {
     fn from(e: base64::DecodeError) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<FromHexError> for CliError {
+impl From<FromHexError> for CosmianError {
     fn from(e: FromHexError) -> Self {
         Self::Conversion(e.to_string())
     }
 }
 
-impl From<KmsRestClientError> for CliError {
-    fn from(e: KmsRestClientError) -> Self {
-        Self::KmsClientError(e.to_string())
-    }
-}
-
-impl From<FindexRestClientError> for CliError {
-    fn from(e: FindexRestClientError) -> Self {
-        Self::FindexClientError(e.to_string())
-    }
-}
-
-impl From<PemError> for CliError {
+impl From<PemError> for CosmianError {
     fn from(e: PemError) -> Self {
         Self::Conversion(format!("PEM error: {e}"))
     }
 }
 
-impl From<std::fmt::Error> for CliError {
+impl From<std::fmt::Error> for CosmianError {
     fn from(e: std::fmt::Error) -> Self {
         Self::Default(e.to_string())
-    }
-}
-
-impl From<GoogleApiError> for CliError {
-    fn from(e: GoogleApiError) -> Self {
-        match e {
-            GoogleApiError::Jwt(e) => Self::GmailApiError(e.to_string()),
-            GoogleApiError::Reqwest(e) => Self::GmailApiError(e.to_string()),
-            GoogleApiError::Serde(e) => Self::GmailApiError(e.to_string()),
-        }
     }
 }
 
@@ -304,13 +226,13 @@ macro_rules! cli_ensure {
 #[macro_export]
 macro_rules! cli_error {
     ($msg:literal) => {
-        $crate::error::CliError::Default(::core::format_args!($msg).to_string())
+        $crate::error::CosmianError::Default(::core::format_args!($msg).to_string())
     };
     ($err:expr $(,)?) => ({
-        $crate::error::CliError::Default($err.to_string())
+        $crate::error::CosmianError::Default($err.to_string())
     });
     ($fmt:expr, $($arg:tt)*) => {
-        $crate::error::CliError::Default(::core::format_args!($fmt, $($arg)*).to_string())
+        $crate::error::CosmianError::Default(::core::format_args!($fmt, $($arg)*).to_string())
     };
 }
 
@@ -331,7 +253,7 @@ macro_rules! cli_bail {
 #[cfg(test)]
 mod tests {
 
-    use crate::error::result::CliResult;
+    use crate::error::result::CosmianResult;
 
     #[test]
     fn test_cli_error_interpolation() {
@@ -346,7 +268,7 @@ mod tests {
         assert_eq!("interpolate 44", err.unwrap_err().to_string());
     }
 
-    fn bail() -> CliResult<()> {
+    fn bail() -> CosmianResult<()> {
         let var = 43;
         if true {
             cli_bail!("interpolate {var}");
@@ -354,7 +276,7 @@ mod tests {
         Ok(())
     }
 
-    fn ensure() -> CliResult<()> {
+    fn ensure() -> CosmianResult<()> {
         let var = 44;
         cli_ensure!(false, "interpolate {var}");
         Ok(())

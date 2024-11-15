@@ -30,3 +30,8 @@ services:
       - 4317:4317
     environment:
       - COLLECTOR_OTLP_ENABLED=true
+  kms:
+    container_name: kms
+    image: ghcr.io/cosmian/kms:4.19.3
+    ports:
+      - 9998:9998

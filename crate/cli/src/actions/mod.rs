@@ -1,4 +1,4 @@
-pub mod console;
+pub mod encrypt_and_add;
 pub mod findex;
-pub mod kms;
 pub mod markdown;
+pub mod search_and_decrypt;

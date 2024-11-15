@@ -1,17 +1,7 @@
 [workspace]
 default-members = ["crate/cli"]
-members = [
-  "crate/cli",
-  "crate/gui",
-  "crate/config",
-  "crate/pkcs11",
-  "crate/http_client",
-  # REST clients
-  "crate/kms_rest_client",
-  "crate/findex_rest_client",
-  "crate/pyo3",
-  "crate/test_server",
-]
+members = ["crate/cli", "crate/gui", "crate/config"]
+
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
 # For more details, read: https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
 # note: resolver defaults to 2 in 2021 edition crate, but defaults to 1 in virtual workspace
@@ -24,12 +14,11 @@ rust-version = "1.71.0"
 authors = [
   "Bruno Grieder <bruno.grieder@cosmian.com>",
   "Emmanuel Coste <emmanuel.coste@cosmian.com>",
-  "Hugo Rosenkranz-Costa <hugo.rosenkranz@cosmian.com>",
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
 repository = "https://github.com/Cosmian/kms"
-keywords = ["kms", "cosmian"]
+keywords = ["kms", "findex", "cosmian"]
 categories = ["security"]
 
 [profile.release]
@@ -57,11 +46,30 @@ base64 = "0.21"
 chrono = "0.4"
 clap = { version = "4.5", default-features = false }
 cloudproof = "3.0"
+
 cloudproof_findex = { git = "https://www.github.com/Cosmian/cloudproof_rust", branch = "feat/add_basic_findex_rest_client" }
 # cloudproof_findex = { path = "../../github/cloudproof_rust/crates/findex" }
-cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli", default-features = true }
-cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli", default-features = true }
-cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", branch = "develop" }
+
+cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli" }
+cosmian_kms_client = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli" }
+cosmian_kms_config = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli" }
+# cosmian_kms_cli = { path = "../kms_alt/crate/cli" }
+# cosmian_kms_client = { path = "../kms_alt/crate/client" }
+# cosmian_kms_config = { path = "../kms_alt/crate/config" }
+
+cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "reuse_cli" }
+cosmian_findex_cli = { git = "https://www.github.com/Cosmian/findex-server", branch = "reuse_cli" }
+cosmian_findex_client = { git = "https://www.github.com/Cosmian/findex-server", branch = "reuse_cli" }
+cosmian_findex_config = { git = "https://www.github.com/Cosmian/findex-server", branch = "reuse_cli" }
+# cosmian_findex_structs = { path = "../../github/findex-server/crate/structs" }
+# cosmian_findex_cli = { path = "../../github/findex-server/crate/cli" }
+# cosmian_findex_client = { path = "../../github/findex-server/crate/client" }
+# cosmian_findex_config = { path = "../../github/findex-server/crate/config" }
+
+cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
+cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
+# cosmian_http_client ={ path = "../client_server/crate/http_client" }
+
 der = { version = "0.7", default-features = false }
 env_logger = "0.11"
 hex = { version = "0.4", default-features = false }

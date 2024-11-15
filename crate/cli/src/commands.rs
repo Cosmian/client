@@ -2,25 +2,16 @@ use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
 use cosmian_config::ClientConf;
-use cosmian_findex_rest_client::FindexRestClient;
-use cosmian_kms_rest_client::KmsRestClient;
-use cosmian_logger::log_utils::log_init;
+use cosmian_findex_client::FindexClient;
+use cosmian_kms_cli::{kms_process, KmsActions};
+use cosmian_kms_client::KmsClient;
+use cosmian_logger::log_init;
+use tracing::info;
 
-#[cfg(not(feature = "fips"))]
-use crate::actions::kms::cover_crypt::CovercryptCommands;
 use crate::{
-    actions::{
-        findex::commands::FindexCommands,
-        kms::{
-            access::AccessAction, attributes::AttributesCommands,
-            certificates::CertificatesCommands, elliptic_curves::EllipticCurveCommands,
-            google::GoogleCommands, login::LoginAction, logout::LogoutAction,
-            new_database::NewDatabaseAction, rsa::RsaCommands, shared::LocateObjectsAction,
-            symmetric::SymmetricCommands, version::ServerVersionAction,
-        },
-        markdown::MarkdownAction,
-    },
-    error::result::CliResult,
+    actions::{findex::FindexActions, markdown::MarkdownAction},
+    cli_error,
+    error::result::CosmianResult,
 };
 
 #[derive(Parser)]
@@ -38,7 +29,11 @@ pub struct Cli {
 
     /// The URL of the KMS
     #[arg(long, action)]
-    pub url: Option<String>,
+    pub kms_url: Option<String>,
+
+    /// The URL of the Findex server
+    #[arg(long, action)]
+    pub findex_url: Option<String>,
 
     /// Allow to connect using a self-signed cert or untrusted cert chain
     ///
@@ -47,7 +42,7 @@ pub struct Cli {
     #[arg(long)]
     pub accept_invalid_certs: Option<bool>,
 
-    /// Output the JSON KMIP request and response.
+    /// Output the KMS JSON KMIP request and response.
     /// This is useful to understand JSON POST requests and responses
     /// required to programmatically call the KMS on the `/kmip/2_1` endpoint
     #[arg(long, default_value = "false")]
@@ -55,37 +50,18 @@ pub struct Cli {
 }
 
 #[derive(Subcommand)]
+#[allow(clippy::large_enum_variant)]
 pub enum CliCommands {
+    /// Handle KMS actions
     #[command(subcommand)]
-    AccessRights(AccessAction),
-    #[cfg(not(feature = "fips"))]
+    Kms(KmsActions),
+    /// Handle Findex server actions
     #[command(subcommand)]
-    Cc(CovercryptCommands),
-    #[command(subcommand)]
-    Certificates(CertificatesCommands),
-    #[command(subcommand)]
-    Ec(EllipticCurveCommands),
-    #[command(subcommand)]
-    Attributes(AttributesCommands),
-    Locate(LocateObjectsAction),
-    NewDatabase(NewDatabaseAction),
-    #[command(subcommand)]
-    Rsa(RsaCommands),
-    ServerVersion(ServerVersionAction),
-    #[command(subcommand)]
-    Sym(SymmetricCommands),
-    #[command(subcommand)]
-    Findex(FindexCommands),
-    Login(LoginAction),
-    Logout(LogoutAction),
-
+    Findex(FindexActions),
     /// Action to auto-generate doc in Markdown format
     /// Run `cargo run --bin ckms -- markdown documentation/docs/cli/main_commands.md`
     #[clap(hide = true)]
     Markdown(MarkdownAction),
-
-    #[command(subcommand)]
-    Google(GoogleCommands),
 }
 
 /// Main function for the CKMS CLI application.
@@ -101,49 +77,64 @@ pub enum CliCommands {
 /// - The command-line arguments cannot be parsed.
 /// - The configuration file cannot be located or loaded.
 /// - Any of the subcommands fail during their execution.
-pub async fn ckms_main() -> CliResult<()> {
+pub async fn cosmian_main() -> CosmianResult<()> {
     log_init(None);
     let opts = Cli::parse();
 
-    if let CliCommands::Markdown(action) = opts.command {
-        let command = <Cli as CommandFactory>::command();
-        action.process(&command)?;
-        return Ok(())
-    }
-
     let conf_path = ClientConf::location(opts.conf)?;
+    let mut conf = ClientConf::load(&conf_path)?;
+
+    // todo(manu): dispatch options directly in sub actions
+    // Override the KMS options from the command line
+    if let Some(kms_url) = opts.kms_url {
+        info!(
+            "Override KMS URL from configuration file with: {:?}",
+            kms_url
+        );
+        conf.kms_config.http_config.server_url = kms_url;
+    }
+    if let Some(accept_invalid_certs) = opts.accept_invalid_certs {
+        info!(
+            "Override KMS and Findex-server `accept_invalid_certs` from configuration file with: \
+             {:?}",
+            accept_invalid_certs
+        );
+        conf.kms_config.http_config.accept_invalid_certs = accept_invalid_certs;
+        // conf.findex_config.http_config.accept_invalid_certs = accept_invalid_certs;
+    }
+    // if let Some(findex_url) = opts.findex_url {
+    //     info!(
+    //         "Override Findex URL from configuration file with: {:?}",
+    //         findex_url
+    //     );
+    //     conf.findex_config.http_config.server_url = findex_url;
+    // }
+    info!(
+        "Override JSON from configuration file with: {:?}",
+        opts.json
+    );
+    conf.kms_config.print_json = Some(opts.json);
+
+    // Instantiate the KMS and Findex clients
+    let kms_rest_client = KmsClient::new(conf.kms_config)?;
 
     match opts.command {
-        CliCommands::Login(action) => action.process(&conf_path).await?,
-        CliCommands::Logout(action) => action.process(&conf_path)?,
-
-        command => {
-            let conf = ClientConf::load(&conf_path)?;
-            let kms_rest_client = KmsRestClient::new(conf.clone())?;
-
-            match command {
-                CliCommands::Locate(action) => action.process(&kms_rest_client).await?,
-                #[cfg(not(feature = "fips"))]
-                CliCommands::Cc(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Ec(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Rsa(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Sym(action) => action.process(&kms_rest_client).await?,
-                CliCommands::AccessRights(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Certificates(action) => action.process(&kms_rest_client).await?,
-                CliCommands::NewDatabase(action) => action.process(&kms_rest_client).await?,
-                CliCommands::ServerVersion(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Attributes(action) => action.process(&kms_rest_client).await?,
-                CliCommands::Google(action) => action.process(&conf_path, &kms_rest_client).await?,
-
-                CliCommands::Findex(action) => {
-                    let findex_rest_client = FindexRestClient::new(conf)?;
-                    action.process(kms_rest_client, findex_rest_client).await?
-                }
-
-                _ => {
-                    tracing::error!("unexpected command");
-                }
-            }
+        CliCommands::Markdown(action) => {
+            let command = <Cli as CommandFactory>::command();
+            action.process(&command)?;
+            return Ok(())
+        }
+        CliCommands::Kms(kms_actions) => {
+            kms_process(kms_actions, kms_rest_client).await?;
+        }
+        CliCommands::Findex(findex_actions) => {
+            let findex_config = conf.findex_config.ok_or_else(|| {
+                cli_error!("Findex configuration is missing in the configuration file")
+            })?;
+            let findex_rest_client = FindexClient::new(findex_config)?;
+            findex_actions
+                .run(findex_rest_client, &kms_rest_client)
+                .await?;
         }
     }
 

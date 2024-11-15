@@ -16,6 +16,8 @@ doctest = false
 
 [dependencies]
 base64 = { workspace = true }
+cosmian_kms_config = { workspace = true }
+cosmian_findex_config = { workspace = true }
 cosmian_logger = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
