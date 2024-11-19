@@ -1,12 +1,12 @@
 [package]
-name = "ckms_gui"
+name = "cosmian_gui"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Graphical interface for the CLI to interact with Cosmian KMS"
+description = "Graphical interface for the CLI to interact with KMS and Findex server"
 
 [features]
 fips = ["cosmian_cli/fips"]

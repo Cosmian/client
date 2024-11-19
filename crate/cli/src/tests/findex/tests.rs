@@ -95,7 +95,7 @@ fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> Cosm
 pub(crate) async fn test_encrypt_and_add_no_auth() -> CosmianResult<()> {
     log_init(None);
 
-    let cli_conf_path = "../../test_data/configs/cosmian.json";
+    let cli_conf_path = "../../test_data/configs/cosmian.toml";
 
     let kek_id = create_symmetric_key(cli_conf_path, None, None, None, &[])?;
 
@@ -107,7 +107,7 @@ pub(crate) async fn test_encrypt_and_add_no_auth() -> CosmianResult<()> {
 pub(crate) async fn test_encrypt_and_add_cert_auth() -> CosmianResult<()> {
     log_init(None);
 
-    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.json";
+    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
 
     let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
 
@@ -123,8 +123,8 @@ pub(crate) async fn test_encrypt_and_add_cert_auth() -> CosmianResult<()> {
 pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> CosmianResult<()> {
     log_init(None);
 
-    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.json";
-    let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.json";
+    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
+    let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.toml";
 
     let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
 
@@ -197,8 +197,8 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
 #[tokio::test]
 pub(crate) async fn test_encrypt_and_add_no_permission() -> CosmianResult<()> {
     log_init(None);
-    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.json";
-    let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.json";
+    let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
+    let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.toml";
 
     let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
 

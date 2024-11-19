@@ -6,6 +6,7 @@ use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexRestClient;
 use cosmian_kms_cli::{reexport::cosmian_kms_client::KmsClient, KmsActions};
 use cosmian_logger::log_init;
+use tracing::info;
 
 use crate::{
     actions::{findex::FindexActions, markdown::MarkdownAction},
@@ -86,6 +87,7 @@ pub enum CliCommands {
 #[allow(clippy::future_not_send)]
 pub async fn cosmian_main() -> CosmianResult<()> {
     log_init(None);
+    info!("Starting Cosmian CLI");
     let cli = Cli::parse();
 
     let conf_path = ClientConf::location(cli.conf)?;
@@ -108,11 +110,11 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         }
     }
     conf.kms_config.print_json = Some(cli.kms_print_json);
+    conf.save(&conf_path)?;
 
     // Instantiate the KMS and Findex clients
     let kms_rest_client = KmsClient::new(conf.kms_config)?;
 
-    // cli.kms_cli.command.process(&kms_rest_client).await?;
     match cli.command {
         CliCommands::Markdown(action) => {
             let command = <Cli as CommandFactory>::command();
@@ -124,7 +126,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         }
         CliCommands::FindexServer(findex_actions) => {
             let findex_config = conf.findex_config.ok_or_else(|| {
-                cli_error!("Findex configuration is missing in the configuration file")
+                cli_error!("Findex server configuration is missing in the configuration file")
             })?;
             let findex_rest_client = FindexRestClient::new(findex_config)?;
             findex_actions

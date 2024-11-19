@@ -1167,18 +1167,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ckms_gui"
-version = "4.19.3"
-dependencies = [
- "clap",
- "cosmian_cli",
- "klask",
- "reqwest",
- "serde",
- "tokio",
-]
-
-[[package]]
 name = "clap"
 version = "4.5.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1541,12 +1529,12 @@ dependencies = [
 [[package]]
 name = "cosmian_config_utils"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#b7cc3ceb1395083edb4ac1b32570cbdd068a86d4"
 dependencies = [
  "base64 0.21.7",
  "serde",
- "serde_json",
  "thiserror",
+ "toml",
  "tracing",
  "url",
 ]
@@ -1706,9 +1694,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmian_gui"
+version = "4.19.3"
+dependencies = [
+ "clap",
+ "cosmian_cli",
+ "klask",
+ "reqwest",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "cosmian_http_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#b7cc3ceb1395083edb4ac1b32570cbdd068a86d4"
 dependencies = [
  "actix-web",
  "oauth2",
@@ -1826,7 +1826,7 @@ dependencies = [
 [[package]]
 name = "cosmian_logger"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#b7cc3ceb1395083edb4ac1b32570cbdd068a86d4"
 dependencies = [
  "tracing",
  "tracing-subscriber",

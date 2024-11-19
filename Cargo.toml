@@ -64,6 +64,7 @@ cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_serve
 cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
 cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
 # cosmian_http_client ={ path = "../client_server/crate/http_client" }
+# cosmian_config_utils ={ path = "../client_server/crate/config_utils" }
 
 der = { version = "0.7", default-features = false }
 env_logger = "0.11"

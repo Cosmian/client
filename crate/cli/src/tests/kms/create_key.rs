@@ -69,7 +69,7 @@ pub(crate) fn create_symmetric_key(
 pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
     // AES 256 bit key
     create_symmetric_key(
-        "../../test_data/configs/cosmian.json",
+        "../../test_data/configs/cosmian.toml",
         None,
         None,
         None,

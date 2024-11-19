@@ -1,0 +1,128 @@
+---
+name: CLI cargo build - no docker
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+      distribution:
+        required: true
+        type: string
+      archive-name:
+        required: true
+        type: string
+      artifacts:
+        required: false
+        type: string
+      target:
+        required: true
+        type: string
+      debug_or_release:
+        required: true
+        type: string
+      features:
+        required: false
+        type: string
+      skip_services_tests:
+        required: false
+        type: string
+
+env:
+  OPENSSL_DIR: /usr/local/openssl
+
+jobs:
+  cli-build:
+    name: ${{ inputs.archive-name }}
+    runs-on: ${{ inputs.distribution }}
+    steps:
+      - name: Display cpuinfo
+        if: contains(runner.os, 'Linux')
+        run: cat /proc/cpuinfo
+
+      - run: |
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
+          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+
+      - uses: actions/checkout@v3
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt, clippy
+
+      - name: Local OpenSSL FIPS Install
+        run: |
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}
+          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          bash .github/scripts/local_ossl_instl.sh ${{ env.OPENSSL_DIR }}
+
+      - name: Build
+        env:
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
+          TEST_GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_SECRET }}
+          TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
+          TARGET: ${{ inputs.target }}
+          DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
+          FEATURES: ${{ inputs.features }}
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
+        run: |
+          bash .github/scripts/cargo_build.sh
+
+      - name: Remove large files before saving cache
+        run: |
+          find target/ -type f -size +100M -delete
+
+      - name: Upload CLI for ${{ inputs.distribution }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
+          path: |
+            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
+            target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
+            target/${{ inputs.target }}/debian/*.deb
+            ${{ inputs.artifacts }}
+          retention-days: 1
+          if-no-files-found: error
+
+  cli-test:
+    needs: cli-build
+    name: Clean env. ${{ inputs.archive-name }}
+    runs-on: ${{ inputs.distribution }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}
+
+      - run: find .
+        if: contains(runner.os, 'linux')
+
+      - name: Linux launch cosmian and cosmian_gui
+        if: contains(runner.os, 'Linux')
+        run: |
+          set -ex
+          # The current path should be /home/runner/work/cli/cli
+          pwd
+          find . -type f
+          chmod u+x ./cosmian
+          chmod u+x ./cosmian_gui
+
+          ./cosmian -V
+          ./cosmian_gui -V
+
+      - name: MacOS launch cosmian and cosmian_gui
+        if: contains(runner.os, 'macos')
+        run: |
+          set -ex
+          # The current path should be /Users/runner/work/cli/cli
+          pwd
+          ls -lah
+          find . -type f
+          chmod u+x ./cosmian
+          chmod u+x ./cosmian_gui
+
+          ./cosmian -V
+          ./cosmian_gui -V

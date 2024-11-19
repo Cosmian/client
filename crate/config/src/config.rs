@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use crate::error::CosmianConfigError;
 
 pub const COSMIAN_CLI_CONF_ENV: &str = "COSMIAN_CLI_CONF";
-pub(crate) const COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH: &str = "/etc/cosmian/cosmian.json";
-pub(crate) const COSMIAN_CLI_CONF_PATH: &str = "~/cosmian/cosmian.json";
+pub(crate) const COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH: &str = "/etc/cosmian/cosmian.toml";
+pub(crate) const COSMIAN_CLI_CONF_PATH: &str = ".cosmian/cosmian.toml";
 
 #[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
 pub struct ClientConf {
@@ -45,7 +45,6 @@ impl Default for ClientConf {
 /// If the configuration file does not exist at the path, a new file is created with default values.
 ///
 /// This function returns a KMS client configured according to the settings specified in the configuration file.
-
 impl ClientConf {
     pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, CosmianConfigError> {
         Ok(location(
@@ -54,18 +53,6 @@ impl ClientConf {
             COSMIAN_CLI_CONF_PATH,
             COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH,
         )?)
-    }
-
-    pub fn set_kms_url(&mut self, url: Option<String>) {
-        if let Some(url) = url {
-            self.kms_config.http_config.server_url = url;
-        }
-    }
-
-    pub fn set_kms_accept_invalid_certs(&mut self, accept_invalid_certs: Option<bool>) {
-        if let Some(accept_invalid_certs) = accept_invalid_certs {
-            self.kms_config.http_config.accept_invalid_certs = accept_invalid_certs;
-        }
     }
 }
 
@@ -86,7 +73,7 @@ mod tests {
         log_init(None);
         // valid conf
         unsafe {
-            env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.json");
+            env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.toml");
         }
         let conf_path = ClientConf::location(None).unwrap();
         assert!(ClientConf::load(&conf_path).is_ok());
@@ -95,7 +82,7 @@ mod tests {
         unsafe {
             env::set_var(
                 COSMIAN_CLI_CONF_ENV,
-                "../../test_data/configs/cosmian_partial.json",
+                "../../test_data/configs/cosmian_partial.toml",
             );
         }
         let conf_path = ClientConf::location(None).unwrap();
@@ -116,7 +103,10 @@ mod tests {
 
         // invalid conf
         unsafe {
-            env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.bad");
+            env::set_var(
+                COSMIAN_CLI_CONF_ENV,
+                "../../test_data/configs/cosmian.bad.toml",
+            );
         }
         let conf_path = ClientConf::location(None).unwrap();
         let e = ClientConf::load(&conf_path).err().unwrap().to_string();
@@ -127,7 +117,7 @@ mod tests {
             env::remove_var(COSMIAN_CLI_CONF_ENV);
         }
         let conf_path =
-            ClientConf::location(Some(PathBuf::from("../../test_data/configs/cosmian.json")))
+            ClientConf::location(Some(PathBuf::from("../../test_data/configs/cosmian.toml")))
                 .unwrap();
 
         assert!(ClientConf::load(&conf_path).is_ok());

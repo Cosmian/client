@@ -1,6 +1,6 @@
 use std::process;
 
-use ckms_gui::gui_main;
+use cosmian_gui::gui_main;
 
 #[tokio::main]
 async fn main() {
