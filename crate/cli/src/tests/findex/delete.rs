@@ -5,35 +5,25 @@ use cosmian_config::COSMIAN_CLI_CONF_ENV;
 use tracing::debug;
 
 use crate::{
-    actions::search_and_decrypt::SearchAndDecryptAction,
+    actions::delete_datasets::DeleteDatasetAction,
     error::{result::CosmianResult, CosmianError},
     tests::{utils::recover_cmd_logs, PROG_NAME},
 };
 
-pub(crate) fn search_cmd(
+pub(crate) fn delete_cmd(
     cli_conf_path: &str,
-    action: SearchAndDecryptAction,
+    action: &DeleteDatasetAction,
 ) -> CosmianResult<String> {
     let mut args = vec![
-        "search-and-decrypt".to_owned(),
-        "--key".to_owned(),
-        action.findex_parameters.key.clone(),
-        "--label".to_owned(),
-        action.findex_parameters.label,
+        "delete-dataset".to_owned(),
         "--index-id".to_owned(),
-        action.findex_parameters.index_id.to_string(),
-        "--kek-id".to_owned(),
-        action.key_encryption_key_id.to_string(),
+        action.index_id.to_string(),
     ];
-    if let Some(authentication_data) = action.authentication_data {
-        args.push("--authentication_data".to_owned());
-        args.push(authentication_data);
+    for uuid in &action.uuid {
+        args.push("--uuid".to_owned());
+        args.push(uuid.to_string());
     }
 
-    for word in action.keyword {
-        args.push("--keyword".to_owned());
-        args.push(word);
-    }
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 

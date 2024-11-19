@@ -1504,26 +1504,19 @@ dependencies = [
  "actix-rt",
  "actix-server",
  "assert_cmd",
- "base64 0.21.7",
  "clap",
- "cloudproof",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat%2Fadd_basic_findex_rest_client)",
  "const-oid",
  "cosmian_config",
+ "cosmian_config_utils",
  "cosmian_findex_cli",
- "cosmian_findex_client",
- "cosmian_findex_structs",
  "cosmian_kms_cli",
- "cosmian_kms_client",
  "cosmian_logger",
  "csv",
- "der",
  "hex",
  "openssl",
- "pem",
  "predicates",
  "regex",
- "serde_json",
  "tempfile",
  "thiserror",
  "tokio",
@@ -1537,10 +1530,20 @@ dependencies = [
 name = "cosmian_config"
 version = "4.19.3"
 dependencies = [
- "base64 0.21.7",
+ "cosmian_config_utils",
  "cosmian_findex_config",
  "cosmian_kms_config",
  "cosmian_logger",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "cosmian_config_utils"
+version = "0.1.0"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
+dependencies = [
+ "base64 0.21.7",
  "serde",
  "serde_json",
  "thiserror",
@@ -1630,71 +1633,60 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#ef4d31a1f829fc195348029052f1128f22f4b7af"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#8b0483a293a4d208b94340125b090fe85b58df7c"
 dependencies = [
  "base64 0.21.7",
  "clap",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat%2Fadd_basic_findex_rest_client)",
+ "cosmian_config_utils",
  "cosmian_findex_client",
  "cosmian_findex_structs",
  "cosmian_logger",
  "csv",
- "der",
  "hex",
- "pem",
- "reqwest",
  "serde",
  "serde_json",
  "thiserror",
  "tokio",
  "tracing",
- "url",
  "uuid",
 ]
 
 [[package]]
 name = "cosmian_findex_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#ef4d31a1f829fc195348029052f1128f22f4b7af"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#8b0483a293a4d208b94340125b090fe85b58df7c"
 dependencies = [
- "base64 0.21.7",
  "cosmian_findex_config",
  "cosmian_findex_structs",
  "cosmian_http_client",
- "der",
- "pem",
  "reqwest",
  "serde",
  "thiserror",
  "tracing",
- "url",
  "uuid",
 ]
 
 [[package]]
 name = "cosmian_findex_config"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#ef4d31a1f829fc195348029052f1128f22f4b7af"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#8b0483a293a4d208b94340125b090fe85b58df7c"
 dependencies = [
- "base64 0.21.7",
+ "cosmian_config_utils",
  "cosmian_http_client",
  "cosmian_logger",
  "serde",
- "serde_json",
  "thiserror",
- "tracing",
- "url",
 ]
 
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#ef4d31a1f829fc195348029052f1128f22f4b7af"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#8b0483a293a4d208b94340125b090fe85b58df7c"
 dependencies = [
  "base64 0.21.7",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat%2Fadd_basic_findex_rest_client)",
  "thiserror",
- "url",
  "uuid",
 ]
 
@@ -1716,7 +1708,7 @@ dependencies = [
 [[package]]
 name = "cosmian_http_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#49d4de89865f23d14bc1948d6db48fd690239eec"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
 dependencies = [
  "actix-web",
  "oauth2",
@@ -1734,7 +1726,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#758c7043f32afb22299c29dee48bfd4b5a3b5223"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#1e6b9b6928a619c3a8dafa45d6d228444634125b"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -1763,7 +1755,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#758c7043f32afb22299c29dee48bfd4b5a3b5223"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#1e6b9b6928a619c3a8dafa45d6d228444634125b"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1772,11 +1764,12 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_cli"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#758c7043f32afb22299c29dee48bfd4b5a3b5223"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#1e6b9b6928a619c3a8dafa45d6d228444634125b"
 dependencies = [
  "base64 0.21.7",
  "clap",
  "cloudproof",
+ "cosmian_config_utils",
  "cosmian_kms_client",
  "cosmian_logger",
  "der",
@@ -1800,7 +1793,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_client"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#758c7043f32afb22299c29dee48bfd4b5a3b5223"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#1e6b9b6928a619c3a8dafa45d6d228444634125b"
 dependencies = [
  "cloudproof",
  "cosmian_http_client",
@@ -1821,22 +1814,19 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_config"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#758c7043f32afb22299c29dee48bfd4b5a3b5223"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore%2Freuse_ckms_in_cosmian_cli#1e6b9b6928a619c3a8dafa45d6d228444634125b"
 dependencies = [
- "base64 0.21.7",
+ "cosmian_config_utils",
  "cosmian_http_client",
  "cosmian_logger",
  "serde",
- "serde_json",
  "thiserror",
- "tracing",
- "url",
 ]
 
 [[package]]
 name = "cosmian_logger"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#49d4de89865f23d14bc1948d6db48fd690239eec"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=add_http_client#cd098c83ff5f6aefe369bc8ad4242e0f4418891e"
 dependencies = [
  "tracing",
  "tracing-subscriber",
@@ -2985,7 +2975,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.7",
+ "socket2 0.4.10",
  "tokio",
  "tower-service",
  "tracing",

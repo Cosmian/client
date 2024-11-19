@@ -8,20 +8,24 @@ use clap::Parser;
 use cloudproof_findex::reexport::cosmian_findex::{
     Data, IndexedValue, IndexedValueToKeywordsMap, Keyword, Keywords,
 };
-use cosmian_findex_cli::actions::findex::{instantiate_findex, FindexParameters};
-use cosmian_findex_client::FindexClient;
-use cosmian_findex_structs::EncryptedEntries;
-use cosmian_kms_cli::actions::symmetric::{
-    DataEncryptionAlgorithm, EncryptAction, KeyEncryptionAlgorithm,
+use cosmian_findex_cli::{
+    actions::findex::{instantiate_findex, FindexParameters},
+    reexports::{
+        cosmian_findex_client::FindexRestClient, cosmian_findex_structs::EncryptedEntries,
+    },
 };
-use cosmian_kms_client::KmsClient;
+use cosmian_kms_cli::{
+    actions::symmetric::{DataEncryptionAlgorithm, EncryptAction, KeyEncryptionAlgorithm},
+    reexport::cosmian_kms_client::KmsClient,
+};
 use tracing::trace;
 
 use crate::error::result::{CliResultHelper, CosmianResult};
 
+/// Encrypt entries and index the corresponding database UUIDs with the Findex. todo(manu): describe the action
 #[derive(Parser, Debug)]
 #[clap(verbatim_doc_comment)]
-pub struct EncryptAndAddAction {
+pub struct EncryptAndIndexAction {
     #[clap(flatten)]
     pub(crate) findex_parameters: FindexParameters,
 
@@ -46,7 +50,7 @@ pub struct EncryptAndAddAction {
     pub(crate) authentication_data: Option<String>,
 }
 
-impl EncryptAndAddAction {
+impl EncryptAndIndexAction {
     pub(crate) async fn encrypt_entries(
         &self,
         csv: PathBuf,
@@ -107,10 +111,10 @@ impl EncryptAndAddAction {
     /// - There is an error converting the CSV file to a hashmap.
     /// - There is an error adding the data to the Findex index.
     /// - There is an error writing the result to the console.
-    #[allow(clippy::future_not_send)]
+    #[allow(clippy::future_not_send, clippy::print_stdout)]
     pub async fn run(
         &self,
-        findex_rest_client: FindexClient,
+        findex_rest_client: FindexRestClient,
         kms_rest_client: &KmsClient,
     ) -> CosmianResult<()> {
         let nonce = self
@@ -151,8 +155,8 @@ impl EncryptAndAddAction {
             .await?;
         trace!("indexing done: keywords: {keywords}");
 
-        // console::Stdout::new(&format!("indexing done: keywords: {keywords}")).write()?;
-        // todo(manu): merge console from findex and kms
+        let uuids = encrypted_entries.get_uuids();
+        println!("Data behind those UUIDS were encrypted and indexed: {uuids}");
 
         Ok(())
     }

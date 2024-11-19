@@ -1,34 +1,15 @@
-use std::io;
-
+use cosmian_config_utils::ConfigUtilsError;
 use thiserror::Error;
 
 pub(crate) mod result;
 
 #[derive(Error, Debug)]
-pub enum ConfigError {
-    #[error(transparent)]
-    Base64DecodeError(#[from] base64::DecodeError),
-
-    #[error("Invalid conversion: {0}")]
-    Conversion(String),
-
+pub enum CosmianConfigError {
     #[error("{0}")]
     Default(String),
 
-    #[error("Not Supported: {0}")]
-    NotSupported(String),
-
-    #[error("Unexpected Error: {0}")]
-    UnexpectedError(String),
-
     #[error(transparent)]
-    UrlError(#[from] url::ParseError),
-}
-
-impl From<io::Error> for ConfigError {
-    fn from(e: io::Error) -> Self {
-        Self::Default(e.to_string())
-    }
+    ConfigUtilsError(#[from] ConfigUtilsError),
 }
 
 /// Construct a server error from a string.

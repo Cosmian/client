@@ -1,12 +1,12 @@
-use std::{array::TryFromSliceError, num::TryFromIntError, str::Utf8Error};
+use std::str::Utf8Error;
 
 #[cfg(test)]
 use assert_cmd::cargo::CargoError;
-use cloudproof::reexport::crypto_core::CryptoCoreError;
 use cloudproof_findex::{db_interfaces::DbInterfaceError, reexport::cosmian_findex};
-use cosmian_config::ConfigError;
-use hex::FromHexError;
-use pem::PemError;
+use cosmian_config::CosmianConfigError;
+use cosmian_config_utils::ConfigUtilsError;
+use cosmian_findex_cli::reexports::cosmian_findex_client::FindexClientError;
+use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientError;
 use thiserror::Error;
 
 pub mod result;
@@ -42,10 +42,6 @@ pub enum CosmianError {
     #[error("Access denied: {0}")]
     Unauthorized(String),
 
-    // A cryptographic error
-    #[error("Cryptographic error: {0}")]
-    Cryptographic(String),
-
     // Conversion errors
     #[error("Conversion error: {0}")]
     Conversion(String),
@@ -71,13 +67,13 @@ pub enum CosmianError {
     GmailApiError(String),
 
     #[error(transparent)]
-    KmsClientError(#[from] cosmian_kms_client::KmsClientError),
+    KmsClientError(#[from] KmsClientError),
 
     #[error(transparent)]
     KmsCliError(#[from] cosmian_kms_cli::error::CliError),
 
     #[error(transparent)]
-    FindexClientError(#[from] cosmian_findex_client::FindexClientError),
+    FindexClientConfig(#[from] FindexClientError),
 
     #[error(transparent)]
     FindexCliError(#[from] cosmian_findex_cli::error::CliError),
@@ -87,117 +83,31 @@ pub enum CosmianError {
 
     #[error(transparent)]
     CsvError(#[from] csv::Error),
-}
 
-// todo(manu): remove all unnecessary conversions
+    #[error(transparent)]
+    FindexInterfaceError(#[from] cosmian_findex::Error<DbInterfaceError>),
 
-impl From<der::Error> for CosmianError {
-    fn from(e: der::Error) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
+    #[error(transparent)]
+    DbInterfaceError(#[from] DbInterfaceError),
 
-impl From<cloudproof::reexport::crypto_core::reexport::pkcs8::Error> for CosmianError {
-    fn from(e: cloudproof::reexport::crypto_core::reexport::pkcs8::Error) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
+    #[error(transparent)]
+    Utf8Error(#[from] Utf8Error),
 
-impl From<cloudproof::reexport::cover_crypt::Error> for CosmianError {
-    fn from(e: cloudproof::reexport::cover_crypt::Error) -> Self {
-        Self::InvalidRequest(e.to_string())
-    }
-}
+    #[error(transparent)]
+    UuidError(#[from] uuid::Error),
 
-impl From<TryFromSliceError> for CosmianError {
-    fn from(e: TryFromSliceError) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
+    #[error(transparent)]
+    ConfigError(#[from] CosmianConfigError),
 
-impl From<serde_json::Error> for CosmianError {
-    fn from(e: serde_json::Error) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
+    #[error(transparent)]
+    ConfigUtilsError(#[from] ConfigUtilsError),
 
-impl From<Utf8Error> for CosmianError {
-    fn from(e: Utf8Error) -> Self {
-        Self::Default(e.to_string())
-    }
-}
+    #[error(transparent)]
+    FmtError(#[from] std::fmt::Error),
 
-impl From<std::string::FromUtf8Error> for CosmianError {
-    fn from(e: std::string::FromUtf8Error) -> Self {
-        Self::Default(e.to_string())
-    }
-}
-
-impl From<TryFromIntError> for CosmianError {
-    fn from(e: TryFromIntError) -> Self {
-        Self::Default(format!("{e}: Details: {e:?}"))
-    }
-}
-
-impl From<cosmian_findex::Error<DbInterfaceError>> for CosmianError {
-    fn from(e: cosmian_findex::Error<DbInterfaceError>) -> Self {
-        Self::Cryptographic(e.to_string())
-    }
-}
-
-impl From<DbInterfaceError> for CosmianError {
-    fn from(e: DbInterfaceError) -> Self {
-        Self::Cryptographic(e.to_string())
-    }
-}
-
-impl From<uuid::Error> for CosmianError {
-    fn from(e: uuid::Error) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
-
-impl From<CryptoCoreError> for CosmianError {
-    fn from(e: CryptoCoreError) -> Self {
-        Self::Cryptographic(e.to_string())
-    }
-}
-
-impl From<ConfigError> for CosmianError {
-    fn from(e: ConfigError) -> Self {
-        Self::Configuration(e.to_string())
-    }
-}
-
-#[cfg(test)]
-impl From<CargoError> for CosmianError {
-    fn from(e: CargoError) -> Self {
-        Self::Default(e.to_string())
-    }
-}
-
-impl From<base64::DecodeError> for CosmianError {
-    fn from(e: base64::DecodeError) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
-
-impl From<FromHexError> for CosmianError {
-    fn from(e: FromHexError) -> Self {
-        Self::Conversion(e.to_string())
-    }
-}
-
-impl From<PemError> for CosmianError {
-    fn from(e: PemError) -> Self {
-        Self::Conversion(format!("PEM error: {e}"))
-    }
-}
-
-impl From<std::fmt::Error> for CosmianError {
-    fn from(e: std::fmt::Error) -> Self {
-        Self::Default(e.to_string())
-    }
+    #[cfg(test)]
+    #[error(transparent)]
+    CargoError(#[from] CargoError),
 }
 
 /// Return early with an error if a condition is not satisfied.

@@ -1,0 +1,15 @@
+{
+    "kms_config": {
+        "http_config": {
+            "server_url": "http://127.0.0.1:9998"
+        }
+    },
+    "findex_config": {
+        "http_config": {
+            "server_url": "https://127.0.0.1:6660",
+            "ssl_client_pkcs12_path": "../../test_data/certificates/client_server/user/user.client.acme.com.p12",
+            "ssl_client_pkcs12_password": "password",
+            "accept_invalid_certs": true
+        }
+    }
+}

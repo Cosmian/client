@@ -1,3 +1,4 @@
+pub mod delete_datasets;
 pub mod encrypt_and_add;
 pub mod findex;
 pub mod markdown;
