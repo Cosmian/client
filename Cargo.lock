@@ -1701,6 +1701,7 @@ dependencies = [
  "cosmian_cli",
  "klask",
  "tokio",
+ "winapi",
 ]
 
 [[package]]
