@@ -105,6 +105,8 @@ jobs:
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           REDIS_HOST: redis
+          KMS_DEFAULT_URL: http://kms:9998
+          FINDEX_SERVER_DEFAULT_URL: http://findex-server:6668
 
           # Google variables
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}

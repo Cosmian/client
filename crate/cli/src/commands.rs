@@ -28,7 +28,7 @@ pub struct Cli {
     pub command: CliCommands,
 
     /// The URL of the KMS
-    #[arg(long, action)]
+    #[arg(long, env = "KMS_DEFAULT_URL", action)]
     pub kms_url: Option<String>,
 
     /// Allow to connect using a self-signed cert or untrusted cert chain
@@ -45,7 +45,7 @@ pub struct Cli {
     pub kms_print_json: bool,
 
     /// The URL of the Findex server
-    #[arg(long, action)]
+    #[arg(long, env = "FINDEX_SERVER_DEFAULT_URL", action)]
     pub findex_url: Option<String>,
 
     /// Allow to connect using a self-signed cert or untrusted cert chain
