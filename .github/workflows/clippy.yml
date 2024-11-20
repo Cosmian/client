@@ -29,6 +29,10 @@ jobs:
           sudo chown -R $USER:$USER /usr/local
           bash .github/scripts/local_ossl_instl.sh ${{ env.OPENSSL_DIR }}
 
+      - name: Install Klask prerequisites
+        run: |
+          sudo apt install librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
+
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ inputs.toolchain }}

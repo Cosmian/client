@@ -28,6 +28,9 @@ on:
       skip_services_tests:
         required: false
         type: string
+      prerequisites:
+        required: false
+        type: string
 
 env:
   OPENSSL_DIR: /usr/local/openssl
@@ -52,6 +55,10 @@ jobs:
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
+
+      - name: Klask prerequisites
+        if: ${{ inputs.prerequisites }}
+        run: ${{ inputs.prerequisites }}
 
       - name: Local OpenSSL FIPS Install
         run: |
@@ -107,8 +114,8 @@ jobs:
           # The current path should be /home/runner/work/cli/cli
           pwd
           find . -type f
-          chmod u+x ./cosmian
-          chmod u+x ./cosmian_gui
+          chmod u+x ./${{ inputs.debug_or_release }}/cosmian
+          chmod u+x ./${{ inputs.debug_or_release }}/cosmian_gui
 
           ./cosmian -V
           ./cosmian_gui -V
@@ -121,8 +128,8 @@ jobs:
           pwd
           ls -lah
           find . -type f
-          chmod u+x ./cosmian
-          chmod u+x ./cosmian_gui
+          chmod u+x ./${{ inputs.debug_or_release }}/cosmian
+          chmod u+x ./${{ inputs.debug_or_release }}/cosmian_gui
 
           ./cosmian -V
           ./cosmian_gui -V

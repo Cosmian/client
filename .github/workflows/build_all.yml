@@ -21,8 +21,6 @@ jobs:
       archive-name: rhel9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      artifacts: |
-        /usr/local/openssl/lib64/ossl-modules/legacy.so
 
   generic-linux:
     strategy:
@@ -32,14 +30,21 @@ jobs:
           - distribution: ubuntu-20.04
             archive-name: ubuntu_20_04
             target: x86_64-unknown-linux-gnu
+            prerequisites: |
+              sudo apt install librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
 
           - distribution: ubuntu-22.04
             archive-name: ubuntu_22_04
             target: x86_64-unknown-linux-gnu
+            prerequisites: |
+              sudo apt install librust-atk-sys-dev librust-gdk-sys-dev libssl-dev pkg-config
 
           - distribution: ubuntu-24.04
             archive-name: ubuntu_24_04
             target: x86_64-unknown-linux-gnu
+            prerequisites: |
+              sudo apt install libgtk-3-dev libglib2.0-dev libssl-dev pkg-config
+
     name: ${{ matrix.distribution }}
     uses: ./.github/workflows/build_generic.yml
     secrets: inherit
@@ -49,7 +54,8 @@ jobs:
       archive-name: ${{ matrix.archive-name }}
       target: ${{ matrix.target }}
       debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse
+      skip_services_tests: --skip test_encrypt --skip test_create
+      prerequisites: ${{ matrix.prerequisites }}
 
   generic-macos:
     strategy:
@@ -72,10 +78,9 @@ jobs:
       archive-name: ${{ matrix.archive-name }}
       target: ${{ matrix.target }}
       debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: --skip test_mysql --skip test_postgresql --skip test_redis --skip google_cse
+      skip_services_tests: --skip test_encrypt --skip test_create
 
   windows-2022:
-    if: inputs.debug_or_release == 'release'
     uses: ./.github/workflows/build_windows.yml
     with:
       toolchain: ${{ inputs.toolchain }}
