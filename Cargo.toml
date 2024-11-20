@@ -1,5 +1,4 @@
 [workspace]
-default-members = ["crate/cli"]
 members = ["crate/cli", "crate/gui", "crate/config"]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.

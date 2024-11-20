@@ -11,26 +11,6 @@ function BuildProject {
     $env:OPENSSL_DIR = "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows-static"
     Get-ChildItem -Recurse $env:OPENSSL_DIR
 
-    # Build `cosmian`
-    Get-ChildItem crate\cli
-    if ($BuildType -eq "release") {
-        cargo build --release --target x86_64-pc-windows-msvc
-    }
-    else {
-        cargo build --target x86_64-pc-windows-msvc
-    }
-    Get-ChildItem ..\..
-
-    # Build `cosmian_gui`
-    Get-ChildItem crate\gui
-    if ($BuildType -eq "release") {
-        cargo build --release --target x86_64-pc-windows-msvc
-    }
-    else {
-        cargo build --target x86_64-pc-windows-msvc
-    }
-    Get-ChildItem ..\..
-
     # Build at root
     if ($BuildType -eq "release") {
         cargo build --release --target x86_64-pc-windows-msvc
