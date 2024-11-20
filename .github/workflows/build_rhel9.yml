@@ -29,6 +29,15 @@ env:
 jobs:
   rhel9-tests:
     services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
       kms:
         image: ghcr.io/cosmian/kms:4.19.3
         ports:
@@ -57,16 +66,6 @@ jobs:
           FINDEX_SERVER_HTTPS_P12_FILE: /test_data/certificates/client_server/server/kmserver.acme.com.p12
           FINDEX_SERVER_HTTPS_P12_PASSWORD: password
           FINDEX_SERVER_AUTHORITY_CERT_FILE: /test_data/certificates/client_server/server/ca.crt
-
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     name: ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04

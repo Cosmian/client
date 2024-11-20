@@ -86,5 +86,6 @@ export RUST_LOG="cosmian_kms_cli=debug,cosmian_gui=debug"
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE $FEATURES
 
+export RUST_LOG="cosmian_cli=trace,cosmian=trace"
 # shellcheck disable=SC2086
 cargo test --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
