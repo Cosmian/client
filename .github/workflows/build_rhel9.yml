@@ -71,7 +71,7 @@ jobs:
     name: ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04
     container:
-      image: redhat/ubi9
+      image: rockylinux:9.3
 
     steps:
       - name: Display cpuinfo
@@ -83,7 +83,7 @@ jobs:
         run: |
           set -x
 
-          yum -y install glib2-devel gtk3 atk
+          yum -y install glib2-devel gtk3-devel atk-devel
           yum -y install python-devel
           yum -y install wget
           yum -y install perl-IPC-Cmd perl-Digest-SHA1 perl-CPAN perl-devel
