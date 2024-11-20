@@ -89,5 +89,5 @@ jobs:
       - name: Launch cosmian and cosmian_gui
         run: |
           pwd
-          ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian.exe -V
-          ./target/x86_64-pc-windows-msvc/${{ inputs.debug_or_release }}/cosmian_gui.exe -V
+          ./cosmian.exe -V
+          ./cosmian_gui.exe -V

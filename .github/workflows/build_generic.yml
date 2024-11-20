@@ -56,9 +56,11 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      - name: Klask prerequisites
+      - name: Prerequisites
         if: ${{ inputs.prerequisites }}
-        run: ${{ inputs.prerequisites }}
+        run: |
+          set -ex
+          ${{ inputs.prerequisites }}
 
       - name: Local OpenSSL FIPS Install
         run: |

@@ -1700,8 +1700,6 @@ dependencies = [
  "clap",
  "cosmian_cli",
  "klask",
- "reqwest",
- "serde",
  "tokio",
 ]
 
