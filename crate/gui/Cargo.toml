@@ -8,6 +8,11 @@ repository.workspace = true
 rust-version.workspace = true
 description = "Graphical interface for the CLI to interact with KMS and Findex server"
 
+[[bin]]
+name = "cosmian_gui"
+path = "src/main.rs"
+test = false
+
 [features]
 fips = ["cosmian_cli/fips"]
 
