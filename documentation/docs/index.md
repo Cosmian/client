@@ -17,8 +17,9 @@ The Cosmian CLI is the Command Line Interface to interact with Cosmian products 
 
 ## Installation
 
-<!-- {!../cli/documentation/docs/installation.md!} -->
-{!./installation.md!}
+<!-- Warning: this doc is merged with `mkdocs merge` in the repository `public_documentation`. -->
+<!-- To test locally, test with path `installation.md` -->
+{!../cli/documentation/docs/installation.md!}
 
 ## Configuring the clients
 
@@ -159,5 +160,6 @@ universe_domain = "googleapis.com"
 
 ## Usage
 
-<!-- {!../cli/documentation/docs/usage.md!} -->
-{!./usage.md!}
+<!-- Warning: this doc is merged with `mkdocs merge` in the repository `public_documentation`. -->
+<!-- To test locally, test with path `usage.md` -->
+{!../cli/documentation/docs/usage.md!}

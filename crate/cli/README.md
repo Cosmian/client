@@ -1,21 +1,21 @@
-# Cosmian KMS CLI
+# Cosmian CLI
 
-Cosmian KMS can be managed using the `ckms` command line interface (CLI) or its graphical
-client `ckms_gui`.
+Cosmian KMS can be managed using the `cosmian` command line interface (CLI) or its graphical
+client `cosmian_gui`.
 
 ## Build
 
 ```sh
-cargo build --bin ckms
+cargo build --bin cosmian
 ```
 
 ## Usage
 
-[Usage](../../documentation/docs/cli/cli.md)
+[Usage](../../documentation/docs/index.md)
 
 ## Testing
 
 ```sh
-cargo build --bin ckms
-cargo test -p ckms
+cargo build --bin cosmian
+cargo test -p cosmian
 ```

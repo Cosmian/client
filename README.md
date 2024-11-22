@@ -1,6 +1,6 @@
 # Cosmian KMS
 
-![Build status](https://github.com/Cosmian/kms/actions/workflows/ci.yml/badge.svg?branch=main)
+![Build status](https://github.com/Cosmian/kms/actions/workflows/main_release.yml/badge.svg?branch=main)
 
 Cosmian KMS is an implementation of a high-performance, massively scalable, **Key
 Management System** that presents some unique features, such as
@@ -12,7 +12,7 @@ Management System** that presents some unique features, such as
 - a JSON KMIP 2.1 compliant interface
 - support for object tagging to easily manage keys and secrets
 - a full-featured command line and graphical
-  interface ([CLI](https://docs.cosmian.com/cosmian_key_management_system/cli/cli/))
+  interface ([CLI](https://docs.cosmian.com/cosmian_cli/))
 - Python, Javascript, Dart, Rust, C/C++, and Java clients (see the `cloudproof` libraries
   on [Cosmian Github](https://github.com/Cosmian))
 - FIPS 140-2 mode gated behind the feature `fips`
