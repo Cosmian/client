@@ -54,6 +54,7 @@ nav:
   - Getting started: index.md
   - Installation: installation.md
   - Configuration:
-      - Configuration file: configuration.md
+      - TOML format: configuration.md
+      - Authorizing users with access rights: authorization.md
       - Usage: usage.md
   - User manual: cli/main_commands.md
