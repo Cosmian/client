@@ -6,8 +6,8 @@ use tracing::debug;
 
 use crate::{
     actions::delete_datasets::DeleteDatasetAction,
-    error::{result::CosmianResult, CosmianError},
-    tests::{utils::recover_cmd_logs, PROG_NAME},
+    error::{CosmianError, result::CosmianResult},
+    tests::{PROG_NAME, utils::recover_cmd_logs},
 };
 
 pub(crate) fn delete_cmd(

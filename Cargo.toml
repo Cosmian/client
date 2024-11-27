@@ -9,7 +9,7 @@ resolver = "2"
 [workspace.package]
 version = "4.19.3"
 edition = "2021"
-rust-version = "1.71.0"
+rust-version = "1.82.0"
 authors = [
   "Bruno Grieder <bruno.grieder@cosmian.com>",
   "Emmanuel Coste <emmanuel.coste@cosmian.com>",
@@ -59,9 +59,9 @@ cosmian_findex_config = { git = "https://www.github.com/Cosmian/findex-server", 
 # cosmian_findex_cli = { path = "../../github/findex-server/crate/cli" }
 # cosmian_findex_config = { path = "../../github/findex-server/crate/config" }
 
-cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
-cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
-cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", branch = "add_http_client" }
+cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", branch = "develop" }
+cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", branch = "develop" }
+cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", branch = "develop" }
 # cosmian_http_client ={ path = "../client_server/crate/http_client" }
 # cosmian_config_utils ={ path = "../client_server/crate/config_utils" }
 

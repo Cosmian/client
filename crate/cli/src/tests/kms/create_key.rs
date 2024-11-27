@@ -5,8 +5,8 @@ use cosmian_config::COSMIAN_CLI_CONF_ENV;
 use regex::{Regex, RegexBuilder};
 
 use crate::{
-    error::{result::CosmianResult, CosmianError},
-    tests::{utils::recover_cmd_logs, PROG_NAME},
+    error::{CosmianError, result::CosmianResult},
+    tests::{PROG_NAME, utils::recover_cmd_logs},
 };
 
 //todo(manu): create a test crate
@@ -68,13 +68,8 @@ pub(crate) fn create_symmetric_key(
 #[tokio::test]
 pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
     // AES 256 bit key
-    create_symmetric_key(
-        "../../test_data/configs/cosmian.toml",
-        None,
-        None,
-        None,
-        &[],
-    )?;
+    create_symmetric_key("../../test_data/configs/cosmian.toml", None, None, None, &[
+    ])?;
 
     Ok(())
 }

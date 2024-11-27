@@ -1,7 +1,7 @@
 use clap::Parser;
 use cloudproof_findex::reexport::cosmian_findex::{Keyword, Keywords};
 use cosmian_findex_cli::{
-    actions::findex::{instantiate_findex, FindexParameters},
+    actions::findex::{FindexParameters, instantiate_findex},
     reexports::{cosmian_findex_client::FindexRestClient, cosmian_findex_structs::Uuids},
 };
 use cosmian_kms_cli::{
@@ -92,6 +92,7 @@ impl SearchAndDecryptAction {
                 .await?;
             let decrypted_record_str = std::str::from_utf8(&decrypted_record)?;
             println!("Decrypted record: {decrypted_record_str}");
+            trace!("Decrypted record: {decrypted_record_str}");
         }
 
         Ok(())

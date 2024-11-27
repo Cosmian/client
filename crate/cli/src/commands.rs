@@ -4,9 +4,9 @@ use clap::{CommandFactory, Parser, Subcommand};
 use cosmian_config::ClientConf;
 use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexRestClient;
-use cosmian_kms_cli::{reexport::cosmian_kms_client::KmsClient, KmsActions};
+use cosmian_kms_cli::{KmsActions, reexport::cosmian_kms_client::KmsClient};
 use cosmian_logger::log_init;
-use tracing::info;
+use tracing::{info, trace};
 
 use crate::{
     actions::{findex::FindexActions, markdown::MarkdownAction},
@@ -91,7 +91,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     let cli = Cli::parse();
 
     let conf_path = ClientConf::location(cli.conf)?;
-    let mut conf = ClientConf::load(&conf_path)?;
+    let mut conf = ClientConf::from_toml(&conf_path)?;
 
     if let Some(url) = cli.kms_url.clone() {
         conf.kms_config.http_config.server_url = url;
@@ -110,7 +110,10 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         }
     }
     conf.kms_config.print_json = Some(cli.kms_print_json);
-    conf.save(&conf_path)?;
+
+    trace!("Configuration: \n{conf:?}");
+
+    conf.to_toml(&conf_path)?;
 
     // Instantiate the KMS and Findex clients
     let kms_rest_client = KmsClient::new(conf.kms_config)?;

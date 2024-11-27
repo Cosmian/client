@@ -8,8 +8,8 @@ use uuid::Uuid;
 
 use crate::{
     actions::encrypt_and_add::EncryptAndIndexAction,
-    error::{result::CosmianResult, CosmianError},
-    tests::{utils::recover_cmd_logs, PROG_NAME},
+    error::{CosmianError, result::CosmianResult},
+    tests::{PROG_NAME, utils::recover_cmd_logs},
 };
 
 #[allow(clippy::unwrap_used)]

@@ -9,7 +9,7 @@ use cloudproof_findex::reexport::cosmian_findex::{
     Data, IndexedValue, IndexedValueToKeywordsMap, Keyword, Keywords,
 };
 use cosmian_findex_cli::{
-    actions::findex::{instantiate_findex, FindexParameters},
+    actions::findex::{FindexParameters, instantiate_findex},
     reexports::{
         cosmian_findex_client::FindexRestClient, cosmian_findex_structs::EncryptedEntries,
     },

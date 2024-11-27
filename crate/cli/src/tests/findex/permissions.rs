@@ -8,8 +8,8 @@ use tracing::{debug, trace};
 use uuid::Uuid;
 
 use crate::{
-    error::{result::CosmianResult, CosmianError},
-    tests::{utils::recover_cmd_logs, PROG_NAME},
+    error::{CosmianError, result::CosmianResult},
+    tests::{PROG_NAME, utils::recover_cmd_logs},
 };
 
 /// Extract the `key_uid` (prefixed by a pattern) from a text

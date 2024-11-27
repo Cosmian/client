@@ -26,49 +26,40 @@ use crate::{
 
 #[allow(dead_code)]
 fn add(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<Uuids> {
-    let uuids = add_cmd(
-        cli_conf_path,
-        EncryptAndIndexAction {
-            findex_parameters: FindexParameters {
-                key: "11223344556677889900AABBCCDDEEFF".to_owned(),
-                label: "My Findex label".to_owned(),
-                index_id: index_id.to_owned(),
-            },
-            csv: "../../test_data/datasets/smallpop.csv".into(),
-            key_encryption_key_id: kek_id.to_owned(),
-            nonce: None,
-            authentication_data: None,
+    let uuids = add_cmd(cli_conf_path, EncryptAndIndexAction {
+        findex_parameters: FindexParameters {
+            key: "11223344556677889900AABBCCDDEEFF".to_owned(),
+            label: "My Findex label".to_owned(),
+            index_id: index_id.to_owned(),
         },
-    )?;
+        csv: "../../test_data/datasets/smallpop.csv".into(),
+        key_encryption_key_id: kek_id.to_owned(),
+        nonce: None,
+        authentication_data: None,
+    })?;
     trace!("add: uuids: {uuids}");
     Ok(uuids)
 }
 
 fn delete(cli_conf_path: &str, index_id: &Uuid, uuids: &Uuids) -> CosmianResult<()> {
-    delete_cmd(
-        cli_conf_path,
-        &DeleteDatasetAction {
-            index_id: index_id.to_owned(),
-            uuid: uuids.deref().clone(),
-        },
-    )?;
+    delete_cmd(cli_conf_path, &DeleteDatasetAction {
+        index_id: index_id.to_owned(),
+        uuid: uuids.deref().clone(),
+    })?;
     Ok(())
 }
 
 fn search(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<String> {
-    search_cmd(
-        cli_conf_path,
-        SearchAndDecryptAction {
-            findex_parameters: FindexParameters {
-                key: "11223344556677889900AABBCCDDEEFF".to_owned(),
-                label: "My Findex label".to_owned(),
-                index_id: index_id.to_owned(),
-            },
-            keyword: vec!["Southborough".to_owned(), "Northbridge".to_owned()],
-            key_encryption_key_id: kek_id.to_owned(),
-            authentication_data: None,
+    search_cmd(cli_conf_path, SearchAndDecryptAction {
+        findex_parameters: FindexParameters {
+            key: "11223344556677889900AABBCCDDEEFF".to_owned(),
+            label: "My Findex label".to_owned(),
+            index_id: index_id.to_owned(),
         },
-    )
+        keyword: vec!["Southborough".to_owned(), "Northbridge".to_owned()],
+        key_encryption_key_id: kek_id.to_owned(),
+        authentication_data: None,
+    })
 }
 
 #[allow(clippy::panic_in_result_fn, clippy::print_stdout)]
@@ -134,14 +125,11 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     add(owner_client_conf_path, &index_id, &kek_id)?;
 
     // Grant read permission to the client
-    grant_permission_cmd(
-        owner_client_conf_path,
-        &GrantPermission {
-            user: "user.client@acme.com".to_owned(),
-            index_id,
-            permission: Permission::Read,
-        },
-    )?;
+    grant_permission_cmd(owner_client_conf_path, &GrantPermission {
+        user: "user.client@acme.com".to_owned(),
+        index_id,
+        permission: Permission::Read,
+    })?;
 
     // User can read...
     let search_results = search(user_client_conf_path, &index_id, &kek_id)?;
@@ -152,14 +140,11 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     assert!(add(user_client_conf_path, &index_id, &kek_id).is_err());
 
     // Grant write permission
-    grant_permission_cmd(
-        owner_client_conf_path,
-        &GrantPermission {
-            user: "user.client@acme.com".to_owned(),
-            index_id,
-            permission: Permission::Write,
-        },
-    )?;
+    grant_permission_cmd(owner_client_conf_path, &GrantPermission {
+        user: "user.client@acme.com".to_owned(),
+        index_id,
+        permission: Permission::Write,
+    })?;
 
     // User can read...
     let search_results = search(user_client_conf_path, &index_id, &kek_id)?;
@@ -170,23 +155,17 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     add(user_client_conf_path, &index_id, &kek_id)?;
 
     // Try to escalade privileges from `read` to `admin`
-    grant_permission_cmd(
-        user_client_conf_path,
-        &GrantPermission {
-            user: "user.client@acme.com".to_owned(),
-            index_id,
-            permission: Permission::Admin,
-        },
-    )
+    grant_permission_cmd(user_client_conf_path, &GrantPermission {
+        user: "user.client@acme.com".to_owned(),
+        index_id,
+        permission: Permission::Admin,
+    })
     .unwrap_err();
 
-    revoke_permission_cmd(
-        owner_client_conf_path,
-        &RevokePermission {
-            user: "user.client@acme.com".to_owned(),
-            index_id,
-        },
-    )?;
+    revoke_permission_cmd(owner_client_conf_path, &RevokePermission {
+        user: "user.client@acme.com".to_owned(),
+        index_id,
+    })?;
 
     search(user_client_conf_path, &index_id, &kek_id).unwrap_err();
 
