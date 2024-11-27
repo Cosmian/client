@@ -76,6 +76,7 @@ fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> Cosm
 
     // make sure no results are returned after deletion
     let search_results = search(cli_conf_path, index_id, kek_id)?;
+    println!("search_results: {search_results}");
     assert!(!search_results.contains("States9686")); // for Southborough
     assert!(!search_results.contains("States14061")); // for Northbridge
 

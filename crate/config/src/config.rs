@@ -27,6 +27,10 @@ impl Default for ClientConf {
 }
 
 impl ClientConf {
+    /// Load the default location of the configuration file.
+    ///
+    /// # Errors
+    /// Return an error if the configuration file is not found or if the file is not a valid toml file.
     pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, CosmianConfigError> {
         Ok(location(
             conf,
@@ -73,7 +77,9 @@ mod tests {
         unsafe {
             env::remove_var(COSMIAN_CLI_CONF_ENV);
         }
-        let _ = fs::remove_file(get_default_conf_path(COSMIAN_CLI_CONF_PATH).unwrap());
+        drop(fs::remove_file(
+            get_default_conf_path(COSMIAN_CLI_CONF_PATH).unwrap(),
+        ));
         let conf_path = ClientConf::location(None).unwrap();
         assert!(ClientConf::from_toml(&conf_path).is_ok());
         assert!(
