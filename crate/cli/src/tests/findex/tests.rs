@@ -64,21 +64,26 @@ fn search(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<S
 
 #[allow(clippy::panic_in_result_fn, clippy::print_stdout)]
 fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<()> {
+    trace!("add_search_delete: entering");
     let uuids = add(cli_conf_path, index_id, kek_id)?;
+    trace!("add_search_delete: add: uuids: {uuids}");
 
     // make sure searching returns the expected results
     let search_results = search(cli_conf_path, index_id, kek_id)?;
-    println!("search_results: {search_results}");
+    trace!("add_search_delete: search_results: {search_results}");
     assert!(search_results.contains("States9686")); // for Southborough
     assert!(search_results.contains("States14061")); // for Northbridge
 
     delete(cli_conf_path, index_id, &uuids)?;
 
     // make sure no results are returned after deletion
-    let search_results = search(cli_conf_path, index_id, kek_id)?;
-    println!("search_results: {search_results}");
-    assert!(!search_results.contains("States9686")); // for Southborough
-    assert!(!search_results.contains("States14061")); // for Northbridge
+    let rerun_search_results = search(cli_conf_path, index_id, kek_id)?;
+    trace!(
+        "add_search_delete: search_results (len={}): {rerun_search_results}",
+        rerun_search_results.len()
+    );
+    assert!(!rerun_search_results.contains("States9686")); // for Southborough
+    assert!(!rerun_search_results.contains("States14061")); // for Northbridge
 
     Ok(())
 }

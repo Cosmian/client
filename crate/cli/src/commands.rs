@@ -6,7 +6,7 @@ use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexRestClient;
 use cosmian_kms_cli::{KmsActions, reexport::cosmian_kms_client::KmsClient};
 use cosmian_logger::log_init;
-use tracing::{info, trace};
+use tracing::info;
 
 use crate::{
     actions::{findex::FindexActions, markdown::MarkdownAction},
@@ -110,9 +110,6 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         }
     }
     conf.kms_config.print_json = Some(cli.kms_print_json);
-
-    trace!("Configuration: \n{conf:?}");
-
     conf.to_toml(&conf_path)?;
 
     // Instantiate the KMS and Findex clients

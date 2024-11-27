@@ -79,6 +79,7 @@ impl SearchAndDecryptAction {
             .with_context(|| "failed to decode the authentication data")?;
 
         let decrypt_action = DecryptAction::default();
+        let mut results = Vec::with_capacity(encrypted_entries.len());
         for (_uuid, ciphertext) in encrypted_entries.iter() {
             let decrypted_record = decrypt_action
                 .client_side_decrypt_with_buffer(
@@ -91,9 +92,10 @@ impl SearchAndDecryptAction {
                 )
                 .await?;
             let decrypted_record_str = std::str::from_utf8(&decrypted_record)?;
-            println!("Decrypted record: {decrypted_record_str}");
-            trace!("Decrypted record: {decrypted_record_str}");
+            results.push(decrypted_record_str.to_string());
         }
+
+        println!("Decrypted records: {:?}", results);
 
         Ok(())
     }
