@@ -62,7 +62,11 @@ fn search(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<S
     })
 }
 
-#[allow(clippy::panic_in_result_fn, clippy::print_stdout)]
+#[allow(
+    clippy::panic_in_result_fn,
+    clippy::print_stdout,
+    clippy::cognitive_complexity
+)]
 fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<()> {
     trace!("add_search_delete: entering");
     let uuids = add(cli_conf_path, index_id, kek_id)?;

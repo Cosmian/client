@@ -95,7 +95,7 @@ impl SearchAndDecryptAction {
             results.push(decrypted_record_str.to_string());
         }
 
-        println!("Decrypted records: {:?}", results);
+        println!("Decrypted records: {results:?}");
 
         Ok(())
     }
