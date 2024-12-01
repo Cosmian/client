@@ -67,6 +67,7 @@ impl SearchAndDecryptAction {
             }
         }
 
+        trace!("UUIDs of encrypted entries: {uuids:?}");
         let encrypted_entries = findex_rest_client
             .get_entries(&self.findex_parameters.index_id, &Uuids::from(uuids))
             .await?;
@@ -80,6 +81,7 @@ impl SearchAndDecryptAction {
 
         let decrypt_action = DecryptAction::default();
         let mut results = Vec::with_capacity(encrypted_entries.len());
+        let mut decrypted_records = Vec::with_capacity(encrypted_entries.len());
         for (_uuid, ciphertext) in encrypted_entries.iter() {
             let decrypted_record = decrypt_action
                 .client_side_decrypt_with_buffer(
@@ -91,6 +93,10 @@ impl SearchAndDecryptAction {
                     authentication_data.clone(),
                 )
                 .await?;
+            decrypted_records.push(decrypted_record);
+        }
+
+        for decrypted_record in decrypted_records {
             let decrypted_record_str = std::str::from_utf8(&decrypted_record)?;
             results.push(decrypted_record_str.to_string());
         }

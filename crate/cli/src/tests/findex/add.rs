@@ -44,10 +44,15 @@ pub(crate) fn add_cmd(cli_conf_path: &str, action: EncryptAndIndexAction) -> Cos
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let findex_output = std::str::from_utf8(&output.stdout)?;
+
         let uuids: Vec<Uuid> = findex_output
             .lines()
-            .filter(|line| line.starts_with("UUID:"))
-            .map(|line| line.trim_start_matches("UUID:").trim().to_owned())
+            .filter(|line| line.contains("UUID:"))
+            .filter_map(|line| {
+                line.split("UUID:")
+                    .nth(1)
+                    .map(|uuid_str| uuid_str.trim().to_owned())
+            })
             .map(|uuid| Uuid::parse_str(&uuid).unwrap())
             .collect();
         let uuids = Uuids::from(uuids);

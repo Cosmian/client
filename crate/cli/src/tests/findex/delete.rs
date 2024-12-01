@@ -10,6 +10,7 @@ use crate::{
     tests::{PROG_NAME, utils::recover_cmd_logs},
 };
 
+// todo(manu): to delete in favor of existing cosmian_findex_cli actions
 pub(crate) fn delete_cmd(
     cli_conf_path: &str,
     action: &DeleteDatasetAction,

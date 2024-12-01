@@ -38,6 +38,7 @@ fn add(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<Uuid
         authentication_data: None,
     })?;
     trace!("add: uuids: {uuids}");
+    assert_eq!(uuids.len(), 10);
     Ok(uuids)
 }
 
@@ -83,7 +84,7 @@ fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> Cosm
     // make sure no results are returned after deletion
     let rerun_search_results = search(cli_conf_path, index_id, kek_id)?;
     trace!(
-        "add_search_delete: search_results (len={}): {rerun_search_results}",
+        "add_search_delete: re-search_results (len={}): {rerun_search_results}",
         rerun_search_results.len()
     );
     assert!(!rerun_search_results.contains("States9686")); // for Southborough
