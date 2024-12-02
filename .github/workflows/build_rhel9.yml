@@ -82,8 +82,9 @@ jobs:
           chmod +x /usr/bin/docker-compose
 
       - name: Run Redis, KMS and Findex servers containers
-        run: docker-compose up --abort-on-container-failure
-        # run: docker-compose up -d --wait
+        run: |
+          docker-compose -h
+          docker-compose up -d --wait
 
       - name: RHEL 9 prerequisites
         run: |
