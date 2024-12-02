@@ -23,7 +23,7 @@ impl MarkdownAction {
         let mut output = String::new();
         writeln!(
             output,
-            "*-- This file is auto-generated using the `ckms markdown` command. --*"
+            "*-- This file is auto-generated using the `cosmian markdown` command. --*"
         )?;
         writeln!(output)?;
         write_command(&mut output, "", "", cmd)?;
@@ -45,7 +45,7 @@ fn write_command(
         writeln!(out)?;
     }
     let full_command = if parent.is_empty() {
-        "ckms".to_owned()
+        "cosmian".to_owned()
     } else {
         format!("{} {}", parent, cmd.get_name())
     };

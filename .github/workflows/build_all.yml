@@ -82,6 +82,7 @@ jobs:
       skip_services_tests: --skip test_encrypt --skip test_create
 
   windows-2022:
+    if: inputs.debug_or_release == 'release'
     uses: ./.github/workflows/build_windows.yml
     with:
       toolchain: ${{ inputs.toolchain }}

@@ -6,7 +6,7 @@ use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexRestClient;
 use cosmian_kms_cli::{KmsActions, reexport::cosmian_kms_client::KmsClient};
 use cosmian_logger::log_init;
-use tracing::info;
+use tracing::{info, trace};
 
 use crate::{
     actions::{findex::FindexActions, markdown::MarkdownAction},
@@ -66,7 +66,7 @@ pub enum CliCommands {
     #[command(subcommand)]
     FindexServer(FindexActions),
     /// Action to auto-generate doc in Markdown format
-    /// Run `cargo run --bin ckms -- markdown documentation/docs/cli/main_commands.md`
+    /// Run `cargo run --bin cosmian -- markdown documentation/docs/cli/main_commands.md`
     #[clap(hide = true)]
     Markdown(MarkdownAction),
 }
@@ -111,6 +111,8 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     }
     conf.kms_config.print_json = Some(cli.kms_print_json);
     conf.to_toml(&conf_path)?;
+
+    trace!("Configuration: {conf:?}");
 
     // Instantiate the KMS and Findex clients
     let kms_rest_client = KmsClient::new(conf.kms_config)?;
