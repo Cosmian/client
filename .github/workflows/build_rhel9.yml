@@ -84,7 +84,7 @@ jobs:
       - name: Run Redis, KMS and Findex servers containers
         run: |
           docker-compose up -h
-          docker-compose up -d 
+          docker-compose up
 
       - name: RHEL 9 prerequisites
         run: |
@@ -109,8 +109,7 @@ jobs:
       - name: Build and tests
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-          # KMS_DEFAULT_URL: http://kms:9998
-          KMS_HOSTNAME: 0.0.0.0
+          KMS_DEFAULT_URL: http://kms:9998
           FINDEX_SERVER_HOSTNAME: findex-server
 
           # Google variables
