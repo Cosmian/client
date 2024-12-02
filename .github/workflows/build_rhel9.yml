@@ -69,6 +69,8 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: rockylinux:9.3
+      volumes:
+        - ./test_data:/test_data
 
     steps:
       - name: Display cpuinfo
@@ -83,8 +85,6 @@ jobs:
 
       - name: Run Redis, KMS and Findex servers containers
         run: |
-          ls -l
-          find test_data
           docker-compose up -h
           docker-compose up
 
