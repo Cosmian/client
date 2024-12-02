@@ -83,8 +83,8 @@ jobs:
 
       - name: Run Redis, KMS and Findex servers containers
         run: |
-          docker-compose -h
-          docker-compose up -d --wait
+          docker-compose up -h
+          docker-compose up -d --wait --progress plain
 
       - name: RHEL 9 prerequisites
         run: |
