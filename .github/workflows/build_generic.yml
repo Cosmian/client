@@ -63,14 +63,6 @@ jobs:
 
       - name: Run Redis, KMS and Findex servers containers
         run: |
-          docker compose 
-      - name: Install Docker compose
-        run: |
-          curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-          chmod +x /usr/bin/docker-compose
-
-      - name: Run Redis, KMS and Findex servers containers
-        run: |
           docker compose -h
           docker compose up
           # docker-compose up -h
