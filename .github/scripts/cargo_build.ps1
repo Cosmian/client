@@ -1,3 +1,7 @@
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+$PSNativeCommandUseErrorActionPreference = $true # might be true by default
+
 function BuildProject {
     param (
         [Parameter(Mandatory = $true)]
@@ -25,10 +29,12 @@ function BuildProject {
     Get-ChildItem target\$BuildType
 
     # Check dynamic links
+    $ErrorActionPreference = "SilentlyContinue"
     $output = & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\dumpbin.exe" /dependents target\x86_64-pc-windows-msvc\$BuildType\cosmian.exe | Select-String "libcrypto"
     if ($output) {
         throw "OpenSSL (libcrypto) found in dynamic dependencies. Error: $output"
     }
+    $ErrorActionPreference = "Stop"
 
     exit 0
 }
