@@ -28,44 +28,43 @@ env:
 
 jobs:
   rhel9-tests:
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-      kms:
-        image: ghcr.io/cosmian/kms:4.20.0
-        ports:
-          - 9998:9998
-      findex-server:
-        image: ghcr.io/cosmian/findex-server:windows_tests
-        ports:
-          - 6668:6668
-        env:
-          RUST_LOG: cosmian_findex_server=trace
-          FINDEX_SERVER_DATABASE_TYPE: redis
-          FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-          FINDEX_SERVER_CLEAR_DATABASE: true
-      findex-server-cert-auth:
-        image: ghcr.io/cosmian/findex-server:windows_tests
-        ports:
-          - 6660:6660
-        volumes:
-          - ./test_data:/test_data
-        env:
-          RUST_LOG: cosmian_findex_server=trace
-          FINDEX_SERVER_DATABASE_TYPE: redis
-          FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-          FINDEX_SERVER_CLEAR_DATABASE: true
-          FINDEX_SERVER_PORT: 6660
-          FINDEX_SERVER_HTTPS_P12_FILE: /test_data/certificates/client_server/server/kmserver.acme.com.p12
-          FINDEX_SERVER_HTTPS_P12_PASSWORD: password
-          FINDEX_SERVER_AUTHORITY_CERT_FILE: /test_data/certificates/client_server/server/ca.crt
+    # services:
+    #   redis:
+    #     image: redis
+    #     options: >-
+    #       --health-cmd "redis-cli ping"
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+    #     ports:
+    #       - 6379:6379
+    #   kms:
+    #     image: ghcr.io/cosmian/kms:4.20.0
+    #     ports:
+    #       - 9998:9998
+    #   findex-server:
+    #     image: ghcr.io/cosmian/findex-server:windows_tests
+    #     ports:
+    #       - 6668:6668
+    #     env:
+    #       RUST_LOG: cosmian_findex_server=trace
+    #       FINDEX_SERVER_DATABASE_TYPE: redis
+    #       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
+    #   findex-server-cert-auth:
+    #     image: ghcr.io/cosmian/findex-server:windows_tests
+    #     ports:
+    #       - 6660:6660
+    #     volumes:
+    #       - ./test_data:/test_data
+    #     env:
+    #       RUST_LOG: cosmian_findex_server=trace
+    #       FINDEX_SERVER_DATABASE_TYPE: redis
+    #       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
+    #       FINDEX_SERVER_CLEAR_DATABASE: true
+    #       FINDEX_SERVER_PORT: 6660
+    #       FINDEX_SERVER_HTTPS_P12_FILE: /test_data/certificates/client_server/server/kmserver.acme.com.p12
+    #       FINDEX_SERVER_HTTPS_P12_PASSWORD: password
+    #       FINDEX_SERVER_AUTHORITY_CERT_FILE: /test_data/certificates/client_server/server/ca.crt
 
     name: ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04
@@ -78,13 +77,15 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      # - name: Install Docker compose
-      #   run: |
-      #     dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-      #     dnf install docker-compose-plugin
+      - name: Install Docker compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+          chmod +x /usr/bin/docker-compose
+          # dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+          # dnf install docker-compose-plugin
 
-      # - name: Run Redis, KMS and Findex servers containers
-      #   run: docker compose up -d
+      - name: Run Redis, KMS and Findex servers containers
+        run: docker-compose up -d
 
       - name: RHEL 9 prerequisites
         run: |

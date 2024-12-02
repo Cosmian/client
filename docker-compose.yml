@@ -26,7 +26,6 @@ services:
       RUST_LOG: cosmian_findex_server=trace
       FINDEX_SERVER_DATABASE_TYPE: redis
       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-      FINDEX_SERVER_CLEAR_DATABASE: true
   findex-server-cert-auth:
     depends_on:
       - redis
@@ -40,7 +39,6 @@ services:
       RUST_LOG: cosmian_findex_server=trace
       FINDEX_SERVER_DATABASE_TYPE: redis
       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-      FINDEX_SERVER_CLEAR_DATABASE: true
       FINDEX_SERVER_PORT: 6660
       FINDEX_SERVER_HTTPS_P12_FILE: /test_data/certificates/client_server/server/kmserver.acme.com.p12
       FINDEX_SERVER_HTTPS_P12_PASSWORD: password
