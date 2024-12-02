@@ -86,7 +86,7 @@ cargo build --target $TARGET $RELEASE $FEATURES
 
 export RUST_LOG="cosmian_cli=trace,cosmian_findex_client=trace,cosmian_kmip=error,cosmian_kms_rest_client=info"
 # shellcheck disable=SC2086
-cargo test --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS test_encrypt_and_add_no_permission
+cargo test --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
 
 # while true; do
 #   sleep 1

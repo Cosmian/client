@@ -93,24 +93,32 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     let conf_path = ClientConf::location(cli.conf)?;
     let mut conf = ClientConf::from_toml(&conf_path)?;
 
+    // Override the configuration with the CLI arguments
+    let mut has_been_overridden = false;
     if let Some(url) = cli.kms_url.clone() {
         conf.kms_config.http_config.server_url = url;
+        has_been_overridden = true;
     }
     if let Some(accept_invalid_certs) = cli.kms_accept_invalid_certs {
         conf.kms_config.http_config.accept_invalid_certs = accept_invalid_certs;
+        has_been_overridden = true;
     }
     if let Some(url) = cli.findex_url.clone() {
         if let Some(findex_conf) = conf.findex_config.as_mut() {
             findex_conf.http_config.server_url = url;
+            has_been_overridden = true;
         }
     }
     if let Some(accept_invalid_certs) = cli.findex_accept_invalid_certs {
         if let Some(findex_conf) = conf.findex_config.as_mut() {
             findex_conf.http_config.accept_invalid_certs = accept_invalid_certs;
+            has_been_overridden = true;
         }
     }
     conf.kms_config.print_json = Some(cli.kms_print_json);
-    conf.to_toml(&conf_path)?;
+    if has_been_overridden {
+        conf.to_toml(&conf_path)?;
+    }
 
     trace!("Configuration: {conf:?}");
 
