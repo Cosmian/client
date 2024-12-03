@@ -28,6 +28,7 @@ on:
       docker_compose:
         required: false
         type: boolean
+        default: false
 
 env:
   OPENSSL_DIR: /usr/local/openssl
