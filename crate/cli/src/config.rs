@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
 use cosmian_config_utils::{ConfigUtils, location};
-use cosmian_findex_config::FindexClientConfig;
-use cosmian_kms_config::KmsClientConfig;
+use cosmian_findex_cli::reexports::cosmian_findex_client::FindexClientConfig;
+use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientConfig;
 use serde::{Deserialize, Serialize};
 
-use crate::error::CosmianConfigError;
+use crate::error::CosmianError;
 
 pub const COSMIAN_CLI_CONF_ENV: &str = "COSMIAN_CLI_CONF";
 pub(crate) const COSMIAN_CLI_CONF_DEFAULT_SYSTEM_PATH: &str = "/etc/cosmian/cosmian.toml";
@@ -31,7 +31,7 @@ impl ClientConf {
     ///
     /// # Errors
     /// Return an error if the configuration file is not found or if the file is not a valid toml file.
-    pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, CosmianConfigError> {
+    pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, CosmianError> {
         Ok(location(
             conf,
             COSMIAN_CLI_CONF_ENV,

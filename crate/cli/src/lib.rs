@@ -30,6 +30,7 @@
 )]
 pub mod actions;
 pub mod commands;
+pub mod config;
 pub mod error;
 
 pub use commands::{Cli, CliCommands, cosmian_main};

@@ -1,13 +1,13 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_config::COSMIAN_CLI_CONF_ENV;
 use cosmian_findex_cli::reexports::cosmian_findex_structs::Uuids;
 use tracing::debug;
 use uuid::Uuid;
 
 use crate::{
     actions::encrypt_and_add::EncryptAndIndexAction,
+    config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{PROG_NAME, utils::recover_cmd_logs},
 };

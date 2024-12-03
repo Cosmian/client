@@ -528,7 +528,7 @@ dependencies = [
  "nom",
  "num-traits",
  "rusticata-macros",
- "thiserror",
+ "thiserror 1.0.69",
  "time",
 ]
 
@@ -1049,7 +1049,7 @@ dependencies = [
  "log",
  "nix 0.25.1",
  "slotmap",
- "thiserror",
+ "thiserror 1.0.69",
  "vec_map",
 ]
 
@@ -1495,7 +1495,6 @@ dependencies = [
  "clap",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat/add_basic_findex_rest_client)",
  "const-oid",
- "cosmian_config",
  "cosmian_config_utils",
  "cosmian_findex_cli",
  "cosmian_kms_cli",
@@ -1505,8 +1504,9 @@ dependencies = [
  "openssl",
  "predicates",
  "regex",
+ "serde",
  "tempfile",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "url",
@@ -1515,26 +1515,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "cosmian_config"
-version = "4.19.3"
-dependencies = [
- "cosmian_config_utils",
- "cosmian_findex_config",
- "cosmian_kms_config",
- "cosmian_logger",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "cosmian_config_utils"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#c7ea728c89415a443868cbdf83b0cc7fa7dbefab"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#3e77e49a0f7ed04380ea44f41d72316fceaf50a8"
 dependencies = [
  "base64 0.21.7",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "toml",
  "tracing",
  "url",
@@ -1622,7 +1610,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#2f093bc28af9b0e6fa1165c4371a0839f0502552"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#c6b90c36af7bab52e4d9987e3a4398da9756937e"
 dependencies = [
  "base64 0.21.7",
  "clap",
@@ -1635,7 +1623,7 @@ dependencies = [
  "hex",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 2.0.3",
  "tokio",
  "tracing",
  "uuid",
@@ -1644,38 +1632,27 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#2f093bc28af9b0e6fa1165c4371a0839f0502552"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#c6b90c36af7bab52e4d9987e3a4398da9756937e"
 dependencies = [
- "cosmian_findex_config",
+ "cosmian_config_utils",
  "cosmian_findex_structs",
  "cosmian_http_client",
+ "cosmian_logger",
  "reqwest",
  "serde",
- "thiserror",
+ "thiserror 2.0.3",
  "tracing",
  "uuid",
 ]
 
 [[package]]
-name = "cosmian_findex_config"
-version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#2f093bc28af9b0e6fa1165c4371a0839f0502552"
-dependencies = [
- "cosmian_config_utils",
- "cosmian_http_client",
- "cosmian_logger",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "cosmian_findex_structs"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#2f093bc28af9b0e6fa1165c4371a0839f0502552"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#c6b90c36af7bab52e4d9987e3a4398da9756937e"
 dependencies = [
  "base64 0.21.7",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat/add_basic_findex_rest_client)",
- "thiserror",
+ "thiserror 2.0.3",
  "uuid",
 ]
 
@@ -1708,15 +1685,16 @@ dependencies = [
 [[package]]
 name = "cosmian_http_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#c7ea728c89415a443868cbdf83b0cc7fa7dbefab"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#3e77e49a0f7ed04380ea44f41d72316fceaf50a8"
 dependencies = [
  "actix-web",
+ "derive_more",
  "oauth2",
  "reqwest",
  "rustls",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "url",
  "webpki-roots 0.22.6",
@@ -1726,7 +1704,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c0a21b784cf208cb3a5b9a7dc38e8203cee3fcd5"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c80014bef0743be12fcd029b2975654e0907a1f2"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -1744,7 +1722,7 @@ dependencies = [
  "serde_json",
  "sha3",
  "strum",
- "thiserror",
+ "thiserror 1.0.69",
  "time",
  "tracing",
  "uuid",
@@ -1755,7 +1733,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c0a21b784cf208cb3a5b9a7dc38e8203cee3fcd5"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c80014bef0743be12fcd029b2975654e0907a1f2"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1764,7 +1742,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_cli"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c0a21b784cf208cb3a5b9a7dc38e8203cee3fcd5"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c80014bef0743be12fcd029b2975654e0907a1f2"
 dependencies = [
  "base64 0.21.7",
  "clap",
@@ -1781,7 +1759,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "url",
@@ -1793,40 +1771,29 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_client"
 version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c0a21b784cf208cb3a5b9a7dc38e8203cee3fcd5"
+source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c80014bef0743be12fcd029b2975654e0907a1f2"
 dependencies = [
  "cloudproof",
+ "cosmian_config_utils",
  "cosmian_http_client",
  "cosmian_kmip",
  "cosmian_kms_access",
- "cosmian_kms_config",
+ "cosmian_logger",
  "der",
  "pem",
  "reqwest",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tracing",
  "url",
  "zeroize",
 ]
 
 [[package]]
-name = "cosmian_kms_config"
-version = "4.19.3"
-source = "git+https://www.github.com/Cosmian/kms?branch=chore/reuse_ckms_in_cosmian_cli#c0a21b784cf208cb3a5b9a7dc38e8203cee3fcd5"
-dependencies = [
- "cosmian_config_utils",
- "cosmian_http_client",
- "cosmian_logger",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "cosmian_logger"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#c7ea728c89415a443868cbdf83b0cc7fa7dbefab"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=develop#3e77e49a0f7ed04380ea44f41d72316fceaf50a8"
 dependencies = [
  "tracing",
  "tracing-subscriber",
@@ -2212,7 +2179,7 @@ dependencies = [
  "percent-encoding",
  "raw-window-handle",
  "static_assertions",
- "thiserror",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -2975,7 +2942,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.7",
+ "socket2 0.4.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -3271,7 +3238,7 @@ dependencies = [
  "combine",
  "jni-sys",
  "log",
- "thiserror",
+ "thiserror 1.0.69",
  "walkdir",
  "windows-sys 0.45.0",
 ]
@@ -3322,7 +3289,7 @@ dependencies = [
  "serde",
  "serde_json",
  "superboring",
- "thiserror",
+ "thiserror 1.0.69",
  "zeroize",
 ]
 
@@ -3366,7 +3333,7 @@ dependencies = [
  "heck 0.4.1",
  "linkify",
  "rfd",
- "thiserror",
+ "thiserror 1.0.69",
  "uuid",
 ]
 
@@ -3629,7 +3596,7 @@ dependencies = [
  "ndk-sys",
  "num_enum 0.5.11",
  "raw-window-handle",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3844,7 +3811,7 @@ dependencies = [
  "serde_json",
  "serde_path_to_error",
  "sha2",
- "thiserror",
+ "thiserror 1.0.69",
  "url",
 ]
 
@@ -5341,7 +5308,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c006c85c7651b3cf2ada4584faa36773bd07bac24acfb39f3c431b36d7e667aa"
+dependencies = [
+ "thiserror-impl 2.0.3",
 ]
 
 [[package]]
@@ -5349,6 +5325,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f077553d607adc1caf65430528a576c757a71ed73944b66ebb58ef2bbd243568"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6505,7 +6492,7 @@ dependencies = [
  "oid-registry",
  "ring",
  "rusticata-macros",
- "thiserror",
+ "thiserror 1.0.69",
  "time",
 ]
 

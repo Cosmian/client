@@ -1,11 +1,11 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_config::COSMIAN_CLI_CONF_ENV;
 use tracing::debug;
 
 use crate::{
     actions::delete_datasets::DeleteDatasetAction,
+    config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{PROG_NAME, utils::recover_cmd_logs},
 };

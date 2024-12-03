@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use cosmian_config::ClientConf;
 use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexRestClient;
 use cosmian_kms_cli::{KmsActions, reexport::cosmian_kms_client::KmsClient};
@@ -11,6 +10,7 @@ use tracing::{info, trace};
 use crate::{
     actions::{findex::FindexActions, markdown::MarkdownAction},
     cli_error,
+    config::ClientConf,
     error::result::CosmianResult,
 };
 
