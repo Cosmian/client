@@ -70,6 +70,7 @@ jobs:
       debug_or_release: ${{ inputs.debug_or_release }}
       prerequisites: ${{ matrix.prerequisites }}
       skip_services_tests: ${{ matrix.skip_services_tests }}
+      docker_compose: ${{ matrix.docker_compose }}
 
   windows-2022:
     if: inputs.debug_or_release == 'release'
