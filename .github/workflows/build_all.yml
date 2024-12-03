@@ -51,7 +51,7 @@ jobs:
             skip_services_tests: --skip test_encrypt --skip test_create
             docker_compose: false
 
-          - distribution: macos-12
+          - distribution: macos-13
             archive-name: macos_intel
             target: x86_64-apple-darwin
             skip_services_tests: --skip test_encrypt --skip test_create
