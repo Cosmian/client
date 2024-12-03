@@ -19,52 +19,12 @@ on:
       debug_or_release:
         required: true
         type: string
-      features:
-        required: false
-        type: string
 
 env:
   OPENSSL_DIR: /usr/local/openssl
 
 jobs:
   rhel9-tests:
-    # services:
-    #   redis:
-    #     image: redis
-    #     options: >-
-    #       --health-cmd "redis-cli ping"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-    #     ports:
-    #       - 6379:6379
-    #   kms:
-    #     image: ghcr.io/cosmian/kms:4.20.0
-    #     ports:
-    #       - 9998:9998
-    #   findex-server:
-    #     image: ghcr.io/cosmian/findex-server:windows_tests
-    #     ports:
-    #       - 6668:6668
-    #     env:
-    #       RUST_LOG: cosmian_findex_server=trace
-    #       FINDEX_SERVER_DATABASE_TYPE: redis
-    #       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-    #   findex-server-cert-auth:
-    #     image: ghcr.io/cosmian/findex-server:windows_tests
-    #     ports:
-    #       - 6660:6660
-    #     volumes:
-    #       - ./test_data:/test_data
-    #     env:
-    #       RUST_LOG: cosmian_findex_server=trace
-    #       FINDEX_SERVER_DATABASE_TYPE: redis
-    #       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
-    #       FINDEX_SERVER_PORT: 6660
-    #       FINDEX_SERVER_HTTPS_P12_FILE: /test_data/certificates/client_server/server/kmserver.acme.com.p12
-    #       FINDEX_SERVER_HTTPS_P12_PASSWORD: password
-    #       FINDEX_SERVER_AUTHORITY_CERT_FILE: /test_data/certificates/client_server/server/ca.crt
-
     name: ${{ inputs.archive-name }}
     runs-on: ubuntu-22.04
     container:
@@ -75,16 +35,6 @@ jobs:
         run: cat /proc/cpuinfo
 
       - uses: actions/checkout@v3
-
-      - name: Install Docker compose
-        run: |
-          curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-          chmod +x /usr/bin/docker-compose
-
-      - name: Run Redis, KMS and Findex servers containers
-        run: |
-          docker-compose up -h
-          docker-compose up -d
 
       - name: RHEL 9 prerequisites
         run: |
@@ -109,8 +59,6 @@ jobs:
       - name: Build and tests
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
-          KMS_DEFAULT_URL: http://kms:9998
-          FINDEX_SERVER_HOSTNAME: findex-server
 
           # Google variables
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
@@ -120,7 +68,7 @@ jobs:
 
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
+          SKIP_SERVICES_TESTS: --skip test_encrypt --skip test_create
         run: |
           bash .github/scripts/cargo_build.sh
 
@@ -128,7 +76,7 @@ jobs:
         run: |
           find target/ -type f -size ++100M -delete
 
-      - name: Upload KMS for RHEL 9
+      - name: Upload CLI for RHEL 9
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.archive-name }}-${{ inputs.debug_or_release }}

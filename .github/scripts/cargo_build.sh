@@ -59,7 +59,7 @@ for crate in "${crates[@]}"; do
   echo "Building $crate"
   cd "$crate"
   # shellcheck disable=SC2086
-  cargo build --target $TARGET $RELEASE $FEATURES
+  cargo build --target $TARGET $RELEASE
   cd "$ROOT_FOLDER"
 done
 

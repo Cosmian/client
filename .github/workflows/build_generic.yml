@@ -13,17 +13,11 @@ on:
       archive-name:
         required: true
         type: string
-      artifacts:
-        required: false
-        type: string
       target:
         required: true
         type: string
       debug_or_release:
         required: true
-        type: string
-      features:
-        required: false
         type: string
       skip_services_tests:
         required: false
@@ -31,6 +25,9 @@ on:
       prerequisites:
         required: false
         type: string
+      docker_compose:
+        required: false
+        type: boolean
 
 env:
   OPENSSL_DIR: /usr/local/openssl
@@ -56,17 +53,11 @@ jobs:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt, clippy
 
-      # - name: Install Docker compose
-      #   run: |
-      #     curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-      #     chmod +x /usr/bin/docker-compose
-
       - name: Run Redis, KMS and Findex servers containers
+        if: ${{ inputs.docker_compose }}
         run: |
           docker compose -h
-          docker compose up
-          # docker-compose up -h
-          # docker-compose up
+          docker compose up -d
 
       - name: Prerequisites
         if: ${{ inputs.prerequisites }}
@@ -82,7 +73,7 @@ jobs:
         env:
           OS_NAME: ${{ inputs.archive-name }}
 
-      - name: Build
+      - name: Build and tests
         env:
           OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
           TEST_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.TEST_GOOGLE_OAUTH_CLIENT_ID }}
@@ -90,7 +81,6 @@ jobs:
           TEST_GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.TEST_GOOGLE_OAUTH_REFRESH_TOKEN }}
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          FEATURES: ${{ inputs.features }}
           SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
           bash .github/scripts/cargo_build.sh
@@ -107,7 +97,6 @@ jobs:
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
             target/${{ inputs.target }}/debian/*.deb
-            ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
 
