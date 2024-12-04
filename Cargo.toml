@@ -7,7 +7,7 @@ members = ["crate/cli", "crate/gui"]
 resolver = "2"
 
 [workspace.package]
-version = "4.19.3"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.82.0"
 authors = [
@@ -16,8 +16,8 @@ authors = [
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
-repository = "https://github.com/Cosmian/kms"
-keywords = ["kms", "findex", "cosmian"]
+repository = "https://github.com/Cosmian/cli"
+keywords = ["cosmian_cli", "kms", "findex", "findex-server", "cosmian"]
 categories = ["security"]
 
 [profile.release]

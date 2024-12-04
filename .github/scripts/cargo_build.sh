@@ -12,22 +12,16 @@ ROOT_FOLDER=$(pwd)
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # First build the Debian and RPM packages. It must come at first since
-  # after this step `ckms` and `cosmian_kms_server` are built with custom features flags (fips for example).
+  # after this step `cosmian` and `cosmian_gui` are built with custom features flags (fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
   if [ -f /etc/redhat-release ]; then
-    cd crate/cli && cargo build --target "$TARGET" --release && cd -
-    cd crate/server && cargo build --target "$TARGET" --release && cd -
+    cargo build --target "$TARGET" --release
     cargo install --version 0.14.1 cargo-generate-rpm --force
-    cd "$ROOT_FOLDER"
     cargo generate-rpm --target "$TARGET" -p crate/cli
-    cargo generate-rpm --target "$TARGET" -p crate/server --metadata-overwrite=pkg/rpm/scriptlets.toml
   elif [ -f /etc/lsb-release ]; then
     cargo install --version 2.4.0 cargo-deb --force
-    cargo deb --target "$TARGET" -p cosmian_kms_cli --variant fips
-    cargo deb --target "$TARGET" -p cosmian_kms_cli
-    cargo deb --target "$TARGET" -p cosmian_kms_server --variant fips
-    cargo deb --target "$TARGET" -p cosmian_kms_server
+    cargo deb --target "$TARGET" -p cosmian_cli
   fi
 fi
 
@@ -79,7 +73,7 @@ else
 fi
 
 find . -type d -name cosmian-findex-server -exec rm -rf \{\} \; -print || true
-rm -f /tmp/*.json
+rm -f /tmp/*.json /tmp/*.toml
 
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE $FEATURES

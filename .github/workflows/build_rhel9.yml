@@ -10,9 +10,6 @@ on:
       archive-name:
         required: true
         type: string
-      artifacts:
-        required: false
-        type: string
       target:
         required: true
         type: string
@@ -84,7 +81,6 @@ jobs:
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian
             target/${{ inputs.target }}/${{ inputs.debug_or_release }}/cosmian_gui
             target/${{ inputs.target }}/generate-rpm/cosmian_*
-            ${{ inputs.artifacts }}
           retention-days: 1
           if-no-files-found: error
 

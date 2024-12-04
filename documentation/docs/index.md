@@ -1,6 +1,15 @@
 # Cosmian Command Line Interface (CLI)
 
-The Cosmian CLI is the Command Line Interface to interact with Cosmian products such as KMS and Findex server. The CLI is [**open-source**](https://github.com/Cosmian/cli), client application written in [**Rust**](https://www.rust-lang.org/) that implements the REST API servers endpoints. A graphical version of the CLI is also available as a separate tool called `cosmian_gui`.
+Cosmian CLI is the Command Line Interface to drive [KMS](https://github.com/Cosmian/kms) and [Findex server](https://github.com/Cosmian/findex-server).
+
+Cosmian CLI provides a powerful interface to manage and secure your cryptographic keys and secrets using the [Cosmian Key Management System KMS](https://github.com/Cosmian/kms).
+The KMS offers a high-performance, scalable solution with unique features such as confidential execution in zero-trust environments, compliance with KMIP 2.1, and support for various cryptographic algorithms and protocols.
+
+Additionally, the CLI facilitates interaction with the [Findex server](https://github.com/Cosmian/findex-server), which implements Searchable Symmetric Encryption (SSE) via the [Findex protocol](https://github.com/Cosmian/findex). This allows for secure and efficient search operations over encrypted data, ensuring that sensitive information remains protected even during search queries.
+
+By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic functionalities and secure search capabilities into their applications, enhancing data security and privacy.
+
+**Note**: A graphical version of the CLI is also available as a separate tool called `cosmian_gui`.
 
 - [Cosmian Command Line Interface (CLI)](#cosmian-command-line-interface-cli)
   - [Installation](#installation)
@@ -12,7 +21,7 @@ The Cosmian CLI is the Command Line Interface to interact with Cosmian products 
 !!! info "Download cosmian and cosmian_gui"
 
     Please download the latest versions for your Operating System from
-    the [Cosmian public packages repository](https://package.cosmian.com/kms/4.19.3/)
+    the [Cosmian public packages repository](https://package.cosmian.com/cli/0.1.0/)
     See below for installation instructions.
 
 ## Installation

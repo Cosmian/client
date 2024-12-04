@@ -1,6 +1,6 @@
 # Cosmian CLI
 
-Cosmian KMS can be managed using the `cosmian` command line interface (CLI) or its graphical
+KMS or Findex server can be managed using the `cosmian` command line interface (CLI) or its graphical
 client `cosmian_gui`.
 
 ## Build
@@ -17,5 +17,6 @@ cargo build --bin cosmian
 
 ```sh
 cargo build --bin cosmian
+docker compose up -d
 cargo test -p cosmian
 ```

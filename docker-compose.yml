@@ -12,7 +12,7 @@ services:
 
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:4.19.3
+    image: ghcr.io/cosmian/kms:4.20.0
     ports:
       - 9998:9998
   findex-server:
