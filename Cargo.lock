@@ -1610,7 +1610,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#80fc868504df5162e7499b701c4e207e71295922"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=findex_v6#dd3810a7e0476fcdf272172e9498ab1fffe90dcc"
 dependencies = [
  "base64 0.21.7",
  "clap",
@@ -1632,7 +1632,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#80fc868504df5162e7499b701c4e207e71295922"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=findex_v6#dd3810a7e0476fcdf272172e9498ab1fffe90dcc"
 dependencies = [
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat/add_basic_findex_rest_client)",
  "cosmian_config_utils",
@@ -1649,7 +1649,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=reuse_cli#80fc868504df5162e7499b701c4e207e71295922"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=findex_v6#dd3810a7e0476fcdf272172e9498ab1fffe90dcc"
 dependencies = [
  "base64 0.21.7",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat/add_basic_findex_rest_client)",
