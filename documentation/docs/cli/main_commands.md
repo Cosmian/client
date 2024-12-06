@@ -1,4 +1,3 @@
-*-- This file is auto-generated using the `cosmian markdown` command. --*
 
 ##  cosmian
 

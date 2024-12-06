@@ -21,10 +21,6 @@ impl MarkdownAction {
     #[allow(clippy::print_stdout)]
     pub fn process(&self, cmd: &Command) -> CosmianResult<()> {
         let mut output = String::new();
-        writeln!(
-            output,
-            "*-- This file is auto-generated using the `cosmian markdown` command. --*"
-        )?;
         writeln!(output)?;
         write_command(&mut output, "", "", cmd)?;
         let mut f = File::create(&self.markdown_file)?;
