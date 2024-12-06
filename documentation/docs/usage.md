@@ -37,19 +37,19 @@ Handle KMS actions
 Usage: cosmian kms <COMMAND>
 
 Commands:
-  login           Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
-  logout          Logout from the Identity Provider.
   access-rights   Manage the users' access rights to the cryptographic objects
+  attributes      Get/Set/Delete the KMIP object attributes
   cc              Manage Covercrypt keys and policies. Rotate attributes. Encrypt and decrypt data
   certificates    Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt data
   ec              Manage elliptic curve keys. Encrypt and decrypt data using ECIES
-  attributes      Get/Set/Delete the KMIP object attributes
+  google          Manage google elements. Handle key pairs and identities from Gmail API
   locate          Locate cryptographic objects inside the KMS
+  login           Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
+  logout          Logout from the Identity Provider.
   new-database    Initialize a new user encrypted database and return the secret (`SQLCipher` only).
   rsa             Manage RSA keys. Encrypt and decrypt data using RSA keys
   server-version  Print the version of the server
   sym             Manage symmetric keys. Encrypt and decrypt data
-  google          Manage google elements. Handle key pairs and identities from Gmail API
   help            Print this message or the help of the given subcommand(s)
 
 Options:
@@ -64,7 +64,10 @@ Handle Findex server actions
 Usage: cosmian findex-server <COMMAND>
 
 Commands:
-  encrypt-and-index   Encrypt entries and index the corresponding database UUIDs with the Findex. todo(manu): describe the action
+  encrypt-and-index   Encrypt entries and index the corresponding database UUIDs with the Findex.
+                      First the CSV file is read and encrypted on client-side with KEM-DEM crypto-system
+                      KEM: Key Encapsulation Mechanism
+                      DEM: Data Encapsulation Mechanism
   search-and-decrypt  Search keywords and decrypt the content of corresponding UUIDs.
   delete-dataset      Delete encrypted entries. (Indexes are not deleted)
   index               Index new keywords
@@ -75,6 +78,7 @@ Commands:
                       authorization code flow.
   logout              Logout from the Identity Provider.
   permissions         Manage the users permissions to the indexes
+  datasets            Manage encrypted datasets
   help                Print this message or the help of the given subcommand(s)
 
 Options:

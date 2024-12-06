@@ -23,7 +23,11 @@ use tracing::trace;
 
 use crate::error::result::{CliResultHelper, CosmianResult};
 
-/// Encrypt entries and index the corresponding database UUIDs with the Findex. todo(manu): describe the action
+/// Encrypt entries and index the corresponding database UUIDs with the Findex.
+///
+/// First the CSV file is read and encrypted on client-side with KEM-DEM crypto-system
+/// KEM: Key Encapsulation Mechanism
+/// DEM: Data Encapsulation Mechanism
 #[derive(Parser, Debug)]
 #[clap(verbatim_doc_comment)]
 pub struct EncryptAndIndexAction {

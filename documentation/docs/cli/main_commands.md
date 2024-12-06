@@ -1818,7 +1818,7 @@ Handle Findex server actions
 
 ### Subcommands
 
-**`encrypt-and-index`** [[2.1]](#21-cosmian-findex-server-encrypt-and-index)  Encrypt entries and index the corresponding database UUIDs with the Findex. todo(manu): describe the action
+**`encrypt-and-index`** [[2.1]](#21-cosmian-findex-server-encrypt-and-index)  Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 **`search-and-decrypt`** [[2.2]](#22-cosmian-findex-server-search-and-decrypt)  Search keywords and decrypt the content of corresponding UUIDs.
 
@@ -1845,7 +1845,7 @@ authorization code flow.
 
 ## 2.1 cosmian findex-server encrypt-and-index
 
-Encrypt entries and index the corresponding database UUIDs with the Findex. todo(manu): describe the action
+Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 ### Usage
 `cosmian findex-server encrypt-and-index [options]`
