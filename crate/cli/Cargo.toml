@@ -31,7 +31,6 @@ clap = { workspace = true, features = [
   "derive",
   "cargo",
 ] }
-cloudproof_findex = { workspace = true, features = ["rest-interface"] }
 cosmian_kms_cli = { workspace = true }
 cosmian_findex_cli = { workspace = true }
 cosmian_config_utils = { workspace = true }

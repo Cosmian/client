@@ -1,8 +1,11 @@
 use clap::Parser;
-use cloudproof_findex::reexport::cosmian_findex::{Keyword, Keywords};
 use cosmian_findex_cli::{
     actions::findex::{FindexParameters, instantiate_findex},
-    reexports::{cosmian_findex_client::FindexRestClient, cosmian_findex_structs::Uuids},
+    reexports::{
+        cloudproof_findex::reexport::cosmian_findex::{Keyword, Keywords},
+        cosmian_findex_client::FindexRestClient,
+        cosmian_findex_structs::Uuids,
+    },
 };
 use cosmian_kms_cli::{
     actions::symmetric::{DataEncryptionAlgorithm, DecryptAction, KeyEncryptionAlgorithm},

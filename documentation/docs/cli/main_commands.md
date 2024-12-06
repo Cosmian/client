@@ -44,53 +44,33 @@ Handle KMS actions
 
 ### Subcommands
 
-**`login`** [[1.1]](#11-cosmian-kms-login)  Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
+**`access-rights`** [[1.1]](#11-cosmian-kms-access-rights)  Manage the users' access rights to the cryptographic objects
 
-**`logout`** [[1.2]](#12-cosmian-kms-logout)  Logout from the Identity Provider.
+**`attributes`** [[1.2]](#12-cosmian-kms-attributes)  Get/Set/Delete the KMIP object attributes
 
-**`access-rights`** [[1.3]](#13-cosmian-kms-access-rights)  Manage the users' access rights to the cryptographic objects
+**`certificates`** [[1.3]](#13-cosmian-kms-certificates)  Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt data
 
-**`certificates`** [[1.4]](#14-cosmian-kms-certificates)  Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt data
+**`ec`** [[1.4]](#14-cosmian-kms-ec)  Manage elliptic curve keys. Encrypt and decrypt data using ECIES
 
-**`ec`** [[1.5]](#15-cosmian-kms-ec)  Manage elliptic curve keys. Encrypt and decrypt data using ECIES
+**`google`** [[1.5]](#15-cosmian-kms-google)  Manage google elements. Handle key pairs and identities from Gmail API
 
-**`attributes`** [[1.6]](#16-cosmian-kms-attributes)  Get/Set/Delete the KMIP object attributes
+**`locate`** [[1.6]](#16-cosmian-kms-locate)  Locate cryptographic objects inside the KMS
 
-**`locate`** [[1.7]](#17-cosmian-kms-locate)  Locate cryptographic objects inside the KMS
+**`login`** [[1.7]](#17-cosmian-kms-login)  Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
 
-**`new-database`** [[1.8]](#18-cosmian-kms-new-database)  Initialize a new user encrypted database and return the secret (`SQLCipher` only).
+**`logout`** [[1.8]](#18-cosmian-kms-logout)  Logout from the Identity Provider.
 
-**`rsa`** [[1.9]](#19-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
+**`new-database`** [[1.9]](#19-cosmian-kms-new-database)  Initialize a new user encrypted database and return the secret (`SQLCipher` only).
 
-**`server-version`** [[1.10]](#110-cosmian-kms-server-version)  Print the version of the server
+**`rsa`** [[1.10]](#110-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
 
-**`sym`** [[1.11]](#111-cosmian-kms-sym)  Manage symmetric keys. Encrypt and decrypt data
+**`server-version`** [[1.11]](#111-cosmian-kms-server-version)  Print the version of the server
 
-**`google`** [[1.12]](#112-cosmian-kms-google)  Manage google elements. Handle key pairs and identities from Gmail API
-
----
-
-## 1.1 cosmian kms login
-
-Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
-
-### Usage
-`cosmian kms login`
-
+**`sym`** [[1.12]](#112-cosmian-kms-sym)  Manage symmetric keys. Encrypt and decrypt data
 
 ---
 
-## 1.2 cosmian kms logout
-
-Logout from the Identity Provider.
-
-### Usage
-`cosmian kms logout`
-
-
----
-
-## 1.3 cosmian kms access-rights
+## 1.1 cosmian kms access-rights
 
 Manage the users' access rights to the cryptographic objects
 
@@ -99,19 +79,19 @@ Manage the users' access rights to the cryptographic objects
 
 ### Subcommands
 
-**`grant`** [[1.3.1]](#131-cosmian-kms-access-rights-grant)  Grant another user one or multiple access rights to an object
+**`grant`** [[1.1.1]](#111-cosmian-kms-access-rights-grant)  Grant another user one or multiple access rights to an object
 
-**`revoke`** [[1.3.2]](#132-cosmian-kms-access-rights-revoke)  Revoke another user one or multiple access rights to an object
+**`revoke`** [[1.1.2]](#112-cosmian-kms-access-rights-revoke)  Revoke another user one or multiple access rights to an object
 
-**`list`** [[1.3.3]](#133-cosmian-kms-access-rights-list)  List the access rights granted on an object to other users
+**`list`** [[1.1.3]](#113-cosmian-kms-access-rights-list)  List the access rights granted on an object to other users
 
-**`owned`** [[1.3.4]](#134-cosmian-kms-access-rights-owned)  List the objects owned by the calling user
+**`owned`** [[1.1.4]](#114-cosmian-kms-access-rights-owned)  List the objects owned by the calling user
 
-**`obtained`** [[1.3.5]](#135-cosmian-kms-access-rights-obtained)  List the access rights obtained by the calling user
+**`obtained`** [[1.1.5]](#115-cosmian-kms-access-rights-obtained)  List the access rights obtained by the calling user
 
 ---
 
-## 1.3.1 cosmian kms access-rights grant
+## 1.1.1 cosmian kms access-rights grant
 
 Grant another user one or multiple access rights to an object
 
@@ -131,7 +111,7 @@ Grant another user one or multiple access rights to an object
 
 ---
 
-## 1.3.2 cosmian kms access-rights revoke
+## 1.1.2 cosmian kms access-rights revoke
 
 Revoke another user one or multiple access rights to an object
 
@@ -151,7 +131,7 @@ Revoke another user one or multiple access rights to an object
 
 ---
 
-## 1.3.3 cosmian kms access-rights list
+## 1.1.3 cosmian kms access-rights list
 
 List the access rights granted on an object to other users
 
@@ -165,7 +145,7 @@ List the access rights granted on an object to other users
 
 ---
 
-## 1.3.4 cosmian kms access-rights owned
+## 1.1.4 cosmian kms access-rights owned
 
 List the objects owned by the calling user
 
@@ -175,7 +155,7 @@ List the objects owned by the calling user
 
 ---
 
-## 1.3.5 cosmian kms access-rights obtained
+## 1.1.5 cosmian kms access-rights obtained
 
 List the access rights obtained by the calling user
 
@@ -186,7 +166,154 @@ List the access rights obtained by the calling user
 
 ---
 
-## 1.4 cosmian kms certificates
+## 1.2 cosmian kms attributes
+
+Get/Set/Delete the KMIP object attributes
+
+### Usage
+`cosmian kms attributes <subcommand>`
+
+### Subcommands
+
+**`get`** [[1.2.1]](#121-cosmian-kms-attributes-get)  Get the KMIP object attributes and tags.
+
+**`set`** [[1.2.2]](#122-cosmian-kms-attributes-set)  Set the KMIP object attributes.
+
+**`delete`** [[1.2.3]](#123-cosmian-kms-attributes-delete)  Delete the KMIP object attributes.
+
+---
+
+## 1.2.1 cosmian kms attributes get
+
+Get the KMIP object attributes and tags.
+
+### Usage
+`cosmian kms attributes get [options]`
+### Arguments
+`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--attribute [-a] <ATTRIBUTE>` The attributes or `KMIP-tags` to retrieve.
+To specify multiple attributes, use the option multiple times.
+If not specified, all possible attributes are returned.
+
+Possible values:  `"ActivationDate", "ApplicationData", "ApplicationNamespace", "ApplicationSpecific_Information", "ArchiveDate", "AsynchronousCorrelation_Value", "AsynchronousIndicator", "Attribute", "AttributeName", "AttributeValue", "Authentication", "BatchCount", "BatchErrorContinuationOption", "BatchItem", "BatchOrderOption", "BlockCipherMode", "CancellationResult", "Certificate", "CertificateRequest", "CertificateRequestType", "CertificateType", "CertificateValue", "CompromiseDate", "CompromiseOccurrenceDate", "ContactInformation", "Credential", "CredentialType", "CredentialValue", "CriticalityIndicator", "CRTCoefficient", "CryptographicAlgorithm", "CryptographicDomainParameters", "CryptographicLength", "CryptographicParameters", "CryptographicUsageMask", "D", "DeactivationDate", "DerivationData", "DerivationMethod", "DerivationParameters", "DestroyDate", "Digest", "DigestValue", "EncryptionKeyInformation", "G", "HashingAlgorithm", "InitialDate", "InitializationVector", "IterationCount", "IVCounterNonce", "J", "Key", "KeyBlock", "KeyCompressionType", "KeyFormatType", "KeyMaterial", "KeyPartIdentifier", "KeyValue", "KeyWrappingData", "KeyWrappingSpecification", "LastChangeDate", "LeaseTime", "Link", "LinkType", "LinkedObjectIdentifier", "MACSignature", "MACSignatureKey_Information", "MaximumItems", "MaximumResponseSize", "MessageExtension", "Modulus", "Name", "NameType", "NameValue", "ObjectGroup", "ObjectType", "Offset", "OpaqueDataType", "OpaqueDataValue", "OpaqueObject", "Operation", "P", "PaddingMethod", "PrimeExponentP", "PrimeExponentQ", "PrimeFieldSize", "PrivateExponent", "PrivateKey", "PrivateKeyUniqueIdentifier", "ProcessStartDate", "ProtectStopDate", "ProtocolVersion", "ProtocolVersionMajor", "ProtocolVersionMinor", "PublicExponent", "PublicKey", "PublicKeyUniqueIdentifier", "PutFunction", "Q", "QString", "Qlength", "QueryFunction", "RecommendedCurve", "ReplacedUniqueIdentifier", "RequestHeader", "RequestMessage", "RequestPayload", "ResponseHeader", "ResponseMessage", "ResponsePayload", "ResultMessage", "ResultReason", "ResultStatus", "RevocationMessage", "RevocationReason", "RevocationReasonCode", "KeyRoleType", "Salt", "SecretData", "SecretDataType", "ServerInformation", "SplitKey", "SplitKeyMethod", "SplitKeyParts", "SplitKeyThreshold", "State", "StorageStatusMask", "SymmetricKey", "TimeStamp", "UniqueBatchItemID", "UniqueIdentifier", "UsageLimits", "UsageLimitsCount", "UsageLimitsTotal", "UsageLimitsUnit", "Username", "ValidityDate", "ValidityIndicator", "VendorExtension", "VendorIdentification", "WrappingMethod", "X", "Y", "Password", "DeviceIdentifier", "EncodingOption", "ExtensionInformation", "ExtensionName", "ExtensionTag", "ExtensionType", "Fresh", "MachineIdentifier", "MediaIdentifier", "NetworkIdentifier", "ObjectGroupMember", "CertificateLength", "DigitalSignatureAlgorithm", "CertificateSerialNumber", "DeviceSerialNumber", "IssuerAlternativeName", "IssuerDistinguishedName", "SubjectAlternativeName", "SubjectDistinguishedName", "X509CertificateIdentifier", "X509CertificateIssuer", "X509CertificateSubject", "KeyValueLocation", "KeyValueLocationValue", "KeyValueLocationType", "KeyValuePresent", "OriginalCreationDate", "PGPKey", "PGPKeyVersion", "AlternativeName", "AlternativeNameValue", "AlternativeNameType", "Data", "SignatureData", "DataLength", "RandomIV", "MACData", "AttestationType", "Nonce", "NonceID", "NonceValue", "AttestationMeasurement", "AttestationAssertion", "IVLength", "TagLength", "FixedFieldLength", "CounterLength", "InitialCounterValue", "InvocationFieldLength", "AttestationCapableIndicator", "OffsetItems", "LocatedItems", "CorrelationValue", "InitIndicator", "FinalIndicator", "RNGParameters", "RNGAlgorithm", "DRBGAlgorithm", "FIPS186Variation", "PredictionResistance", "RandomNumberGenerator", "ValidationInformation", "ValidationAuthorityType", "ValidationAuthorityCountry", "ValidationAuthorityURI", "ValidationVersionMajor", "ValidationVersionMinor", "ValidationType", "ValidationLevel", "ValidationCertificateIdentifier", "ValidationCertificateURI", "ValidationVendorURI", "ValidationProfile", "ProfileInformation", "ProfileName", "ServerURI", "ServerPort", "StreamingCapability", "AsynchronousCapability", "AttestationCapability", "UnwrapMode", "DestroyAction", "ShreddingAlgorithm", "RNGMode", "ClientRegistrationMethod", "CapabilityInformation", "KeyWrapType", "BatchUndoCapability", "BatchContinueCapability", "PKCS12FriendlyName", "Description", "Comment", "AuthenticatedEncryptionAdditionalData", "AuthenticatedEncryptionTag", "SaltLength", "MaskGenerator", "MaskGeneratorHashingAlgorithm", "PSource", "TrailerField", "ClientCorrelationValue", "ServerCorrelationValue", "DigestedData", "CertificateSubjectCN", "CertificateSubjectO", "CertificateSubjectOU", "CertificateSubjectEmail", "CertificateSubjectC", "CertificateSubjectST", "CertificateSubjectL", "CertificateSubjectUID", "CertificateSubjectSerialNumber", "CertificateSubjectTitle", "CertificateSubjectDC", "CertificateSubjectDNQualifier", "CertificateIssuerCN", "CertificateIssuerO", "CertificateIssuerOU", "CertificateIssuerEmail", "CertificateIssuerC", "CertificateIssuerST", "CertificateIssuerL", "CertificateIssuerUID", "CertificateIssuerSerialNumber", "CertificateIssuerTitle", "CertificateIssuerDC", "CertificateIssuerDNQualifier", "Sensitive", "AlwaysSensitive", "Extractable", "NeverExtractable", "ReplaceExisting", "Attributes", "CommonAttributes", "PrivateKeyAttributes", "PublicKeyAttributes", "ExtensionEnumeration", "ExtensionAttribute", "ExtensionParentStructureTag", "ExtensionDescription", "ServerName", "ServerSerialNumber", "ServerVersion", "ServerLoad", "ProductName", "BuildLevel", "BuildDate", "ClusterInfo", "AlternateFailoverEndpoints", "ShortUniqueIdentifier", "Reserved", "Tag", "CertificateRequestUniqueIdentifier", "NISTKeyType", "AttributeReference", "CurrentAttribute", "NewAttribute", "CertificateRequestValue", "LogMessage", "ProfileVersion", "ProfileVersionMajor", "ProfileVersionMinor", "ProtectionLevel", "ProtectionPeriod", "QuantumSafe", "QuantumSafeCapability", "Ticket", "TicketType", "TicketValue", "RequestCount", "Rights", "Objects", "Operations", "Right", "EndpointRole", "DefaultsInformation", "ObjectDefaults", "Ephemeral", "ServerHashedPassword", "OneTimePassword", "HashedPassword", "AdjustmentType", "PKCS11Interface", "PKCS11Function", "PKCS11InputParameters", "PKCS11OutputParameters", "PKCS11ReturnCode", "ProtectionStorageMask", "ProtectionStorageMasks", "InteropFunction", "InteropIdentifier", "AdjustmentValue", "CommonProtectionStorageMasks", "PrivateProtectionStorageMasks", "PublicProtectionStorageMasks"`
+
+`--link-type [-l] <LINK_TYPE>` Filter on retrieved links. Only if KMIP tag `LinkType` is used in `attribute` parameter.
+To specify multiple attributes, use the option multiple times.
+If not specified, all possible link types are returned.
+
+Possible values:  `"CertificateLink", "PublicKeyLink", "PrivateKeyLink", "DerivationBaseObjectLink", "DerivedKeyLink", "ReplacementObjectLink", "ReplacedObjectLink", "ParentLink", "ChildLink", "PreviousLink", "NextLink", "PKCS12CertificateLink", "PKCS12PasswordLink", "WrappingKeyLink"`
+
+`--output-file [-o] <OUTPUT_FILE>` An optional file where to export the attributes.
+The attributes will be in JSON TTLV format.
+
+
+
+---
+
+## 1.2.2 cosmian kms attributes set
+
+Set the KMIP object attributes.
+
+### Usage
+`cosmian kms attributes set [options]`
+### Arguments
+`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--activation-date [-d] <ACTIVATION_DATE>` Set the activation date of the key. Epoch time (or Unix time) in milliseconds
+
+`--cryptographic-algorithm [-a] <CRYPTOGRAPHIC_ALGORITHM>` The cryptographic algorithm used by the key
+
+Possible values:  `"DES", "THREE_DES", "AES", "RSA", "DSA", "ECDSA", "HMACSHA1", "HMACSHA224", "HMACSHA256", "HMACSHA384", "HMACSHA512", "HMACMD5", "DH", "ECDH", "ECMQV", "Blowfish", "Camellia", "CAST5", "IDEA", "MARS", "RC2", "RC4", "RC5", "SKIPJACK", "Twofish", "EC", "OneTimePad", "ChaCha20", "Poly1305", "ChaCha20Poly1305", "SHA3224", "SHA3256", "SHA3384", "SHA3512", "HMACSHA3224", "HMACSHA3256", "HMACSHA3384", "HMACSHA3512", "SHAKE128", "SHAKE256", "ARIA", "SEED", "SM2", "SM3", "SM4", "GOSTR34102012", "GOSTR34112012", "GOSTR34132015", "GOST2814789", "XMSS", "SPHINCS_256", "Page166Of230McEliece", "McEliece6960119", "McEliece8192128", "Ed25519", "Ed448", "CoverCrypt", "CoverCryptBulk"`
+
+`--cryptographic-length <CRYPTOGRAPHIC_LENGTH>` The length of the cryptographic key
+
+`--key-usage [-u] <KEY_USAGE>` The key usage. Add multiple times to specify multiple key usages
+
+Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--public-key-id <PUBLIC_KEY_ID>` The link to the corresponding public key id if any
+
+`--private-key-id <PRIVATE_KEY_ID>` The link to the corresponding private key id if any
+
+`--certificate-id <CERTIFICATE_ID>` The link to the corresponding certificate id if any
+
+`--p12-id <PKCS12_CERTIFICATE_ID>` The link to the corresponding PKCS12 certificate id if any
+
+`--p12-pwd <PKCS12_PASSWORD_CERTIFICATE>` The link to the corresponding PKCS12 password certificate if any
+
+`--parent-id <PARENT_ID>` The link to the corresponding parent id if any
+
+`--child-id <CHILD_ID>` The link to the corresponding child id if any
+
+`--vendor-identification [-v] <VENDOR_IDENTIFICATION>` The vendor identification
+
+`--attribute-name [-n] <ATTRIBUTE_NAME>` The attribute name
+
+`--attribute-value <ATTRIBUTE_VALUE>` The attribute value (in hex format)
+
+
+
+---
+
+## 1.2.3 cosmian kms attributes delete
+
+Delete the KMIP object attributes.
+
+### Usage
+`cosmian kms attributes delete [options]`
+### Arguments
+`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--activation-date [-d] <ACTIVATION_DATE>` Set the activation date of the key. Epoch time (or Unix time) in milliseconds
+
+`--cryptographic-algorithm [-a] <CRYPTOGRAPHIC_ALGORITHM>` The cryptographic algorithm used by the key
+
+Possible values:  `"DES", "THREE_DES", "AES", "RSA", "DSA", "ECDSA", "HMACSHA1", "HMACSHA224", "HMACSHA256", "HMACSHA384", "HMACSHA512", "HMACMD5", "DH", "ECDH", "ECMQV", "Blowfish", "Camellia", "CAST5", "IDEA", "MARS", "RC2", "RC4", "RC5", "SKIPJACK", "Twofish", "EC", "OneTimePad", "ChaCha20", "Poly1305", "ChaCha20Poly1305", "SHA3224", "SHA3256", "SHA3384", "SHA3512", "HMACSHA3224", "HMACSHA3256", "HMACSHA3384", "HMACSHA3512", "SHAKE128", "SHAKE256", "ARIA", "SEED", "SM2", "SM3", "SM4", "GOSTR34102012", "GOSTR34112012", "GOSTR34132015", "GOST2814789", "XMSS", "SPHINCS_256", "Page166Of230McEliece", "McEliece6960119", "McEliece8192128", "Ed25519", "Ed448", "CoverCrypt", "CoverCryptBulk"`
+
+`--cryptographic-length <CRYPTOGRAPHIC_LENGTH>` The length of the cryptographic key
+
+`--key-usage [-u] <KEY_USAGE>` The key usage. Add multiple times to specify multiple key usages
+
+Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--public-key-id <PUBLIC_KEY_ID>` The link to the corresponding public key id if any
+
+`--private-key-id <PRIVATE_KEY_ID>` The link to the corresponding private key id if any
+
+`--certificate-id <CERTIFICATE_ID>` The link to the corresponding certificate id if any
+
+`--p12-id <PKCS12_CERTIFICATE_ID>` The link to the corresponding PKCS12 certificate id if any
+
+`--p12-pwd <PKCS12_PASSWORD_CERTIFICATE>` The link to the corresponding PKCS12 password certificate if any
+
+`--parent-id <PARENT_ID>` The link to the corresponding parent id if any
+
+`--child-id <CHILD_ID>` The link to the corresponding child id if any
+
+`--vendor-identification [-v] <VENDOR_IDENTIFICATION>` The vendor identification
+
+`--attribute-name [-n] <ATTRIBUTE_NAME>` The attribute name
+
+`--attribute-value <ATTRIBUTE_VALUE>` The attribute value (in hex format)
+
+`--attribute <ATTRIBUTE>` The attributes or tags to retrieve.
+To specify multiple attributes, use the option multiple times.
+
+Possible values:  `"ActivationDate", "ApplicationData", "ApplicationNamespace", "ApplicationSpecific_Information", "ArchiveDate", "AsynchronousCorrelation_Value", "AsynchronousIndicator", "Attribute", "AttributeName", "AttributeValue", "Authentication", "BatchCount", "BatchErrorContinuationOption", "BatchItem", "BatchOrderOption", "BlockCipherMode", "CancellationResult", "Certificate", "CertificateRequest", "CertificateRequestType", "CertificateType", "CertificateValue", "CompromiseDate", "CompromiseOccurrenceDate", "ContactInformation", "Credential", "CredentialType", "CredentialValue", "CriticalityIndicator", "CRTCoefficient", "CryptographicAlgorithm", "CryptographicDomainParameters", "CryptographicLength", "CryptographicParameters", "CryptographicUsageMask", "D", "DeactivationDate", "DerivationData", "DerivationMethod", "DerivationParameters", "DestroyDate", "Digest", "DigestValue", "EncryptionKeyInformation", "G", "HashingAlgorithm", "InitialDate", "InitializationVector", "IterationCount", "IVCounterNonce", "J", "Key", "KeyBlock", "KeyCompressionType", "KeyFormatType", "KeyMaterial", "KeyPartIdentifier", "KeyValue", "KeyWrappingData", "KeyWrappingSpecification", "LastChangeDate", "LeaseTime", "Link", "LinkType", "LinkedObjectIdentifier", "MACSignature", "MACSignatureKey_Information", "MaximumItems", "MaximumResponseSize", "MessageExtension", "Modulus", "Name", "NameType", "NameValue", "ObjectGroup", "ObjectType", "Offset", "OpaqueDataType", "OpaqueDataValue", "OpaqueObject", "Operation", "P", "PaddingMethod", "PrimeExponentP", "PrimeExponentQ", "PrimeFieldSize", "PrivateExponent", "PrivateKey", "PrivateKeyUniqueIdentifier", "ProcessStartDate", "ProtectStopDate", "ProtocolVersion", "ProtocolVersionMajor", "ProtocolVersionMinor", "PublicExponent", "PublicKey", "PublicKeyUniqueIdentifier", "PutFunction", "Q", "QString", "Qlength", "QueryFunction", "RecommendedCurve", "ReplacedUniqueIdentifier", "RequestHeader", "RequestMessage", "RequestPayload", "ResponseHeader", "ResponseMessage", "ResponsePayload", "ResultMessage", "ResultReason", "ResultStatus", "RevocationMessage", "RevocationReason", "RevocationReasonCode", "KeyRoleType", "Salt", "SecretData", "SecretDataType", "ServerInformation", "SplitKey", "SplitKeyMethod", "SplitKeyParts", "SplitKeyThreshold", "State", "StorageStatusMask", "SymmetricKey", "TimeStamp", "UniqueBatchItemID", "UniqueIdentifier", "UsageLimits", "UsageLimitsCount", "UsageLimitsTotal", "UsageLimitsUnit", "Username", "ValidityDate", "ValidityIndicator", "VendorExtension", "VendorIdentification", "WrappingMethod", "X", "Y", "Password", "DeviceIdentifier", "EncodingOption", "ExtensionInformation", "ExtensionName", "ExtensionTag", "ExtensionType", "Fresh", "MachineIdentifier", "MediaIdentifier", "NetworkIdentifier", "ObjectGroupMember", "CertificateLength", "DigitalSignatureAlgorithm", "CertificateSerialNumber", "DeviceSerialNumber", "IssuerAlternativeName", "IssuerDistinguishedName", "SubjectAlternativeName", "SubjectDistinguishedName", "X509CertificateIdentifier", "X509CertificateIssuer", "X509CertificateSubject", "KeyValueLocation", "KeyValueLocationValue", "KeyValueLocationType", "KeyValuePresent", "OriginalCreationDate", "PGPKey", "PGPKeyVersion", "AlternativeName", "AlternativeNameValue", "AlternativeNameType", "Data", "SignatureData", "DataLength", "RandomIV", "MACData", "AttestationType", "Nonce", "NonceID", "NonceValue", "AttestationMeasurement", "AttestationAssertion", "IVLength", "TagLength", "FixedFieldLength", "CounterLength", "InitialCounterValue", "InvocationFieldLength", "AttestationCapableIndicator", "OffsetItems", "LocatedItems", "CorrelationValue", "InitIndicator", "FinalIndicator", "RNGParameters", "RNGAlgorithm", "DRBGAlgorithm", "FIPS186Variation", "PredictionResistance", "RandomNumberGenerator", "ValidationInformation", "ValidationAuthorityType", "ValidationAuthorityCountry", "ValidationAuthorityURI", "ValidationVersionMajor", "ValidationVersionMinor", "ValidationType", "ValidationLevel", "ValidationCertificateIdentifier", "ValidationCertificateURI", "ValidationVendorURI", "ValidationProfile", "ProfileInformation", "ProfileName", "ServerURI", "ServerPort", "StreamingCapability", "AsynchronousCapability", "AttestationCapability", "UnwrapMode", "DestroyAction", "ShreddingAlgorithm", "RNGMode", "ClientRegistrationMethod", "CapabilityInformation", "KeyWrapType", "BatchUndoCapability", "BatchContinueCapability", "PKCS12FriendlyName", "Description", "Comment", "AuthenticatedEncryptionAdditionalData", "AuthenticatedEncryptionTag", "SaltLength", "MaskGenerator", "MaskGeneratorHashingAlgorithm", "PSource", "TrailerField", "ClientCorrelationValue", "ServerCorrelationValue", "DigestedData", "CertificateSubjectCN", "CertificateSubjectO", "CertificateSubjectOU", "CertificateSubjectEmail", "CertificateSubjectC", "CertificateSubjectST", "CertificateSubjectL", "CertificateSubjectUID", "CertificateSubjectSerialNumber", "CertificateSubjectTitle", "CertificateSubjectDC", "CertificateSubjectDNQualifier", "CertificateIssuerCN", "CertificateIssuerO", "CertificateIssuerOU", "CertificateIssuerEmail", "CertificateIssuerC", "CertificateIssuerST", "CertificateIssuerL", "CertificateIssuerUID", "CertificateIssuerSerialNumber", "CertificateIssuerTitle", "CertificateIssuerDC", "CertificateIssuerDNQualifier", "Sensitive", "AlwaysSensitive", "Extractable", "NeverExtractable", "ReplaceExisting", "Attributes", "CommonAttributes", "PrivateKeyAttributes", "PublicKeyAttributes", "ExtensionEnumeration", "ExtensionAttribute", "ExtensionParentStructureTag", "ExtensionDescription", "ServerName", "ServerSerialNumber", "ServerVersion", "ServerLoad", "ProductName", "BuildLevel", "BuildDate", "ClusterInfo", "AlternateFailoverEndpoints", "ShortUniqueIdentifier", "Reserved", "Tag", "CertificateRequestUniqueIdentifier", "NISTKeyType", "AttributeReference", "CurrentAttribute", "NewAttribute", "CertificateRequestValue", "LogMessage", "ProfileVersion", "ProfileVersionMajor", "ProfileVersionMinor", "ProtectionLevel", "ProtectionPeriod", "QuantumSafe", "QuantumSafeCapability", "Ticket", "TicketType", "TicketValue", "RequestCount", "Rights", "Objects", "Operations", "Right", "EndpointRole", "DefaultsInformation", "ObjectDefaults", "Ephemeral", "ServerHashedPassword", "OneTimePassword", "HashedPassword", "AdjustmentType", "PKCS11Interface", "PKCS11Function", "PKCS11InputParameters", "PKCS11OutputParameters", "PKCS11ReturnCode", "ProtectionStorageMask", "ProtectionStorageMasks", "InteropFunction", "InteropIdentifier", "AdjustmentValue", "CommonProtectionStorageMasks", "PrivateProtectionStorageMasks", "PublicProtectionStorageMasks"`
+
+
+
+
+---
+
+## 1.3 cosmian kms certificates
 
 Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt data
 
@@ -195,30 +322,30 @@ Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt dat
 
 ### Subcommands
 
-**`certify`** [[1.4.1]](#141-cosmian-kms-certificates-certify)  Issue or renew a X509 certificate
+**`certify`** [[1.3.1]](#131-cosmian-kms-certificates-certify)  Issue or renew a X509 certificate
 
-**`decrypt`** [[1.4.2]](#142-cosmian-kms-certificates-decrypt)  Decrypt a file using the private key of a certificate
+**`decrypt`** [[1.3.2]](#132-cosmian-kms-certificates-decrypt)  Decrypt a file using the private key of a certificate
 
-**`encrypt`** [[1.4.3]](#143-cosmian-kms-certificates-encrypt)  Encrypt a file using the certificate public key
+**`encrypt`** [[1.3.3]](#133-cosmian-kms-certificates-encrypt)  Encrypt a file using the certificate public key
 
-**`export`** [[1.4.4]](#144-cosmian-kms-certificates-export)  Export a certificate from the KMS
+**`export`** [[1.3.4]](#134-cosmian-kms-certificates-export)  Export a certificate from the KMS
 
-**`import`** [[1.4.5]](#145-cosmian-kms-certificates-import)  Import one of the following:
+**`import`** [[1.3.5]](#135-cosmian-kms-certificates-import)  Import one of the following:
 
 - a certificate: formatted as a X509 PEM (pem), X509 DER (der) or JSON TTLV (json-ttlv)
 - a certificate chain as a PEM-stack (chain)
 - a PKCS12 file containing a certificate, a private key and possibly a chain (pkcs12)
 - the Mozilla Common CA Database (CCADB - fetched by the CLI before import) (ccadb)
 
-**`revoke`** [[1.4.6]](#146-cosmian-kms-certificates-revoke)  Revoke a certificate
+**`revoke`** [[1.3.6]](#136-cosmian-kms-certificates-revoke)  Revoke a certificate
 
-**`destroy`** [[1.4.7]](#147-cosmian-kms-certificates-destroy)  Destroy a certificate
+**`destroy`** [[1.3.7]](#137-cosmian-kms-certificates-destroy)  Destroy a certificate
 
-**`validate`** [[1.4.8]](#148-cosmian-kms-certificates-validate)  Validate a certificate
+**`validate`** [[1.3.8]](#138-cosmian-kms-certificates-validate)  Validate a certificate
 
 ---
 
-## 1.4.1 cosmian kms certificates certify
+## 1.3.1 cosmian kms certificates certify
 
 Issue or renew a X509 certificate
 
@@ -263,7 +390,7 @@ with the x509 extensions to use. For instance:
 
 ---
 
-## 1.4.2 cosmian kms certificates decrypt
+## 1.3.2 cosmian kms certificates decrypt
 
 Decrypt a file using the private key of a certificate
 
@@ -291,7 +418,7 @@ Possible values:  `"ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"`
 
 ---
 
-## 1.4.3 cosmian kms certificates encrypt
+## 1.3.3 cosmian kms certificates encrypt
 
 Encrypt a file using the certificate public key
 
@@ -319,7 +446,7 @@ Possible values:  `"ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"`
 
 ---
 
-## 1.4.4 cosmian kms certificates export
+## 1.3.4 cosmian kms certificates export
 
 Export a certificate from the KMS
 
@@ -351,7 +478,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.4.5 cosmian kms certificates import
+## 1.3.5 cosmian kms certificates import
 
 Import one of the following:
 
@@ -397,7 +524,7 @@ Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-k
 
 ---
 
-## 1.4.6 cosmian kms certificates revoke
+## 1.3.6 cosmian kms certificates revoke
 
 Revoke a certificate
 
@@ -415,7 +542,7 @@ Revoke a certificate
 
 ---
 
-## 1.4.7 cosmian kms certificates destroy
+## 1.3.7 cosmian kms certificates destroy
 
 Destroy a certificate
 
@@ -430,7 +557,7 @@ Destroy a certificate
 
 ---
 
-## 1.4.8 cosmian kms certificates validate
+## 1.3.8 cosmian kms certificates validate
 
 Validate a certificate
 
@@ -448,7 +575,7 @@ Validate a certificate
 
 ---
 
-## 1.5 cosmian kms ec
+## 1.4 cosmian kms ec
 
 Manage elliptic curve keys. Encrypt and decrypt data using ECIES
 
@@ -457,11 +584,11 @@ Manage elliptic curve keys. Encrypt and decrypt data using ECIES
 
 ### Subcommands
 
-**`keys`** [[1.5.1]](#151-cosmian-kms-ec-keys)  Create, destroy, import, and export elliptic curve key pairs
+**`keys`** [[1.4.1]](#141-cosmian-kms-ec-keys)  Create, destroy, import, and export elliptic curve key pairs
 
 ---
 
-## 1.5.1 cosmian kms ec keys
+## 1.4.1 cosmian kms ec keys
 
 Create, destroy, import, and export elliptic curve key pairs
 
@@ -470,23 +597,23 @@ Create, destroy, import, and export elliptic curve key pairs
 
 ### Subcommands
 
-**`create`** [[1.5.1.1]](#1511-cosmian-kms-ec-keys-create)  Create an elliptic curve key pair
+**`create`** [[1.4.1.1]](#1411-cosmian-kms-ec-keys-create)  Create an elliptic curve key pair
 
-**`export`** [[1.5.1.2]](#1512-cosmian-kms-ec-keys-export)  Export a key from the KMS
+**`export`** [[1.4.1.2]](#1412-cosmian-kms-ec-keys-export)  Export a key from the KMS
 
-**`import`** [[1.5.1.3]](#1513-cosmian-kms-ec-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.4.1.3]](#1413-cosmian-kms-ec-keys-import)  Import a private or public key in the KMS.
 
-**`wrap`** [[1.5.1.4]](#1514-cosmian-kms-ec-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.4.1.4]](#1414-cosmian-kms-ec-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.5.1.5]](#1515-cosmian-kms-ec-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.4.1.5]](#1415-cosmian-kms-ec-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
 
-**`revoke`** [[1.5.1.6]](#1516-cosmian-kms-ec-keys-revoke)  Revoke a public or private key
+**`revoke`** [[1.4.1.6]](#1416-cosmian-kms-ec-keys-revoke)  Revoke a public or private key
 
-**`destroy`** [[1.5.1.7]](#1517-cosmian-kms-ec-keys-destroy)  Destroy a public or private key
+**`destroy`** [[1.4.1.7]](#1417-cosmian-kms-ec-keys-destroy)  Destroy a public or private key
 
 ---
 
-## 1.5.1.1 cosmian kms ec keys create
+## 1.4.1.1 cosmian kms ec keys create
 
 Create an elliptic curve key pair
 
@@ -510,7 +637,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.5.1.2 cosmian kms ec keys export
+## 1.4.1.2 cosmian kms ec keys export
 
 Export a key from the KMS
 
@@ -564,7 +691,7 @@ Possible values:  `"nist-key-wrap", "aes-gcm", "rsa-pkcs-v15", "rsa-oaep", "rsa-
 
 ---
 
-## 1.5.1.3 cosmian kms ec keys import
+## 1.4.1.3 cosmian kms ec keys import
 
 Import a private or public key in the KMS.
 
@@ -607,7 +734,7 @@ Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-k
 
 ---
 
-## 1.5.1.4 cosmian kms ec keys wrap
+## 1.4.1.4 cosmian kms ec keys wrap
 
 Locally wrap a key in KMIP JSON TTLV format.
 
@@ -632,7 +759,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.5.1.5 cosmian kms ec keys unwrap
+## 1.4.1.5 cosmian kms ec keys unwrap
 
 Locally unwrap a key in KMIP JSON TTLV format.
 
@@ -655,7 +782,7 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.5.1.6 cosmian kms ec keys revoke
+## 1.4.1.6 cosmian kms ec keys revoke
 
 Revoke a public or private key
 
@@ -673,7 +800,7 @@ Revoke a public or private key
 
 ---
 
-## 1.5.1.7 cosmian kms ec keys destroy
+## 1.4.1.7 cosmian kms ec keys destroy
 
 Destroy a public or private key
 
@@ -690,154 +817,280 @@ Destroy a public or private key
 
 ---
 
-## 1.6 cosmian kms attributes
+## 1.5 cosmian kms google
 
-Get/Set/Delete the KMIP object attributes
+Manage google elements. Handle key pairs and identities from Gmail API
 
 ### Usage
-`cosmian kms attributes <subcommand>`
+`cosmian kms google <subcommand>`
 
 ### Subcommands
 
-**`get`** [[1.6.1]](#161-cosmian-kms-attributes-get)  Get the KMIP object attributes and tags.
+**`key-pairs`** [[1.5.1]](#151-cosmian-kms-google-key-pairs)  Insert, get, list, enable, disabled and obliterate key pairs to Gmail API
 
-**`set`** [[1.6.2]](#162-cosmian-kms-attributes-set)  Set the KMIP object attributes.
-
-**`delete`** [[1.6.3]](#163-cosmian-kms-attributes-delete)  Delete the KMIP object attributes.
+**`identities`** [[1.5.2]](#152-cosmian-kms-google-identities)  Insert, get, list, patch and delete identities from Gmail API
 
 ---
 
-## 1.6.1 cosmian kms attributes get
+## 1.5.1 cosmian kms google key-pairs
 
-Get the KMIP object attributes and tags.
+Insert, get, list, enable, disabled and obliterate key pairs to Gmail API
 
 ### Usage
-`cosmian kms attributes get [options]`
-### Arguments
-`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+`cosmian kms google key-pairs <subcommand>`
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+### Subcommands
 
-`--attribute [-a] <ATTRIBUTE>` The attributes or `KMIP-tags` to retrieve.
-To specify multiple attributes, use the option multiple times.
-If not specified, all possible attributes are returned.
+**`get`** [[1.5.1.1]](#1511-cosmian-kms-google-key-pairs-get)  Retrieves an existing client-side encryption key pair.
 
-Possible values:  `"ActivationDate", "ApplicationData", "ApplicationNamespace", "ApplicationSpecific_Information", "ArchiveDate", "AsynchronousCorrelation_Value", "AsynchronousIndicator", "Attribute", "AttributeName", "AttributeValue", "Authentication", "BatchCount", "BatchErrorContinuationOption", "BatchItem", "BatchOrderOption", "BlockCipherMode", "CancellationResult", "Certificate", "CertificateRequest", "CertificateRequestType", "CertificateType", "CertificateValue", "CompromiseDate", "CompromiseOccurrenceDate", "ContactInformation", "Credential", "CredentialType", "CredentialValue", "CriticalityIndicator", "CRTCoefficient", "CryptographicAlgorithm", "CryptographicDomainParameters", "CryptographicLength", "CryptographicParameters", "CryptographicUsageMask", "D", "DeactivationDate", "DerivationData", "DerivationMethod", "DerivationParameters", "DestroyDate", "Digest", "DigestValue", "EncryptionKeyInformation", "G", "HashingAlgorithm", "InitialDate", "InitializationVector", "IterationCount", "IVCounterNonce", "J", "Key", "KeyBlock", "KeyCompressionType", "KeyFormatType", "KeyMaterial", "KeyPartIdentifier", "KeyValue", "KeyWrappingData", "KeyWrappingSpecification", "LastChangeDate", "LeaseTime", "Link", "LinkType", "LinkedObjectIdentifier", "MACSignature", "MACSignatureKey_Information", "MaximumItems", "MaximumResponseSize", "MessageExtension", "Modulus", "Name", "NameType", "NameValue", "ObjectGroup", "ObjectType", "Offset", "OpaqueDataType", "OpaqueDataValue", "OpaqueObject", "Operation", "P", "PaddingMethod", "PrimeExponentP", "PrimeExponentQ", "PrimeFieldSize", "PrivateExponent", "PrivateKey", "PrivateKeyUniqueIdentifier", "ProcessStartDate", "ProtectStopDate", "ProtocolVersion", "ProtocolVersionMajor", "ProtocolVersionMinor", "PublicExponent", "PublicKey", "PublicKeyUniqueIdentifier", "PutFunction", "Q", "QString", "Qlength", "QueryFunction", "RecommendedCurve", "ReplacedUniqueIdentifier", "RequestHeader", "RequestMessage", "RequestPayload", "ResponseHeader", "ResponseMessage", "ResponsePayload", "ResultMessage", "ResultReason", "ResultStatus", "RevocationMessage", "RevocationReason", "RevocationReasonCode", "KeyRoleType", "Salt", "SecretData", "SecretDataType", "ServerInformation", "SplitKey", "SplitKeyMethod", "SplitKeyParts", "SplitKeyThreshold", "State", "StorageStatusMask", "SymmetricKey", "TimeStamp", "UniqueBatchItemID", "UniqueIdentifier", "UsageLimits", "UsageLimitsCount", "UsageLimitsTotal", "UsageLimitsUnit", "Username", "ValidityDate", "ValidityIndicator", "VendorExtension", "VendorIdentification", "WrappingMethod", "X", "Y", "Password", "DeviceIdentifier", "EncodingOption", "ExtensionInformation", "ExtensionName", "ExtensionTag", "ExtensionType", "Fresh", "MachineIdentifier", "MediaIdentifier", "NetworkIdentifier", "ObjectGroupMember", "CertificateLength", "DigitalSignatureAlgorithm", "CertificateSerialNumber", "DeviceSerialNumber", "IssuerAlternativeName", "IssuerDistinguishedName", "SubjectAlternativeName", "SubjectDistinguishedName", "X509CertificateIdentifier", "X509CertificateIssuer", "X509CertificateSubject", "KeyValueLocation", "KeyValueLocationValue", "KeyValueLocationType", "KeyValuePresent", "OriginalCreationDate", "PGPKey", "PGPKeyVersion", "AlternativeName", "AlternativeNameValue", "AlternativeNameType", "Data", "SignatureData", "DataLength", "RandomIV", "MACData", "AttestationType", "Nonce", "NonceID", "NonceValue", "AttestationMeasurement", "AttestationAssertion", "IVLength", "TagLength", "FixedFieldLength", "CounterLength", "InitialCounterValue", "InvocationFieldLength", "AttestationCapableIndicator", "OffsetItems", "LocatedItems", "CorrelationValue", "InitIndicator", "FinalIndicator", "RNGParameters", "RNGAlgorithm", "DRBGAlgorithm", "FIPS186Variation", "PredictionResistance", "RandomNumberGenerator", "ValidationInformation", "ValidationAuthorityType", "ValidationAuthorityCountry", "ValidationAuthorityURI", "ValidationVersionMajor", "ValidationVersionMinor", "ValidationType", "ValidationLevel", "ValidationCertificateIdentifier", "ValidationCertificateURI", "ValidationVendorURI", "ValidationProfile", "ProfileInformation", "ProfileName", "ServerURI", "ServerPort", "StreamingCapability", "AsynchronousCapability", "AttestationCapability", "UnwrapMode", "DestroyAction", "ShreddingAlgorithm", "RNGMode", "ClientRegistrationMethod", "CapabilityInformation", "KeyWrapType", "BatchUndoCapability", "BatchContinueCapability", "PKCS12FriendlyName", "Description", "Comment", "AuthenticatedEncryptionAdditionalData", "AuthenticatedEncryptionTag", "SaltLength", "MaskGenerator", "MaskGeneratorHashingAlgorithm", "PSource", "TrailerField", "ClientCorrelationValue", "ServerCorrelationValue", "DigestedData", "CertificateSubjectCN", "CertificateSubjectO", "CertificateSubjectOU", "CertificateSubjectEmail", "CertificateSubjectC", "CertificateSubjectST", "CertificateSubjectL", "CertificateSubjectUID", "CertificateSubjectSerialNumber", "CertificateSubjectTitle", "CertificateSubjectDC", "CertificateSubjectDNQualifier", "CertificateIssuerCN", "CertificateIssuerO", "CertificateIssuerOU", "CertificateIssuerEmail", "CertificateIssuerC", "CertificateIssuerST", "CertificateIssuerL", "CertificateIssuerUID", "CertificateIssuerSerialNumber", "CertificateIssuerTitle", "CertificateIssuerDC", "CertificateIssuerDNQualifier", "Sensitive", "AlwaysSensitive", "Extractable", "NeverExtractable", "ReplaceExisting", "Attributes", "CommonAttributes", "PrivateKeyAttributes", "PublicKeyAttributes", "ExtensionEnumeration", "ExtensionAttribute", "ExtensionParentStructureTag", "ExtensionDescription", "ServerName", "ServerSerialNumber", "ServerVersion", "ServerLoad", "ProductName", "BuildLevel", "BuildDate", "ClusterInfo", "AlternateFailoverEndpoints", "ShortUniqueIdentifier", "Reserved", "Tag", "CertificateRequestUniqueIdentifier", "NISTKeyType", "AttributeReference", "CurrentAttribute", "NewAttribute", "CertificateRequestValue", "LogMessage", "ProfileVersion", "ProfileVersionMajor", "ProfileVersionMinor", "ProtectionLevel", "ProtectionPeriod", "QuantumSafe", "QuantumSafeCapability", "Ticket", "TicketType", "TicketValue", "RequestCount", "Rights", "Objects", "Operations", "Right", "EndpointRole", "DefaultsInformation", "ObjectDefaults", "Ephemeral", "ServerHashedPassword", "OneTimePassword", "HashedPassword", "AdjustmentType", "PKCS11Interface", "PKCS11Function", "PKCS11InputParameters", "PKCS11OutputParameters", "PKCS11ReturnCode", "ProtectionStorageMask", "ProtectionStorageMasks", "InteropFunction", "InteropIdentifier", "AdjustmentValue", "CommonProtectionStorageMasks", "PrivateProtectionStorageMasks", "PublicProtectionStorageMasks"`
+**`list`** [[1.5.1.2]](#1512-cosmian-kms-google-key-pairs-list)  Lists client-side encryption key pairs for a user.
 
-`--link-type [-l] <LINK_TYPE>` Filter on retrieved links. Only if KMIP tag `LinkType` is used in `attribute` parameter.
-To specify multiple attributes, use the option multiple times.
-If not specified, all possible link types are returned.
+**`enable`** [[1.5.1.3]](#1513-cosmian-kms-google-key-pairs-enable)  Turns on a client-side encryption key pair that was turned off. The key pair becomes active
+again for any associated client-side encryption identities.
 
-Possible values:  `"CertificateLink", "PublicKeyLink", "PrivateKeyLink", "DerivationBaseObjectLink", "DerivedKeyLink", "ReplacementObjectLink", "ReplacedObjectLink", "ParentLink", "ChildLink", "PreviousLink", "NextLink", "PKCS12CertificateLink", "PKCS12PasswordLink", "WrappingKeyLink"`
+**`disable`** [[1.5.1.4]](#1514-cosmian-kms-google-key-pairs-disable)  Turns off a client-side encryption key pair. The authenticated user can no longer use the key
+pair to decrypt incoming CSE message texts or sign outgoing CSE mail. To regain access, use the
+key pairs.enable to turn on the key pair. After 30 days, you can permanently delete the key pair
+by using the key pairs.obliterate method.
 
-`--output-file [-o] <OUTPUT_FILE>` An optional file where to export the attributes.
-The attributes will be in JSON TTLV format.
+**`obliterate`** [[1.5.1.5]](#1515-cosmian-kms-google-key-pairs-obliterate)  Deletes a client-side encryption key pair permanently and immediately. You can only permanently
+delete key pairs that have been turned off for more than 30 days. To turn off a key pair, use
+the key pairs disable method. Gmail can't restore or decrypt any messages that were encrypted by
+an obliterated key. Authenticated users and Google Workspace administrators lose access to
+reading the encrypted messages.
 
-
+**`create`** [[1.5.1.6]](#1516-cosmian-kms-google-key-pairs-create)  Creates and uploads a client-side encryption S/MIME public key certificate chain and private key
+metadata for a user.
 
 ---
 
-## 1.6.2 cosmian kms attributes set
+## 1.5.1.1 cosmian kms google key-pairs get
 
-Set the KMIP object attributes.
+Retrieves an existing client-side encryption key pair.
 
 ### Usage
-`cosmian kms attributes set [options]`
+`cosmian kms google key-pairs get [options] <KEY_PAIRS_ID>
+`
 ### Arguments
-`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+` <KEY_PAIRS_ID>` The identifier of the key pair to retrieve
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
-
-`--activation-date [-d] <ACTIVATION_DATE>` Set the activation date of the key. Epoch time (or Unix time) in milliseconds
-
-`--cryptographic-algorithm [-a] <CRYPTOGRAPHIC_ALGORITHM>` The cryptographic algorithm used by the key
-
-Possible values:  `"DES", "THREE_DES", "AES", "RSA", "DSA", "ECDSA", "HMACSHA1", "HMACSHA224", "HMACSHA256", "HMACSHA384", "HMACSHA512", "HMACMD5", "DH", "ECDH", "ECMQV", "Blowfish", "Camellia", "CAST5", "IDEA", "MARS", "RC2", "RC4", "RC5", "SKIPJACK", "Twofish", "EC", "OneTimePad", "ChaCha20", "Poly1305", "ChaCha20Poly1305", "SHA3224", "SHA3256", "SHA3384", "SHA3512", "HMACSHA3224", "HMACSHA3256", "HMACSHA3384", "HMACSHA3512", "SHAKE128", "SHAKE256", "ARIA", "SEED", "SM2", "SM3", "SM4", "GOSTR34102012", "GOSTR34112012", "GOSTR34132015", "GOST2814789", "XMSS", "SPHINCS_256", "Page166Of230McEliece", "McEliece6960119", "McEliece8192128", "Ed25519", "Ed448", "CoverCrypt", "CoverCryptBulk"`
-
-`--cryptographic-length <CRYPTOGRAPHIC_LENGTH>` The length of the cryptographic key
-
-`--key-usage [-u] <KEY_USAGE>` The key usage. Add multiple times to specify multiple key usages
-
-Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
-
-`--public-key-id <PUBLIC_KEY_ID>` The link to the corresponding public key id if any
-
-`--private-key-id <PRIVATE_KEY_ID>` The link to the corresponding private key id if any
-
-`--certificate-id <CERTIFICATE_ID>` The link to the corresponding certificate id if any
-
-`--p12-id <PKCS12_CERTIFICATE_ID>` The link to the corresponding PKCS12 certificate id if any
-
-`--p12-pwd <PKCS12_PASSWORD_CERTIFICATE>` The link to the corresponding PKCS12 password certificate if any
-
-`--parent-id <PARENT_ID>` The link to the corresponding parent id if any
-
-`--child-id <CHILD_ID>` The link to the corresponding child id if any
-
-`--vendor-identification [-v] <VENDOR_IDENTIFICATION>` The vendor identification
-
-`--attribute-name [-n] <ATTRIBUTE_NAME>` The attribute name
-
-`--attribute-value <ATTRIBUTE_VALUE>` The attribute value (in hex format)
+`--user-id [-u] <USER_ID>` The requester's primary email address
 
 
 
 ---
 
-## 1.6.3 cosmian kms attributes delete
+## 1.5.1.2 cosmian kms google key-pairs list
 
-Delete the KMIP object attributes.
+Lists client-side encryption key pairs for a user.
 
 ### Usage
-`cosmian kms attributes delete [options]`
+`cosmian kms google key-pairs list [options] <USER_ID>
+`
 ### Arguments
-`--id [-i] <ID>` The unique identifier of the cryptographic object. If not specified, tags should be specified
+` <USER_ID>` The requester's primary email address
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
-`--activation-date [-d] <ACTIVATION_DATE>` Set the activation date of the key. Epoch time (or Unix time) in milliseconds
 
-`--cryptographic-algorithm [-a] <CRYPTOGRAPHIC_ALGORITHM>` The cryptographic algorithm used by the key
+---
 
-Possible values:  `"DES", "THREE_DES", "AES", "RSA", "DSA", "ECDSA", "HMACSHA1", "HMACSHA224", "HMACSHA256", "HMACSHA384", "HMACSHA512", "HMACMD5", "DH", "ECDH", "ECMQV", "Blowfish", "Camellia", "CAST5", "IDEA", "MARS", "RC2", "RC4", "RC5", "SKIPJACK", "Twofish", "EC", "OneTimePad", "ChaCha20", "Poly1305", "ChaCha20Poly1305", "SHA3224", "SHA3256", "SHA3384", "SHA3512", "HMACSHA3224", "HMACSHA3256", "HMACSHA3384", "HMACSHA3512", "SHAKE128", "SHAKE256", "ARIA", "SEED", "SM2", "SM3", "SM4", "GOSTR34102012", "GOSTR34112012", "GOSTR34132015", "GOST2814789", "XMSS", "SPHINCS_256", "Page166Of230McEliece", "McEliece6960119", "McEliece8192128", "Ed25519", "Ed448", "CoverCrypt", "CoverCryptBulk"`
+## 1.5.1.3 cosmian kms google key-pairs enable
 
-`--cryptographic-length <CRYPTOGRAPHIC_LENGTH>` The length of the cryptographic key
+Turns on a client-side encryption key pair that was turned off. The key pair becomes active
+again for any associated client-side encryption identities.
 
-`--key-usage [-u] <KEY_USAGE>` The key usage. Add multiple times to specify multiple key usages
+### Usage
+`cosmian kms google key-pairs enable [options] <KEY_PAIRS_ID>
+`
+### Arguments
+` <KEY_PAIRS_ID>` The identifier of the key pair to enable
 
-Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+`--user-id [-u] <USER_ID>` The requester's primary email address
 
-`--public-key-id <PUBLIC_KEY_ID>` The link to the corresponding public key id if any
 
-`--private-key-id <PRIVATE_KEY_ID>` The link to the corresponding private key id if any
 
-`--certificate-id <CERTIFICATE_ID>` The link to the corresponding certificate id if any
+---
 
-`--p12-id <PKCS12_CERTIFICATE_ID>` The link to the corresponding PKCS12 certificate id if any
+## 1.5.1.4 cosmian kms google key-pairs disable
 
-`--p12-pwd <PKCS12_PASSWORD_CERTIFICATE>` The link to the corresponding PKCS12 password certificate if any
+Turns off a client-side encryption key pair. The authenticated user can no longer use the key
+pair to decrypt incoming CSE message texts or sign outgoing CSE mail. To regain access, use the
+key pairs.enable to turn on the key pair. After 30 days, you can permanently delete the key pair
+by using the key pairs.obliterate method.
 
-`--parent-id <PARENT_ID>` The link to the corresponding parent id if any
+### Usage
+`cosmian kms google key-pairs disable [options] <KEY_PAIRS_ID>
+`
+### Arguments
+` <KEY_PAIRS_ID>` The identifier of the key pair to disable
 
-`--child-id <CHILD_ID>` The link to the corresponding child id if any
+`--user-id [-u] <USER_ID>` The requester's primary email address
 
-`--vendor-identification [-v] <VENDOR_IDENTIFICATION>` The vendor identification
 
-`--attribute-name [-n] <ATTRIBUTE_NAME>` The attribute name
 
-`--attribute-value <ATTRIBUTE_VALUE>` The attribute value (in hex format)
+---
 
-`--attribute <ATTRIBUTE>` The attributes or tags to retrieve.
-To specify multiple attributes, use the option multiple times.
+## 1.5.1.5 cosmian kms google key-pairs obliterate
 
-Possible values:  `"ActivationDate", "ApplicationData", "ApplicationNamespace", "ApplicationSpecific_Information", "ArchiveDate", "AsynchronousCorrelation_Value", "AsynchronousIndicator", "Attribute", "AttributeName", "AttributeValue", "Authentication", "BatchCount", "BatchErrorContinuationOption", "BatchItem", "BatchOrderOption", "BlockCipherMode", "CancellationResult", "Certificate", "CertificateRequest", "CertificateRequestType", "CertificateType", "CertificateValue", "CompromiseDate", "CompromiseOccurrenceDate", "ContactInformation", "Credential", "CredentialType", "CredentialValue", "CriticalityIndicator", "CRTCoefficient", "CryptographicAlgorithm", "CryptographicDomainParameters", "CryptographicLength", "CryptographicParameters", "CryptographicUsageMask", "D", "DeactivationDate", "DerivationData", "DerivationMethod", "DerivationParameters", "DestroyDate", "Digest", "DigestValue", "EncryptionKeyInformation", "G", "HashingAlgorithm", "InitialDate", "InitializationVector", "IterationCount", "IVCounterNonce", "J", "Key", "KeyBlock", "KeyCompressionType", "KeyFormatType", "KeyMaterial", "KeyPartIdentifier", "KeyValue", "KeyWrappingData", "KeyWrappingSpecification", "LastChangeDate", "LeaseTime", "Link", "LinkType", "LinkedObjectIdentifier", "MACSignature", "MACSignatureKey_Information", "MaximumItems", "MaximumResponseSize", "MessageExtension", "Modulus", "Name", "NameType", "NameValue", "ObjectGroup", "ObjectType", "Offset", "OpaqueDataType", "OpaqueDataValue", "OpaqueObject", "Operation", "P", "PaddingMethod", "PrimeExponentP", "PrimeExponentQ", "PrimeFieldSize", "PrivateExponent", "PrivateKey", "PrivateKeyUniqueIdentifier", "ProcessStartDate", "ProtectStopDate", "ProtocolVersion", "ProtocolVersionMajor", "ProtocolVersionMinor", "PublicExponent", "PublicKey", "PublicKeyUniqueIdentifier", "PutFunction", "Q", "QString", "Qlength", "QueryFunction", "RecommendedCurve", "ReplacedUniqueIdentifier", "RequestHeader", "RequestMessage", "RequestPayload", "ResponseHeader", "ResponseMessage", "ResponsePayload", "ResultMessage", "ResultReason", "ResultStatus", "RevocationMessage", "RevocationReason", "RevocationReasonCode", "KeyRoleType", "Salt", "SecretData", "SecretDataType", "ServerInformation", "SplitKey", "SplitKeyMethod", "SplitKeyParts", "SplitKeyThreshold", "State", "StorageStatusMask", "SymmetricKey", "TimeStamp", "UniqueBatchItemID", "UniqueIdentifier", "UsageLimits", "UsageLimitsCount", "UsageLimitsTotal", "UsageLimitsUnit", "Username", "ValidityDate", "ValidityIndicator", "VendorExtension", "VendorIdentification", "WrappingMethod", "X", "Y", "Password", "DeviceIdentifier", "EncodingOption", "ExtensionInformation", "ExtensionName", "ExtensionTag", "ExtensionType", "Fresh", "MachineIdentifier", "MediaIdentifier", "NetworkIdentifier", "ObjectGroupMember", "CertificateLength", "DigitalSignatureAlgorithm", "CertificateSerialNumber", "DeviceSerialNumber", "IssuerAlternativeName", "IssuerDistinguishedName", "SubjectAlternativeName", "SubjectDistinguishedName", "X509CertificateIdentifier", "X509CertificateIssuer", "X509CertificateSubject", "KeyValueLocation", "KeyValueLocationValue", "KeyValueLocationType", "KeyValuePresent", "OriginalCreationDate", "PGPKey", "PGPKeyVersion", "AlternativeName", "AlternativeNameValue", "AlternativeNameType", "Data", "SignatureData", "DataLength", "RandomIV", "MACData", "AttestationType", "Nonce", "NonceID", "NonceValue", "AttestationMeasurement", "AttestationAssertion", "IVLength", "TagLength", "FixedFieldLength", "CounterLength", "InitialCounterValue", "InvocationFieldLength", "AttestationCapableIndicator", "OffsetItems", "LocatedItems", "CorrelationValue", "InitIndicator", "FinalIndicator", "RNGParameters", "RNGAlgorithm", "DRBGAlgorithm", "FIPS186Variation", "PredictionResistance", "RandomNumberGenerator", "ValidationInformation", "ValidationAuthorityType", "ValidationAuthorityCountry", "ValidationAuthorityURI", "ValidationVersionMajor", "ValidationVersionMinor", "ValidationType", "ValidationLevel", "ValidationCertificateIdentifier", "ValidationCertificateURI", "ValidationVendorURI", "ValidationProfile", "ProfileInformation", "ProfileName", "ServerURI", "ServerPort", "StreamingCapability", "AsynchronousCapability", "AttestationCapability", "UnwrapMode", "DestroyAction", "ShreddingAlgorithm", "RNGMode", "ClientRegistrationMethod", "CapabilityInformation", "KeyWrapType", "BatchUndoCapability", "BatchContinueCapability", "PKCS12FriendlyName", "Description", "Comment", "AuthenticatedEncryptionAdditionalData", "AuthenticatedEncryptionTag", "SaltLength", "MaskGenerator", "MaskGeneratorHashingAlgorithm", "PSource", "TrailerField", "ClientCorrelationValue", "ServerCorrelationValue", "DigestedData", "CertificateSubjectCN", "CertificateSubjectO", "CertificateSubjectOU", "CertificateSubjectEmail", "CertificateSubjectC", "CertificateSubjectST", "CertificateSubjectL", "CertificateSubjectUID", "CertificateSubjectSerialNumber", "CertificateSubjectTitle", "CertificateSubjectDC", "CertificateSubjectDNQualifier", "CertificateIssuerCN", "CertificateIssuerO", "CertificateIssuerOU", "CertificateIssuerEmail", "CertificateIssuerC", "CertificateIssuerST", "CertificateIssuerL", "CertificateIssuerUID", "CertificateIssuerSerialNumber", "CertificateIssuerTitle", "CertificateIssuerDC", "CertificateIssuerDNQualifier", "Sensitive", "AlwaysSensitive", "Extractable", "NeverExtractable", "ReplaceExisting", "Attributes", "CommonAttributes", "PrivateKeyAttributes", "PublicKeyAttributes", "ExtensionEnumeration", "ExtensionAttribute", "ExtensionParentStructureTag", "ExtensionDescription", "ServerName", "ServerSerialNumber", "ServerVersion", "ServerLoad", "ProductName", "BuildLevel", "BuildDate", "ClusterInfo", "AlternateFailoverEndpoints", "ShortUniqueIdentifier", "Reserved", "Tag", "CertificateRequestUniqueIdentifier", "NISTKeyType", "AttributeReference", "CurrentAttribute", "NewAttribute", "CertificateRequestValue", "LogMessage", "ProfileVersion", "ProfileVersionMajor", "ProfileVersionMinor", "ProtectionLevel", "ProtectionPeriod", "QuantumSafe", "QuantumSafeCapability", "Ticket", "TicketType", "TicketValue", "RequestCount", "Rights", "Objects", "Operations", "Right", "EndpointRole", "DefaultsInformation", "ObjectDefaults", "Ephemeral", "ServerHashedPassword", "OneTimePassword", "HashedPassword", "AdjustmentType", "PKCS11Interface", "PKCS11Function", "PKCS11InputParameters", "PKCS11OutputParameters", "PKCS11ReturnCode", "ProtectionStorageMask", "ProtectionStorageMasks", "InteropFunction", "InteropIdentifier", "AdjustmentValue", "CommonProtectionStorageMasks", "PrivateProtectionStorageMasks", "PublicProtectionStorageMasks"`
+Deletes a client-side encryption key pair permanently and immediately. You can only permanently
+delete key pairs that have been turned off for more than 30 days. To turn off a key pair, use
+the key pairs disable method. Gmail can't restore or decrypt any messages that were encrypted by
+an obliterated key. Authenticated users and Google Workspace administrators lose access to
+reading the encrypted messages.
+
+### Usage
+`cosmian kms google key-pairs obliterate [options] <KEY_PAIRS_ID>
+`
+### Arguments
+` <KEY_PAIRS_ID>` The identifier of the key pair to obliterate
+
+`--user-id [-u] <USER_ID>` The requester's primary email address
+
+
+
+---
+
+## 1.5.1.6 cosmian kms google key-pairs create
+
+Creates and uploads a client-side encryption S/MIME public key certificate chain and private key
+metadata for a user.
+
+### Usage
+`cosmian kms google key-pairs create [options] <USER_ID>
+`
+### Arguments
+` <USER_ID>` The requester's primary email address
+
+`--cse-key-id [-w] <CSE_KEY_ID>` CSE key ID to wrap exported user private key
+
+`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id
+
+`--subject-name [-s] <SUBJECT_NAME>` When certifying a public key, or generating a keypair,
+the subject name to use.
+
+`--rsa-private-key-id [-k] <RSA_PRIVATE_KEY_ID>` The existing private key id of an existing RSA keypair to use (optional - if no ID is provided, a RSA keypair will be created)
+
+`--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
+
+Possible values:  `"true", "false"` [default: `"false"`]
 
 
 
 
 ---
 
-## 1.7 cosmian kms locate
+## 1.5.2 cosmian kms google identities
+
+Insert, get, list, patch and delete identities from Gmail API
+
+### Usage
+`cosmian kms google identities <subcommand>`
+
+### Subcommands
+
+**`get`** [[1.5.2.1]](#1521-cosmian-kms-google-identities-get)  Retrieves a client-side encryption identity configuration.
+
+**`list`** [[1.5.2.2]](#1522-cosmian-kms-google-identities-list)  Lists the client-side encrypted identities for an authenticated user.
+
+**`insert`** [[1.5.2.3]](#1523-cosmian-kms-google-identities-insert)  Creates and configures a client-side encryption identity that's authorized to send mail from the
+user account. Google publishes the S/MIME certificate to a shared domain-wide directory so that
+people within a Google Workspace organization can encrypt and send mail to the identity.
+
+**`delete`** [[1.5.2.4]](#1524-cosmian-kms-google-identities-delete)  Deletes a client-side encryption identity. The authenticated user can no longer use the identity
+to send encrypted messages. You cannot restore the identity after you delete it. Instead, use
+the identities.create method to create another identity with the same configuration.
+
+**`patch`** [[1.5.2.5]](#1525-cosmian-kms-google-identities-patch)  Associates a different key pair with an existing client-side encryption identity. The updated
+key pair must validate against Google's S/MIME certificate profiles.
+
+---
+
+## 1.5.2.1 cosmian kms google identities get
+
+Retrieves a client-side encryption identity configuration.
+
+### Usage
+`cosmian kms google identities get [options] <USER_ID>
+`
+### Arguments
+` <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
+
+
+
+---
+
+## 1.5.2.2 cosmian kms google identities list
+
+Lists the client-side encrypted identities for an authenticated user.
+
+### Usage
+`cosmian kms google identities list [options] <USER_ID>
+`
+### Arguments
+` <USER_ID>` The requester's primary email address
+
+
+
+---
+
+## 1.5.2.3 cosmian kms google identities insert
+
+Creates and configures a client-side encryption identity that's authorized to send mail from the
+user account. Google publishes the S/MIME certificate to a shared domain-wide directory so that
+people within a Google Workspace organization can encrypt and send mail to the identity.
+
+### Usage
+`cosmian kms google identities insert [options] <KEY_PAIRS_ID>
+`
+### Arguments
+` <KEY_PAIRS_ID>` The keypair id, associated with a given cert/key. You can get the by listing the keypairs associated with the user-id
+
+`--user-id [-u] <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
+
+
+
+---
+
+## 1.5.2.4 cosmian kms google identities delete
+
+Deletes a client-side encryption identity. The authenticated user can no longer use the identity
+to send encrypted messages. You cannot restore the identity after you delete it. Instead, use
+the identities.create method to create another identity with the same configuration.
+
+### Usage
+`cosmian kms google identities delete [options] <USER_ID>
+`
+### Arguments
+` <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
+
+
+
+---
+
+## 1.5.2.5 cosmian kms google identities patch
+
+Associates a different key pair with an existing client-side encryption identity. The updated
+key pair must validate against Google's S/MIME certificate profiles.
+
+### Usage
+`cosmian kms google identities patch [options] <KEY_PAIRS_ID>
+`
+### Arguments
+` <KEY_PAIRS_ID>` The key pair id, associated with a given cert/key. You can get the by listing the key pairs associated with the user-id
+
+`--user-id [-u] <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
+
+
+
+
+
+---
+
+## 1.6 cosmian kms locate
 
 Locate cryptographic objects inside the KMS
 
@@ -865,7 +1118,27 @@ To specify multiple tags, use the option multiple times.
 
 ---
 
-## 1.8 cosmian kms new-database
+## 1.7 cosmian kms login
+
+Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
+
+### Usage
+`cosmian kms login`
+
+
+---
+
+## 1.8 cosmian kms logout
+
+Logout from the Identity Provider.
+
+### Usage
+`cosmian kms logout`
+
+
+---
+
+## 1.9 cosmian kms new-database
 
 Initialize a new user encrypted database and return the secret (`SQLCipher` only).
 
@@ -875,7 +1148,7 @@ Initialize a new user encrypted database and return the secret (`SQLCipher` only
 
 ---
 
-## 1.9 cosmian kms rsa
+## 1.10 cosmian kms rsa
 
 Manage RSA keys. Encrypt and decrypt data using RSA keys
 
@@ -884,15 +1157,15 @@ Manage RSA keys. Encrypt and decrypt data using RSA keys
 
 ### Subcommands
 
-**`keys`** [[1.9.1]](#191-cosmian-kms-rsa-keys)  Create, destroy, import, and export RSA key pairs
+**`keys`** [[1.10.1]](#1101-cosmian-kms-rsa-keys)  Create, destroy, import, and export RSA key pairs
 
-**`encrypt`** [[1.9.2]](#192-cosmian-kms-rsa-encrypt)  Encrypt a file with the given public key using either
+**`encrypt`** [[1.10.2]](#1102-cosmian-kms-rsa-encrypt)  Encrypt a file with the given public key using either
 
  - `CKM_RSA_PKCS` a.k.a PKCS #1 RSA V1.5 as specified in PKCS#11 v2.40
  - `CKM_RSA_PKCS_OAEP` a.k.a PKCS #1 RSA OAEP as specified in PKCS#11 v2.40
  - `CKM_RSA_AES_KEY_WRAP` as specified in PKCS#11 v2.40
 
-**`decrypt`** [[1.9.3]](#193-cosmian-kms-rsa-decrypt)  Decrypt a file with the given public key using either
+**`decrypt`** [[1.10.3]](#1103-cosmian-kms-rsa-decrypt)  Decrypt a file with the given public key using either
 
  - `CKM_RSA_PKCS` a.k.a PKCS #1 RSA V1.5 as specified in PKCS#11 v2.40
  - `CKM_RSA_PKCS_OAEP` a.k.a PKCS #1 RSA OAEP as specified in PKCS#11 v2.40
@@ -900,7 +1173,7 @@ Manage RSA keys. Encrypt and decrypt data using RSA keys
 
 ---
 
-## 1.9.1 cosmian kms rsa keys
+## 1.10.1 cosmian kms rsa keys
 
 Create, destroy, import, and export RSA key pairs
 
@@ -909,23 +1182,23 @@ Create, destroy, import, and export RSA key pairs
 
 ### Subcommands
 
-**`create`** [[1.9.1.1]](#1911-cosmian-kms-rsa-keys-create)  Create a new RSA key pair
+**`create`** [[1.10.1.1]](#11011-cosmian-kms-rsa-keys-create)  Create a new RSA key pair
 
-**`export`** [[1.9.1.2]](#1912-cosmian-kms-rsa-keys-export)  Export a key from the KMS
+**`export`** [[1.10.1.2]](#11012-cosmian-kms-rsa-keys-export)  Export a key from the KMS
 
-**`import`** [[1.9.1.3]](#1913-cosmian-kms-rsa-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.10.1.3]](#11013-cosmian-kms-rsa-keys-import)  Import a private or public key in the KMS.
 
-**`wrap`** [[1.9.1.4]](#1914-cosmian-kms-rsa-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.10.1.4]](#11014-cosmian-kms-rsa-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.9.1.5]](#1915-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.10.1.5]](#11015-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
 
-**`revoke`** [[1.9.1.6]](#1916-cosmian-kms-rsa-keys-revoke)  Revoke a public or private key
+**`revoke`** [[1.10.1.6]](#11016-cosmian-kms-rsa-keys-revoke)  Revoke a public or private key
 
-**`destroy`** [[1.9.1.7]](#1917-cosmian-kms-rsa-keys-destroy)  Destroy a public or private key
+**`destroy`** [[1.10.1.7]](#11017-cosmian-kms-rsa-keys-destroy)  Destroy a public or private key
 
 ---
 
-## 1.9.1.1 cosmian kms rsa keys create
+## 1.10.1.1 cosmian kms rsa keys create
 
 Create a new RSA key pair
 
@@ -947,7 +1220,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.9.1.2 cosmian kms rsa keys export
+## 1.10.1.2 cosmian kms rsa keys export
 
 Export a key from the KMS
 
@@ -1001,7 +1274,7 @@ Possible values:  `"nist-key-wrap", "aes-gcm", "rsa-pkcs-v15", "rsa-oaep", "rsa-
 
 ---
 
-## 1.9.1.3 cosmian kms rsa keys import
+## 1.10.1.3 cosmian kms rsa keys import
 
 Import a private or public key in the KMS.
 
@@ -1044,7 +1317,7 @@ Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-k
 
 ---
 
-## 1.9.1.4 cosmian kms rsa keys wrap
+## 1.10.1.4 cosmian kms rsa keys wrap
 
 Locally wrap a key in KMIP JSON TTLV format.
 
@@ -1069,7 +1342,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.9.1.5 cosmian kms rsa keys unwrap
+## 1.10.1.5 cosmian kms rsa keys unwrap
 
 Locally unwrap a key in KMIP JSON TTLV format.
 
@@ -1092,7 +1365,7 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.9.1.6 cosmian kms rsa keys revoke
+## 1.10.1.6 cosmian kms rsa keys revoke
 
 Revoke a public or private key
 
@@ -1110,7 +1383,7 @@ Revoke a public or private key
 
 ---
 
-## 1.9.1.7 cosmian kms rsa keys destroy
+## 1.10.1.7 cosmian kms rsa keys destroy
 
 Destroy a public or private key
 
@@ -1126,7 +1399,7 @@ Destroy a public or private key
 
 ---
 
-## 1.9.2 cosmian kms rsa encrypt
+## 1.10.2 cosmian kms rsa encrypt
 
 Encrypt a file with the given public key using either
 
@@ -1158,7 +1431,7 @@ Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "
 
 ---
 
-## 1.9.3 cosmian kms rsa decrypt
+## 1.10.3 cosmian kms rsa decrypt
 
 Decrypt a file with the given public key using either
 
@@ -1191,7 +1464,7 @@ Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "
 
 ---
 
-## 1.10 cosmian kms server-version
+## 1.11 cosmian kms server-version
 
 Print the version of the server
 
@@ -1201,7 +1474,7 @@ Print the version of the server
 
 ---
 
-## 1.11 cosmian kms sym
+## 1.12 cosmian kms sym
 
 Manage symmetric keys. Encrypt and decrypt data
 
@@ -1210,15 +1483,15 @@ Manage symmetric keys. Encrypt and decrypt data
 
 ### Subcommands
 
-**`keys`** [[1.11.1]](#1111-cosmian-kms-sym-keys)  Create, destroy, import, and export symmetric keys
+**`keys`** [[1.12.1]](#1121-cosmian-kms-sym-keys)  Create, destroy, import, and export symmetric keys
 
-**`encrypt`** [[1.11.2]](#1112-cosmian-kms-sym-encrypt)  Encrypt a file using a symmetric cipher
+**`encrypt`** [[1.12.2]](#1122-cosmian-kms-sym-encrypt)  Encrypt a file using a symmetric cipher
 
-**`decrypt`** [[1.11.3]](#1113-cosmian-kms-sym-decrypt)  Decrypt a file using a symmetric key.
+**`decrypt`** [[1.12.3]](#1123-cosmian-kms-sym-decrypt)  Decrypt a file using a symmetric key.
 
 ---
 
-## 1.11.1 cosmian kms sym keys
+## 1.12.1 cosmian kms sym keys
 
 Create, destroy, import, and export symmetric keys
 
@@ -1227,25 +1500,25 @@ Create, destroy, import, and export symmetric keys
 
 ### Subcommands
 
-**`create`** [[1.11.1.1]](#11111-cosmian-kms-sym-keys-create)  Create a new symmetric key
+**`create`** [[1.12.1.1]](#11211-cosmian-kms-sym-keys-create)  Create a new symmetric key
 
-**`re-key`** [[1.11.1.2]](#11112-cosmian-kms-sym-keys-re-key)  Refresh an existing symmetric key
+**`re-key`** [[1.12.1.2]](#11212-cosmian-kms-sym-keys-re-key)  Refresh an existing symmetric key
 
-**`export`** [[1.11.1.3]](#11113-cosmian-kms-sym-keys-export)  Export a key from the KMS
+**`export`** [[1.12.1.3]](#11213-cosmian-kms-sym-keys-export)  Export a key from the KMS
 
-**`import`** [[1.11.1.4]](#11114-cosmian-kms-sym-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.12.1.4]](#11214-cosmian-kms-sym-keys-import)  Import a private or public key in the KMS.
 
-**`wrap`** [[1.11.1.5]](#11115-cosmian-kms-sym-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.12.1.5]](#11215-cosmian-kms-sym-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.11.1.6]](#11116-cosmian-kms-sym-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.12.1.6]](#11216-cosmian-kms-sym-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
 
-**`revoke`** [[1.11.1.7]](#11117-cosmian-kms-sym-keys-revoke)  Revoke a symmetric key
+**`revoke`** [[1.12.1.7]](#11217-cosmian-kms-sym-keys-revoke)  Revoke a symmetric key
 
-**`destroy`** [[1.11.1.8]](#11118-cosmian-kms-sym-keys-destroy)  Destroy a symmetric key
+**`destroy`** [[1.12.1.8]](#11218-cosmian-kms-sym-keys-destroy)  Destroy a symmetric key
 
 ---
 
-## 1.11.1.1 cosmian kms sym keys create
+## 1.12.1.1 cosmian kms sym keys create
 
 Create a new symmetric key
 
@@ -1280,7 +1553,7 @@ If the wrapping key is:
 
 ---
 
-## 1.11.1.2 cosmian kms sym keys re-key
+## 1.12.1.2 cosmian kms sym keys re-key
 
 Refresh an existing symmetric key
 
@@ -1293,7 +1566,7 @@ Refresh an existing symmetric key
 
 ---
 
-## 1.11.1.3 cosmian kms sym keys export
+## 1.12.1.3 cosmian kms sym keys export
 
 Export a key from the KMS
 
@@ -1347,7 +1620,7 @@ Possible values:  `"nist-key-wrap", "aes-gcm", "rsa-pkcs-v15", "rsa-oaep", "rsa-
 
 ---
 
-## 1.11.1.4 cosmian kms sym keys import
+## 1.12.1.4 cosmian kms sym keys import
 
 Import a private or public key in the KMS.
 
@@ -1390,7 +1663,7 @@ Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-k
 
 ---
 
-## 1.11.1.5 cosmian kms sym keys wrap
+## 1.12.1.5 cosmian kms sym keys wrap
 
 Locally wrap a key in KMIP JSON TTLV format.
 
@@ -1415,7 +1688,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.11.1.6 cosmian kms sym keys unwrap
+## 1.12.1.6 cosmian kms sym keys unwrap
 
 Locally unwrap a key in KMIP JSON TTLV format.
 
@@ -1438,7 +1711,7 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.11.1.7 cosmian kms sym keys revoke
+## 1.12.1.7 cosmian kms sym keys revoke
 
 Revoke a symmetric key
 
@@ -1456,7 +1729,7 @@ Revoke a symmetric key
 
 ---
 
-## 1.11.1.8 cosmian kms sym keys destroy
+## 1.12.1.8 cosmian kms sym keys destroy
 
 Destroy a symmetric key
 
@@ -1472,7 +1745,7 @@ Destroy a symmetric key
 
 ---
 
-## 1.11.2 cosmian kms sym encrypt
+## 1.12.2 cosmian kms sym encrypt
 
 Encrypt a file using a symmetric cipher
 
@@ -1504,7 +1777,7 @@ Possible values:  `"aes-gcm", "aes-xts", "rfc5649"`
 
 ---
 
-## 1.11.3 cosmian kms sym decrypt
+## 1.12.3 cosmian kms sym decrypt
 
 Decrypt a file using a symmetric key.
 
@@ -1529,279 +1802,6 @@ Possible values:  `"aes-gcm", "aes-xts", "rfc5649"`
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 
 `--authentication-data [-a] <AUTHENTICATION_DATA>` Optional authentication data that was supplied during encryption as a hex string
-
-
-
-
----
-
-## 1.12 cosmian kms google
-
-Manage google elements. Handle key pairs and identities from Gmail API
-
-### Usage
-`cosmian kms google <subcommand>`
-
-### Subcommands
-
-**`key-pairs`** [[1.12.1]](#1121-cosmian-kms-google-key-pairs)  Insert, get, list, enable, disabled and obliterate key pairs to Gmail API
-
-**`identities`** [[1.12.2]](#1122-cosmian-kms-google-identities)  Insert, get, list, patch and delete identities from Gmail API
-
----
-
-## 1.12.1 cosmian kms google key-pairs
-
-Insert, get, list, enable, disabled and obliterate key pairs to Gmail API
-
-### Usage
-`cosmian kms google key-pairs <subcommand>`
-
-### Subcommands
-
-**`get`** [[1.12.1.1]](#11211-cosmian-kms-google-key-pairs-get)  Retrieves an existing client-side encryption key pair.
-
-**`list`** [[1.12.1.2]](#11212-cosmian-kms-google-key-pairs-list)  Lists client-side encryption key pairs for a user.
-
-**`enable`** [[1.12.1.3]](#11213-cosmian-kms-google-key-pairs-enable)  Turns on a client-side encryption key pair that was turned off. The key pair becomes active
-again for any associated client-side encryption identities.
-
-**`disable`** [[1.12.1.4]](#11214-cosmian-kms-google-key-pairs-disable)  Turns off a client-side encryption key pair. The authenticated user can no longer use the key
-pair to decrypt incoming CSE message texts or sign outgoing CSE mail. To regain access, use the
-key pairs.enable to turn on the key pair. After 30 days, you can permanently delete the key pair
-by using the key pairs.obliterate method.
-
-**`obliterate`** [[1.12.1.5]](#11215-cosmian-kms-google-key-pairs-obliterate)  Deletes a client-side encryption key pair permanently and immediately. You can only permanently
-delete key pairs that have been turned off for more than 30 days. To turn off a key pair, use
-the key pairs disable method. Gmail can't restore or decrypt any messages that were encrypted by
-an obliterated key. Authenticated users and Google Workspace administrators lose access to
-reading the encrypted messages.
-
-**`create`** [[1.12.1.6]](#11216-cosmian-kms-google-key-pairs-create)  Creates and uploads a client-side encryption S/MIME public key certificate chain and private key
-metadata for a user.
-
----
-
-## 1.12.1.1 cosmian kms google key-pairs get
-
-Retrieves an existing client-side encryption key pair.
-
-### Usage
-`cosmian kms google key-pairs get [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The identifier of the key pair to retrieve
-
-`--user-id [-u] <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.1.2 cosmian kms google key-pairs list
-
-Lists client-side encryption key pairs for a user.
-
-### Usage
-`cosmian kms google key-pairs list [options] <USER_ID>
-`
-### Arguments
-` <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.1.3 cosmian kms google key-pairs enable
-
-Turns on a client-side encryption key pair that was turned off. The key pair becomes active
-again for any associated client-side encryption identities.
-
-### Usage
-`cosmian kms google key-pairs enable [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The identifier of the key pair to enable
-
-`--user-id [-u] <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.1.4 cosmian kms google key-pairs disable
-
-Turns off a client-side encryption key pair. The authenticated user can no longer use the key
-pair to decrypt incoming CSE message texts or sign outgoing CSE mail. To regain access, use the
-key pairs.enable to turn on the key pair. After 30 days, you can permanently delete the key pair
-by using the key pairs.obliterate method.
-
-### Usage
-`cosmian kms google key-pairs disable [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The identifier of the key pair to disable
-
-`--user-id [-u] <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.1.5 cosmian kms google key-pairs obliterate
-
-Deletes a client-side encryption key pair permanently and immediately. You can only permanently
-delete key pairs that have been turned off for more than 30 days. To turn off a key pair, use
-the key pairs disable method. Gmail can't restore or decrypt any messages that were encrypted by
-an obliterated key. Authenticated users and Google Workspace administrators lose access to
-reading the encrypted messages.
-
-### Usage
-`cosmian kms google key-pairs obliterate [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The identifier of the key pair to obliterate
-
-`--user-id [-u] <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.1.6 cosmian kms google key-pairs create
-
-Creates and uploads a client-side encryption S/MIME public key certificate chain and private key
-metadata for a user.
-
-### Usage
-`cosmian kms google key-pairs create [options] <USER_ID>
-`
-### Arguments
-` <USER_ID>` The requester's primary email address
-
-`--cse-key-id [-w] <CSE_KEY_ID>` CSE key ID to wrap exported user private key
-
-`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id
-
-`--subject-name [-s] <SUBJECT_NAME>` When certifying a public key, or generating a keypair,
-the subject name to use.
-
-`--rsa-private-key-id [-k] <RSA_PRIVATE_KEY_ID>` The existing private key id of an existing RSA keypair to use (optional - if no ID is provided, a RSA keypair will be created)
-
-`--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
-
-Possible values:  `"true", "false"` [default: `"false"`]
-
-`--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
-
-Possible values:  `"true", "false"` [default: `"false"`]
-
-
-
-
----
-
-## 1.12.2 cosmian kms google identities
-
-Insert, get, list, patch and delete identities from Gmail API
-
-### Usage
-`cosmian kms google identities <subcommand>`
-
-### Subcommands
-
-**`get`** [[1.12.2.1]](#11221-cosmian-kms-google-identities-get)  Retrieves a client-side encryption identity configuration.
-
-**`list`** [[1.12.2.2]](#11222-cosmian-kms-google-identities-list)  Lists the client-side encrypted identities for an authenticated user.
-
-**`insert`** [[1.12.2.3]](#11223-cosmian-kms-google-identities-insert)  Creates and configures a client-side encryption identity that's authorized to send mail from the
-user account. Google publishes the S/MIME certificate to a shared domain-wide directory so that
-people within a Google Workspace organization can encrypt and send mail to the identity.
-
-**`delete`** [[1.12.2.4]](#11224-cosmian-kms-google-identities-delete)  Deletes a client-side encryption identity. The authenticated user can no longer use the identity
-to send encrypted messages. You cannot restore the identity after you delete it. Instead, use
-the identities.create method to create another identity with the same configuration.
-
-**`patch`** [[1.12.2.5]](#11225-cosmian-kms-google-identities-patch)  Associates a different key pair with an existing client-side encryption identity. The updated
-key pair must validate against Google's S/MIME certificate profiles.
-
----
-
-## 1.12.2.1 cosmian kms google identities get
-
-Retrieves a client-side encryption identity configuration.
-
-### Usage
-`cosmian kms google identities get [options] <USER_ID>
-`
-### Arguments
-` <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
-
-
-
----
-
-## 1.12.2.2 cosmian kms google identities list
-
-Lists the client-side encrypted identities for an authenticated user.
-
-### Usage
-`cosmian kms google identities list [options] <USER_ID>
-`
-### Arguments
-` <USER_ID>` The requester's primary email address
-
-
-
----
-
-## 1.12.2.3 cosmian kms google identities insert
-
-Creates and configures a client-side encryption identity that's authorized to send mail from the
-user account. Google publishes the S/MIME certificate to a shared domain-wide directory so that
-people within a Google Workspace organization can encrypt and send mail to the identity.
-
-### Usage
-`cosmian kms google identities insert [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The keypair id, associated with a given cert/key. You can get the by listing the keypairs associated with the user-id
-
-`--user-id [-u] <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
-
-
-
----
-
-## 1.12.2.4 cosmian kms google identities delete
-
-Deletes a client-side encryption identity. The authenticated user can no longer use the identity
-to send encrypted messages. You cannot restore the identity after you delete it. Instead, use
-the identities.create method to create another identity with the same configuration.
-
-### Usage
-`cosmian kms google identities delete [options] <USER_ID>
-`
-### Arguments
-` <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
-
-
-
----
-
-## 1.12.2.5 cosmian kms google identities patch
-
-Associates a different key pair with an existing client-side encryption identity. The updated
-key pair must validate against Google's S/MIME certificate profiles.
-
-### Usage
-`cosmian kms google identities patch [options] <KEY_PAIRS_ID>
-`
-### Arguments
-` <KEY_PAIRS_ID>` The key pair id, associated with a given cert/key. You can get the by listing the key pairs associated with the user-id
-
-`--user-id [-u] <USER_ID>` The primary email address associated with the client-side encryption identity configuration that's retrieved
-
 
 
 

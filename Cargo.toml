@@ -45,7 +45,6 @@ base64 = "0.21"
 chrono = "0.4"
 clap = { version = "4.5", default-features = false }
 cloudproof = "3.0"
-cloudproof_findex = { git = "https://www.github.com/Cosmian/cloudproof_rust", branch = "feat/add_basic_findex_rest_client" }
 cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", branch = "chore/reuse_ckms_in_cosmian_cli" }
 cosmian_findex_cli = { git = "https://www.github.com/Cosmian/findex-server", branch = "findex_v6" }
 cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", branch = "develop" }

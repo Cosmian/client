@@ -2,9 +2,11 @@ use std::str::Utf8Error;
 
 #[cfg(test)]
 use assert_cmd::cargo::CargoError;
-use cloudproof_findex::{db_interfaces::DbInterfaceError, reexport::cosmian_findex};
 use cosmian_config_utils::ConfigUtilsError;
-use cosmian_findex_cli::reexports::cosmian_findex_client::FindexClientError;
+use cosmian_findex_cli::reexports::{
+    cloudproof_findex::{db_interfaces::DbInterfaceError, reexport::cosmian_findex},
+    cosmian_findex_client::FindexClientError,
+};
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientError;
 use thiserror::Error;
 

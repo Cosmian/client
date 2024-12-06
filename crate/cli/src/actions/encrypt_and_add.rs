@@ -5,13 +5,14 @@ use std::{
 };
 
 use clap::Parser;
-use cloudproof_findex::reexport::cosmian_findex::{
-    Data, IndexedValue, IndexedValueToKeywordsMap, Keyword, Keywords,
-};
 use cosmian_findex_cli::{
     actions::findex::{FindexParameters, instantiate_findex},
     reexports::{
-        cosmian_findex_client::FindexRestClient, cosmian_findex_structs::EncryptedEntries,
+        cloudproof_findex::reexport::cosmian_findex::{
+            Data, IndexedValue, IndexedValueToKeywordsMap, Keyword, Keywords,
+        },
+        cosmian_findex_client::FindexRestClient,
+        cosmian_findex_structs::EncryptedEntries,
     },
 };
 use cosmian_kms_cli::{

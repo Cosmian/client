@@ -24,7 +24,8 @@ In that example, KMS stores its data inside the container:
 docker run -p 9998:9998 --rm --name kms ghcr.io/cosmian/kms
 ```
 
-> [!NOTE]: The KMS server can also be installed using these [instructions](https://docs.cosmian.com/key_management_system/installation).
+> [!NOTE]:
+> The KMS server can also be installed using these [instructions](https://docs.cosmian./key_management_system/installation).
 
 In the same manner, you can run a Findex server (using Docker image) on `http://localhost:6668`:
 
@@ -32,40 +33,41 @@ In the same manner, you can run a Findex server (using Docker image) on `http://
 docker run -p 6668:6668 --rm --name kms ghcr.io/cosmian/findex-server
 ```
 
-> [!NOTE]: The Findex server can also be installed using these [instructions](/findex_server/installation.md).
+> [!NOTE]:
+> The Findex server can also be installed using these [instructions](./documentation/docs/installation.md).
 
 ### Example
 
 1. Create a 256-bit symmetric key
 
-```sh
-➜ cosmian kms sym keys create --number-of-bits 256 --algorithm aes --tag my-key-file
-...
-The symmetric key was successfully generated.
-  Unique identifier: 87e9e2a8-4538-4701-aa8c-e3af94e44a9e
+   ```sh
+   ➜ cosmian kms sym keys create --number-of-bits 256 --algorithm aes --tag my-key-file
+   ...
+   The symmetric key was successfully generated.
+   Unique identifier: 87e9e2a8-4538-4701-aa8c-e3af94e44a9e
 
-  Tags:
-   - my-key-file
-```
+   Tags:
+      - my-key-file
+   ```
 
 2. Encrypt the `image.png` file with AES GCM using the key
 
-```sh
-➜ cosmian kms sym encrypt --tag my-key-file --output-file image.enc image.png
-...
-The encrypted file is available at "image.enc"
-```
+   ```sh
+   ➜ cosmian kms sym encrypt --tag my-key-file --output-file image.enc image.png
+   ...
+   The encrypted file is available at "image.enc"
+   ```
 
 3. Decrypt the `image.enc` file using the key
 
-```sh
-➜ cosmian kms sym decrypt --tag my-key-file --output-file image2.png image.enc
-...
-The decrypted file is available at "image2.png"
+   ```sh
+   ➜ cosmian kms sym decrypt --tag my-key-file --output-file image2.png image.enc
+   ...
+   The decrypted file is available at "image2.png"
 
-...
-The decrypted file is available at "image2.png"
-```
+   ...
+   The decrypted file is available at "image2.png"
+   ```
 
 See the [documentation](https://docs.cosmian.com/key_management_system/) for more.
 
@@ -79,7 +81,7 @@ binaries:
 - The classic CLI (`cosmian_cli`)
 - The graphical version of the CLI (`cosmian_gui`)
 
-Find the [public documentation](https://docs.cosmian.com) of the CLI in the `documentation`
+Find the [public documentation](https://docs.cosmian.com/cosmian_cli/) of the CLI in the `documentation`
 directory.
 
 ## Building the CLI
