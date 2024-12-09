@@ -3,7 +3,7 @@ use cosmian_findex_cli::{CoreFindexActions, reexports::cosmian_findex_client::Fi
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 
 use super::{
-    delete_datasets::DeleteDatasetAction, encrypt_and_add::EncryptAndIndexAction,
+    delete_datasets::DeleteDatasetAction, encrypt_and_index::EncryptAndIndexAction,
     search_and_decrypt::SearchAndDecryptAction,
 };
 use crate::error::{CosmianError, result::CosmianResult};

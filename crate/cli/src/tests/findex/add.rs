@@ -6,7 +6,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use crate::{
-    actions::encrypt_and_add::EncryptAndIndexAction,
+    actions::encrypt_and_index::EncryptAndIndexAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{PROG_NAME, utils::recover_cmd_logs},
@@ -23,11 +23,19 @@ pub(crate) fn add_cmd(cli_conf_path: &str, action: EncryptAndIndexAction) -> Cos
         action.findex_parameters.label,
         "--index-id".to_owned(),
         action.findex_parameters.index_id.to_string(),
-        "--csv".to_owned(),
-        action.csv.to_str().unwrap().to_owned(),
-        "--kek-id".to_owned(),
-        action.key_encryption_key_id.to_string(),
+        "--csv-path".to_owned(),
+        action.csv_path.to_str().unwrap().to_owned(),
+        "--data-encryption-algorithm".to_owned(),
+        action.data_encryption_algorithm.to_string(),
     ];
+    if let Some(key_encryption_key_id) = action.key_encryption_key_id {
+        args.push("--kek-id".to_owned());
+        args.push(key_encryption_key_id);
+    }
+    if let Some(data_encryption_key_id) = action.data_encryption_key_id {
+        args.push("--dek-id".to_owned());
+        args.push(data_encryption_key_id);
+    }
     if let Some(nonce) = action.nonce {
         args.push("--nonce".to_owned());
         args.push(nonce);

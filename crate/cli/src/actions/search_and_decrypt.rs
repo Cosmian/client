@@ -8,13 +8,16 @@ use cosmian_findex_cli::{
     },
 };
 use cosmian_kms_cli::{
-    actions::symmetric::{DataEncryptionAlgorithm, DecryptAction, KeyEncryptionAlgorithm},
+    actions::symmetric::{DataEncryptionAlgorithm, DecryptAction},
     reexport::cosmian_kms_client::KmsClient,
 };
 use tracing::trace;
 use uuid::Uuid;
 
-use crate::error::result::{CliResultHelper, CosmianResult};
+use crate::{
+    cli_bail,
+    error::result::{CliResultHelper, CosmianResult},
+};
 
 /// Search keywords and decrypt the content of corresponding UUIDs.
 #[derive(Parser, Debug)]
@@ -27,10 +30,35 @@ pub struct SearchAndDecryptAction {
     #[clap(long)]
     pub(crate) keyword: Vec<String>,
 
-    /// The public key unique identifier.
+    /// The Key Encryption key (KEM) unique identifier.
     /// If not specified, tags should be specified
-    #[clap(long = "kek-id", group = "key-tags")]
-    pub(crate) key_encryption_key_id: String,
+    #[clap(long = "kek-id", group = "kem", conflicts_with = "dem")]
+    pub(crate) key_encryption_key_id: Option<String>,
+
+    /// The data encryption key (DEK) unique identifier.
+    /// The key has been created in KMS.
+    /// DEM supported are:
+    /// - RFC5649
+    /// - AES-GCM
+    #[clap(
+        required = false,
+        long = "dek-id",
+        group = "dem",
+        conflicts_with = "kem"
+    )]
+    pub(crate) data_encryption_key_id: Option<String>,
+
+    /// The data encryption algorithm.
+    /// If not specified, aes-gcm is used.
+    ///
+    /// If no key encryption algorithm is specified, the data will be sent to the server
+    /// and will be decrypted server side.
+    #[clap(
+        long = "data-encryption-algorithm",
+        short = 'd',
+        default_value = "AesGcm"
+    )]
+    pub(crate) data_encryption_algorithm: DataEncryptionAlgorithm,
 
     /// Optional additional authentication data as a hex string.
     /// This data needs to be provided back for decryption.
@@ -86,16 +114,37 @@ impl SearchAndDecryptAction {
         let mut results = Vec::with_capacity(encrypted_entries.len());
         let mut decrypted_records = Vec::with_capacity(encrypted_entries.len());
         for (_uuid, ciphertext) in encrypted_entries.iter() {
-            let decrypted_record = decrypt_action
-                .client_side_decrypt_with_buffer(
-                    kms_rest_client,
-                    KeyEncryptionAlgorithm::RFC5649,
-                    DataEncryptionAlgorithm::AesGcm,
-                    &self.key_encryption_key_id,
-                    ciphertext,
-                    authentication_data.clone(),
-                )
-                .await?;
+            let decrypted_record = match (
+                self.key_encryption_key_id.as_ref(),
+                self.data_encryption_key_id.as_ref(),
+            ) {
+                (Some(key_encryption_key_id), None) => {
+                    decrypt_action
+                        .client_side_decrypt_with_buffer(
+                            kms_rest_client,
+                            self.data_encryption_algorithm,
+                            key_encryption_key_id,
+                            ciphertext,
+                            authentication_data.clone(),
+                        )
+                        .await?
+                }
+                (None, Some(data_encryption_key_id)) => decrypt_action
+                    .server_side_decrypt(
+                        kms_rest_client,
+                        self.data_encryption_algorithm.into(),
+                        data_encryption_key_id,
+                        ciphertext.clone(),
+                        authentication_data.clone(),
+                    )
+                    .await?
+                    .to_vec(),
+                _ => {
+                    cli_bail!(
+                        "Either a key encryption key or a data encryption key must be provided"
+                    )
+                }
+            };
             decrypted_records.push(decrypted_record);
         }
 

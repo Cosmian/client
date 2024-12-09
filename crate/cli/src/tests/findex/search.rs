@@ -22,9 +22,17 @@ pub(crate) fn search_cmd(
         action.findex_parameters.label,
         "--index-id".to_owned(),
         action.findex_parameters.index_id.to_string(),
-        "--kek-id".to_owned(),
-        action.key_encryption_key_id.to_string(),
+        "--data-encryption-algorithm".to_owned(),
+        action.data_encryption_algorithm.to_string(),
     ];
+    if let Some(key_encryption_key_id) = action.key_encryption_key_id {
+        args.push("--kek-id".to_owned());
+        args.push(key_encryption_key_id);
+    }
+    if let Some(data_encryption_key_id) = action.data_encryption_key_id {
+        args.push("--dek-id".to_owned());
+        args.push(data_encryption_key_id);
+    }
     if let Some(authentication_data) = action.authentication_data {
         args.push("--authentication_data".to_owned());
         args.push(authentication_data);

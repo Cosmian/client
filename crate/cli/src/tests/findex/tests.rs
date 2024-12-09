@@ -7,6 +7,9 @@ use cosmian_findex_cli::{
     },
     reexports::cosmian_findex_structs::{Permission, Uuids},
 };
+use cosmian_kms_cli::actions::symmetric::{
+    DataEncryptionAlgorithm, keys::create_key::CreateKeyAction,
+};
 use cosmian_logger::log_init;
 use tracing::trace;
 use uuid::Uuid;
@@ -14,7 +17,7 @@ use uuid::Uuid;
 use super::{add::add_cmd, delete::delete_cmd, search::search_cmd};
 use crate::{
     actions::{
-        delete_datasets::DeleteDatasetAction, encrypt_and_add::EncryptAndIndexAction,
+        delete_datasets::DeleteDatasetAction, encrypt_and_index::EncryptAndIndexAction,
         search_and_decrypt::SearchAndDecryptAction,
     },
     error::result::CosmianResult,
@@ -25,15 +28,22 @@ use crate::{
 };
 
 #[allow(dead_code)]
-fn add(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<Uuids> {
+fn add(
+    cli_conf_path: &str,
+    index_id: &Uuid,
+    kek_id: Option<&str>,
+    dek_id: Option<&str>,
+) -> CosmianResult<Uuids> {
     let uuids = add_cmd(cli_conf_path, EncryptAndIndexAction {
         findex_parameters: FindexParameters {
             key: "11223344556677889900AABBCCDDEEFF".to_owned(),
             label: "My Findex label".to_owned(),
             index_id: index_id.to_owned(),
         },
-        csv: "../../test_data/datasets/smallpop.csv".into(),
-        key_encryption_key_id: kek_id.to_owned(),
+        csv_path: "../../test_data/datasets/smallpop.csv".into(),
+        key_encryption_key_id: kek_id.map(std::borrow::ToOwned::to_owned),
+        data_encryption_key_id: dek_id.map(std::borrow::ToOwned::to_owned),
+        data_encryption_algorithm: DataEncryptionAlgorithm::AesGcm,
         nonce: None,
         authentication_data: None,
     })?;
@@ -50,15 +60,22 @@ fn delete(cli_conf_path: &str, index_id: &Uuid, uuids: &Uuids) -> CosmianResult<
     Ok(())
 }
 
-fn search(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<String> {
+fn search(
+    cli_conf_path: &str,
+    index_id: &Uuid,
+    kek_id: Option<&str>,
+    dek_id: Option<&str>,
+) -> CosmianResult<String> {
     search_cmd(cli_conf_path, SearchAndDecryptAction {
         findex_parameters: FindexParameters {
             key: "11223344556677889900AABBCCDDEEFF".to_owned(),
             label: "My Findex label".to_owned(),
             index_id: index_id.to_owned(),
         },
+        key_encryption_key_id: kek_id.map(std::borrow::ToOwned::to_owned),
+        data_encryption_key_id: dek_id.map(std::borrow::ToOwned::to_owned),
+        data_encryption_algorithm: DataEncryptionAlgorithm::AesGcm,
         keyword: vec!["Southborough".to_owned(), "Northbridge".to_owned()],
-        key_encryption_key_id: kek_id.to_owned(),
         authentication_data: None,
     })
 }
@@ -68,13 +85,18 @@ fn search(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<S
     clippy::print_stdout,
     clippy::cognitive_complexity
 )]
-fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> CosmianResult<()> {
+fn add_search_delete(
+    cli_conf_path: &str,
+    index_id: &Uuid,
+    kek_id: Option<&str>,
+    dek_id: Option<&str>,
+) -> CosmianResult<()> {
     trace!("add_search_delete: entering");
-    let uuids = add(cli_conf_path, index_id, kek_id)?;
+    let uuids = add(cli_conf_path, index_id, kek_id, dek_id)?;
     trace!("add_search_delete: add: uuids: {uuids}");
 
     // make sure searching returns the expected results
-    let search_results = search(cli_conf_path, index_id, kek_id)?;
+    let search_results = search(cli_conf_path, index_id, kek_id, dek_id)?;
     trace!("add_search_delete: search_results: {search_results}");
     assert!(search_results.contains("States9686")); // for Southborough
     assert!(search_results.contains("States14061")); // for Northbridge
@@ -82,7 +104,7 @@ fn add_search_delete(cli_conf_path: &str, index_id: &Uuid, kek_id: &str) -> Cosm
     delete(cli_conf_path, index_id, &uuids)?;
 
     // make sure no results are returned after deletion
-    let rerun_search_results = search(cli_conf_path, index_id, kek_id)?;
+    let rerun_search_results = search(cli_conf_path, index_id, kek_id, dek_id)?;
     trace!(
         "add_search_delete: re-search_results (len={}): {rerun_search_results}",
         rerun_search_results.len()
@@ -99,9 +121,10 @@ pub(crate) async fn test_encrypt_and_add_no_auth() -> CosmianResult<()> {
 
     let cli_conf_path = "../../test_data/configs/cosmian.toml";
 
-    let kek_id = create_symmetric_key(cli_conf_path, None, None, None, &[])?;
+    let kek_or_dek_id = create_symmetric_key(cli_conf_path, CreateKeyAction::default())?;
 
-    add_search_delete(cli_conf_path, &Uuid::new_v4(), &kek_id)?;
+    add_search_delete(cli_conf_path, &Uuid::new_v4(), Some(&kek_or_dek_id), None)?;
+    add_search_delete(cli_conf_path, &Uuid::new_v4(), None, Some(&kek_or_dek_id))?;
     Ok(())
 }
 
@@ -111,12 +134,12 @@ pub(crate) async fn test_encrypt_and_add_cert_auth() -> CosmianResult<()> {
 
     let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
 
-    let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
+    let kek_id = create_symmetric_key(owner_client_conf_path, CreateKeyAction::default())?;
 
     let index_id = create_index_id_cmd(owner_client_conf_path)?;
     trace!("index_id: {index_id}");
 
-    add_search_delete(owner_client_conf_path, &index_id, &kek_id)?;
+    add_search_delete(owner_client_conf_path, &index_id, Some(&kek_id), None)?;
     Ok(())
 }
 
@@ -128,12 +151,12 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
     let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.toml";
 
-    let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
+    let kek_id = create_symmetric_key(owner_client_conf_path, CreateKeyAction::default())?;
 
     let index_id = create_index_id_cmd(owner_client_conf_path)?;
     trace!("index_id: {index_id}");
 
-    add(owner_client_conf_path, &index_id, &kek_id)?;
+    add(owner_client_conf_path, &index_id, Some(&kek_id), None)?;
 
     // Grant read permission to the client
     grant_permission_cmd(owner_client_conf_path, &GrantPermission {
@@ -143,12 +166,12 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     })?;
 
     // User can read...
-    let search_results = search(user_client_conf_path, &index_id, &kek_id)?;
+    let search_results = search(user_client_conf_path, &index_id, Some(&kek_id), None)?;
     assert!(search_results.contains("States9686")); // for Southborough
     assert!(search_results.contains("States14061")); // for Northbridge
 
     // ... but not write
-    assert!(add(user_client_conf_path, &index_id, &kek_id).is_err());
+    assert!(add(user_client_conf_path, &index_id, Some(&kek_id), None).is_err());
 
     // Grant write permission
     grant_permission_cmd(owner_client_conf_path, &GrantPermission {
@@ -158,12 +181,12 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
     })?;
 
     // User can read...
-    let search_results = search(user_client_conf_path, &index_id, &kek_id)?;
+    let search_results = search(user_client_conf_path, &index_id, Some(&kek_id), None)?;
     assert!(search_results.contains("States9686")); // for Southborough
     assert!(search_results.contains("States14061")); // for Northbridge
 
     // ... and write
-    add(user_client_conf_path, &index_id, &kek_id)?;
+    add(user_client_conf_path, &index_id, Some(&kek_id), None)?;
 
     // Try to escalade privileges from `read` to `admin`
     grant_permission_cmd(user_client_conf_path, &GrantPermission {
@@ -178,7 +201,7 @@ pub(crate) async fn test_encrypt_and_add_grant_and_revoke_permission() -> Cosmia
         index_id,
     })?;
 
-    search(user_client_conf_path, &index_id, &kek_id).unwrap_err();
+    search(user_client_conf_path, &index_id, Some(&kek_id), None).unwrap_err();
 
     Ok(())
 }
@@ -190,8 +213,10 @@ pub(crate) async fn test_encrypt_and_add_no_permission() -> CosmianResult<()> {
     let owner_client_conf_path = "../../test_data/configs/cosmian_cert_auth_owner.toml";
     let user_client_conf_path = "../../test_data/configs/cosmian_cert_auth_user.toml";
 
-    let kek_id = create_symmetric_key(owner_client_conf_path, None, None, None, &[])?;
+    let kek_id = create_symmetric_key(owner_client_conf_path, CreateKeyAction::default())?;
 
-    assert!(add_search_delete(user_client_conf_path, &Uuid::new_v4(), &kek_id).is_err());
+    assert!(
+        add_search_delete(user_client_conf_path, &Uuid::new_v4(), Some(&kek_id), None).is_err()
+    );
     Ok(())
 }
