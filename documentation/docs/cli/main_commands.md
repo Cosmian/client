@@ -1878,16 +1878,15 @@ Handle Findex server actions
 
 **`delete`** [[2.4]](#24-cosmian-findex-server-delete)  Delete indexed keywords
 
-**`index`** [[2.5]](#25-cosmian-findex-server-index)  Index new keywords
+**`insert`** [[2.5]](#25-cosmian-findex-server-insert)  Insert new keywords
 
-**`login`** [[2.6]](#26-cosmian-findex-server-login)  Login to the Identity Provider of the Findex server using the `OAuth2`
-authorization code flow.
+**`login`** [[2.6]](#26-cosmian-findex-server-login)  Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
 
 **`logout`** [[2.7]](#27-cosmian-findex-server-logout)  Logout from the Identity Provider.
 
 **`permissions`** [[2.8]](#28-cosmian-findex-server-permissions)  Manage the users permissions to the indexes
 
-**`search`** [[2.9]](#29-cosmian-findex-server-search)  Findex: Search keywords.
+**`search`** [[2.9]](#29-cosmian-findex-server-search)  Search words.
 
 **`server-version`** [[2.10]](#210-cosmian-findex-server-server-version)  Print the version of the server
 
@@ -1900,9 +1899,7 @@ Encrypt entries and index the corresponding database UUIDs with the Findex.
 ### Usage
 `cosmian findex-server encrypt-and-index [options]`
 ### Arguments
-`--key [-k] <KEY>` The user findex key used (to add, search, delete and compact). The key is a 16 bytes hex string
-
-`--label [-l] <LABEL>` The Findex label
+`--seed [-s] <SEED>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
 `--index-id [-i] <INDEX_ID>` The index ID
 
@@ -1931,9 +1928,7 @@ Search keywords and decrypt the content of corresponding UUIDs.
 ### Usage
 `cosmian findex-server search-and-decrypt [options]`
 ### Arguments
-`--key [-k] <KEY>` The user findex key used (to add, search, delete and compact). The key is a 16 bytes hex string
-
-`--label [-l] <LABEL>` The Findex label
+`--seed [-s] <SEED>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
 `--index-id [-i] <INDEX_ID>` The index ID
 
@@ -1966,7 +1961,7 @@ Manage encrypted datasets
 
 **`delete`** [[2.3.2]](#232-cosmian-findex-server-datasets-delete)  Delete datasets entries using corresponding entries UUID
 
-**`get`** [[2.3.3]](#233-cosmian-findex-server-datasets-get)  Get datasets entries using corresponding entries UUID. Returns the entries
+**`get`** [[2.3.3]](#233-cosmian-findex-server-datasets-get)  Return datasets entries matching given UUID
 
 ---
 
@@ -2002,7 +1997,7 @@ Delete datasets entries using corresponding entries UUID
 
 ## 2.3.3 cosmian findex-server datasets get
 
-Get datasets entries using corresponding entries UUID. Returns the entries
+Return datasets entries matching given UUID
 
 ### Usage
 `cosmian findex-server datasets get [options]`
@@ -2023,9 +2018,7 @@ Delete indexed keywords
 ### Usage
 `cosmian findex-server delete [options]`
 ### Arguments
-`--key [-k] <KEY>` The user findex key used (to add, search, delete and compact). The key is a 16 bytes hex string
-
-`--label [-l] <LABEL>` The Findex label
+`--seed [-s] <SEED>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
 `--index-id [-i] <INDEX_ID>` The index ID
 
@@ -2035,16 +2028,14 @@ Delete indexed keywords
 
 ---
 
-## 2.5 cosmian findex-server index
+## 2.5 cosmian findex-server insert
 
-Index new keywords
+Insert new keywords
 
 ### Usage
-`cosmian findex-server index [options]`
+`cosmian findex-server insert [options]`
 ### Arguments
-`--key [-k] <KEY>` The user findex key used (to add, search, delete and compact). The key is a 16 bytes hex string
-
-`--label [-l] <LABEL>` The Findex label
+`--seed [-s] <SEED>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
 `--index-id [-i] <INDEX_ID>` The index ID
 
@@ -2056,8 +2047,7 @@ Index new keywords
 
 ## 2.6 cosmian findex-server login
 
-Login to the Identity Provider of the Findex server using the `OAuth2`
-authorization code flow.
+Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
 
 ### Usage
 `cosmian findex-server login`
@@ -2151,14 +2141,12 @@ Revoke user permission
 
 ## 2.9 cosmian findex-server search
 
-Findex: Search keywords.
+Search words.
 
 ### Usage
 `cosmian findex-server search [options]`
 ### Arguments
-`--key [-k] <KEY>` The user findex key used (to add, search, delete and compact). The key is a 16 bytes hex string
-
-`--label [-l] <LABEL>` The Findex label
+`--seed [-s] <SEED>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
 `--index-id [-i] <INDEX_ID>` The index ID
 

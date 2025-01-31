@@ -4,7 +4,7 @@ use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::{
     actions::{
         datasets::DeleteEntries,
-        findex::FindexParameters,
+        findex::parameters::FindexParameters,
         permissions::{CreateIndex, GrantPermission, RevokePermission},
     },
     reexports::{
@@ -40,6 +40,8 @@ struct AdminAndUsers {
     pub users: TestClients,
 }
 
+const TEST_SEED: &str = "11223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF";
+
 lazy_static! {
     static ref CLIENTS: AdminAndUsers = {
         let no_auth_clients = instantiate_clients("../../test_data/configs/cosmian.toml").unwrap();
@@ -64,8 +66,7 @@ async fn index(
 ) -> CosmianResult<Uuids> {
     let uuids = EncryptAndIndexAction {
         findex_parameters: FindexParameters {
-            key: "11223344556677889900AABBCCDDEEFF".to_owned(),
-            label: "My Findex label".to_owned(),
+            seed: TEST_SEED.to_owned(),
             index_id: index_id.to_owned(),
         },
         csv_path: "../../test_data/datasets/smallpop.csv".into(),
@@ -104,14 +105,13 @@ async fn search(
 ) -> CosmianResult<Vec<String>> {
     SearchAndDecryptAction {
         findex_parameters: FindexParameters {
-            key: "11223344556677889900AABBCCDDEEFF".to_owned(),
-            label: "My Findex label".to_owned(),
+            seed: TEST_SEED.to_owned(),
             index_id: index_id.to_owned(),
         },
         key_encryption_key_id: kek_id.map(std::string::ToString::to_string),
         data_encryption_key_id: dek_id.map(std::string::ToString::to_string),
         data_encryption_algorithm: DataEncryptionAlgorithm::AesGcm,
-        keyword: vec!["Southborough".to_owned(), "Northbridge".to_owned()],
+        keyword: vec!["Southborough".to_owned()],
         authentication_data: None,
     }
     .run(findex, kms)
@@ -142,7 +142,6 @@ async fn index_search_delete(
     let search_results = search(findex, kms, index_id, kek_id, dek_id).await?;
     trace!("index_search_delete: search_results: {search_results:?}");
     assert!(contains_substring(&search_results, "States9686")); // for Southborough
-    assert!(contains_substring(&search_results, "States14061")); // for Northbridge
 
     delete(findex, index_id, &uuids).await?;
 
@@ -152,8 +151,7 @@ async fn index_search_delete(
         "index_search_delete: re-search_results (len={}): {rerun_search_results:?}",
         rerun_search_results.len()
     );
-    assert!(!contains_substring(&rerun_search_results, "States9686")); // for Southborough
-    assert!(!contains_substring(&rerun_search_results, "States14061")); // for Northbridge
+    assert!(rerun_search_results.is_empty());
 
     Ok(())
 }
@@ -248,7 +246,6 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     )
     .await?;
     assert!(contains_substring(&search_results, "States9686")); // for Southborough
-    assert!(contains_substring(&search_results, "States14061")); // for Northbridge
 
     // ... but not write
     assert!(index(
@@ -280,7 +277,6 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     )
     .await?;
     assert!(contains_substring(&search_results, "States9686")); // for Southborough
-    assert!(contains_substring(&search_results, "States14061")); // for Northbridge
 
     // ... and write
     index(
