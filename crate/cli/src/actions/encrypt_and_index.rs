@@ -136,9 +136,8 @@ impl EncryptAndIndexAction {
             encrypted_entries.insert(new_uuid, encrypted_record);
 
             let indexed_value = Value::from(new_uuid.as_bytes().to_vec());
-            let keywords = record.iter().map(Keyword::from).collect::<HashSet<_>>();
-            trace!("my keywords: {}", Keywords(keywords.clone()));
-            for keyword in keywords {
+            for keyword in record.iter().map(Keyword::from) {
+                trace!("keyword: {}", keyword);
                 keywords_values
                     .entry(keyword)
                     .or_default()
