@@ -34,27 +34,25 @@ ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.c
 scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa ./*.zip cosmian@package.cosmian.com:"$DESTINATION_DIR"/
 
 # Push the packages to the package.cosmian.com server
-# if [ "$DEBUG_OR_RELEASE" = "release" ]; then
-KMS_DESTINATION_DIR=/mnt/package/kms/4.22.1
-FINDEX_SERVER_DESTINATION_DIR=/mnt/package/findex-server/0.2.0
+if [ "$DEBUG_OR_RELEASE" = "release" ]; then
+  KMS_DESTINATION_DIR=/mnt/package/kms/4.22.1
+  FINDEX_SERVER_DESTINATION_DIR=/mnt/package/findex-server/0.2.0
 
-ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p "$DESTINATION_DIR"/{rhel9,ubuntu-20.04,ubuntu-22.04,ubuntu-24.04}
+  ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p "$DESTINATION_DIR"/{rhel9,ubuntu-20.04,ubuntu-22.04,ubuntu-24.04}
 
-# RedHat 9 package
-for dir in "$DESTINATION_DIR/rhel9" "$KMS_DESTINATION_DIR/rhel9" "$FINDEX_SERVER_DESTINATION_DIR/rhel9"; do
-  scp -o 'StrictHostKeyChecking no' \
-    -i "/root/.ssh/id_rsa rhel9-$DEBUG_OR_RELEASE/generate-rpm/*.rpm" \
-    cosmian@package.cosmian.com:"$dir"
-done
-
-# Ubuntu packages
-for version in 20.04 22.04 24.04; do
-  for dir in "$DESTINATION_DIR/ubuntu-$version" "$KMS_DESTINATION_DIR/ubuntu-$version" "$FINDEX_SERVER_DESTINATION_DIR/ubuntu-$version"; do
+  # RedHat 9 package
+  for dir in "$DESTINATION_DIR/rhel9" "$KMS_DESTINATION_DIR/rhel9" "$FINDEX_SERVER_DESTINATION_DIR/rhel9"; do
     scp -o 'StrictHostKeyChecking no' \
-      -i "/root/.ssh/id_rsa ubuntu_${version//./_}-$DEBUG_OR_RELEASE/debian/*.deb" \
+      -i /root/.ssh/id_rsa rhel9-"$DEBUG_OR_RELEASE"/generate-rpm/*.rpm \
       cosmian@package.cosmian.com:"$dir"
   done
-done
 
-# end
-# fi
+  # Ubuntu packages
+  for version in 20.04 22.04 24.04; do
+    for dir in "$DESTINATION_DIR/ubuntu-$version" "$KMS_DESTINATION_DIR/ubuntu-$version" "$FINDEX_SERVER_DESTINATION_DIR/ubuntu-$version"; do
+      scp -o 'StrictHostKeyChecking no' \
+        -i /root/.ssh/id_rsa ubuntu_${version//./_}-"$DEBUG_OR_RELEASE"/debian/*.deb \
+        cosmian@package.cosmian.com:"$dir"
+    done
+  done
+fi # end
