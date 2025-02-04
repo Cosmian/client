@@ -21,7 +21,7 @@ scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa \
   "*.zip" \
   cosmian@package.cosmian.com:"$DESTINATION_DIR"/
 
-if [ "$DEBUG_OR_RELEASE" == "release" ]; then
+if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p "$DESTINATION_DIR"/{rhel9,ubuntu-20.04,ubuntu-22.04,ubuntu-24.04}
 
   # RedHat 9 package
