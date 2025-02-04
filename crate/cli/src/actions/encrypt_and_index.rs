@@ -122,7 +122,6 @@ impl EncryptAndIndexAction {
             // The iterator yields Result<StringRecord, Error>, so we check the
             // error here.
             let record = result?;
-            trace!("CSV line: {record:?}");
             let record_bytes = record.as_slice();
             let encrypted_record = encrypt_action.client_side_encrypt_with_buffer(
                 &dek,
@@ -174,7 +173,6 @@ impl EncryptAndIndexAction {
             // The iterator yields Result<StringRecord, Error>, so we check the
             // error here.
             let record = result?;
-            trace!("CSV line: {record:?}");
             let record_bytes = record.as_slice();
             let encrypted_record = encrypt_action.client_side_encrypt_with_buffer(
                 &dek,
@@ -189,7 +187,7 @@ impl EncryptAndIndexAction {
 
             let indexed_value = Value::from(new_uuid.as_bytes().to_vec());
             let keywords = record.iter().map(Keyword::from).collect::<HashSet<_>>();
-            trace!("my keywords: {}", Keywords(keywords.clone()));
+            trace!("keywords: {}", Keywords(keywords.clone()));
             for keyword in keywords {
                 keywords_values
                     .entry(keyword)
@@ -220,7 +218,6 @@ impl EncryptAndIndexAction {
             // The iterator yields Result<StringRecord, Error>, so we check the
             // error here.
             let record = result?;
-            trace!("CSV line: {record:?}");
             let record_bytes = record.as_slice();
             let (nonce, data, tag) = encrypt_action
                 .server_side_encrypt(
@@ -243,7 +240,7 @@ impl EncryptAndIndexAction {
 
             let indexed_value = Value::from(new_uuid.as_bytes().to_vec());
             let keywords = record.iter().map(Keyword::from).collect::<HashSet<_>>();
-            trace!("my keywords: {}", Keywords(keywords.clone()));
+            trace!("keywords: {}", Keywords(keywords.clone()));
             for keyword in keywords {
                 keywords_values
                     .entry(keyword)
