@@ -6,6 +6,8 @@ set -ex
 
 DEBUG_OR_RELEASE="$1"
 
+find . # List artifacts
+
 apt update -y
 apt-get install -y zip
 
