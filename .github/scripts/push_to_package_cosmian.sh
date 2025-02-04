@@ -44,7 +44,7 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   for dir in "$DESTINATION_DIR/rhel9" "$KMS_DESTINATION_DIR/rhel9" "$FINDEX_SERVER_DESTINATION_DIR/rhel9"; do
     scp -o 'StrictHostKeyChecking no' \
       -i /root/.ssh/id_rsa rhel9-"$DEBUG_OR_RELEASE"/generate-rpm/*.rpm \
-      cosmian@package.cosmian.com:"$dir"
+      cosmian@package.cosmian.com:"$dir"/
   done
 
   # Ubuntu packages
@@ -52,7 +52,7 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
     for dir in "$DESTINATION_DIR/ubuntu-$version" "$KMS_DESTINATION_DIR/ubuntu-$version" "$FINDEX_SERVER_DESTINATION_DIR/ubuntu-$version"; do
       scp -o 'StrictHostKeyChecking no' \
         -i /root/.ssh/id_rsa ubuntu_${version//./_}-"$DEBUG_OR_RELEASE"/debian/*.deb \
-        cosmian@package.cosmian.com:"$dir"
+        cosmian@package.cosmian.com:"$dir"/
     done
   done
 fi # end
