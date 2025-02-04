@@ -38,8 +38,8 @@ incremental = false
 opt-level = 0
 
 [workspace.dependencies]
-clap = { version = "4.5", default-features = false }
-cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", tag = "4.21.2" }
+clap = { version = "4.5.28", default-features = false }
+cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", tag = "4.22.0" }
 cosmian_findex_cli = { git = "https://www.github.com/Cosmian/findex-server", tag = "0.2.0" }
 cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }

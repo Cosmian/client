@@ -69,7 +69,7 @@ async fn index(
             seed: TEST_SEED.to_owned(),
             index_id: index_id.to_owned(),
         },
-        csv_path: "../../test_data/datasets/smallpop.csv".into(),
+        csv: "../../test_data/datasets/smallpop.csv".into(),
         key_encryption_key_id: kek_id.map(std::string::ToString::to_string),
         data_encryption_key_id: dek_id.map(std::string::ToString::to_string),
         data_encryption_algorithm: DataEncryptionAlgorithm::AesGcm,

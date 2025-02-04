@@ -41,7 +41,7 @@ pub struct EncryptAndIndexAction {
 
     /// The path to the CSV file path containing the data to index
     #[clap(long)]
-    pub(crate) csv_path: PathBuf,
+    pub(crate) csv: PathBuf,
 
     /// The key encryption key (KEK) unique identifier.
     /// If provided, all encryption is done client side. The KEK is first
@@ -261,8 +261,6 @@ impl EncryptAndIndexAction {
     ///
     /// This function will return an error if:
     /// - There is an error instantiating the Findex client.
-    /// - There is an error retrieving the user key or label from the Findex
-    ///   parameters.
     /// - There is an error converting the CSV file to a hashmap.
     /// - There is an error adding the data to the Findex index.
     /// - There is an error writing the result to the console.
@@ -292,7 +290,7 @@ impl EncryptAndIndexAction {
         ) {
             (Some(key_encryption_key_id), None) => {
                 self.client_side_encrypt_entries(
-                    self.csv_path.clone(),
+                    self.csv.clone(),
                     kms_rest_client,
                     &key_encryption_key_id,
                     nonce,
@@ -302,7 +300,7 @@ impl EncryptAndIndexAction {
             }
             (None, Some(data_encryption_key_id)) => {
                 self.server_side_encrypt_entries(
-                    self.csv_path.clone(),
+                    self.csv.clone(),
                     kms_rest_client,
                     &data_encryption_key_id,
                     nonce,

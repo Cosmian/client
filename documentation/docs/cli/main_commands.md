@@ -1809,13 +1809,13 @@ Encrypt a file using a symmetric cipher
 
 `--key-id [-k] <KEY_ID>` The symmetric key unique identifier. If not specified, tags should be specified
 
-`--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
+`--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, `aes-gcm` is used
 
-Possible values:  `"AesGcm", "AesXts"` [default: `"aes-gcm"`]
+Possible values:  `"aes-gcm", "aes-xts"` [default: `"aes-gcm"`]
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to encrypt the data encryption key.
 
-Possible values:  `"AesGcm", "AesXts", "RFC5649"`
+Possible values:  `"aes-gcm", "aes-xts", "rfc5649"`
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -1841,15 +1841,16 @@ Decrypt a file using a symmetric key.
 
 `--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
 
-`--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
-Possible values:  `"AesGcm", "AesXts"` [default: `"aes-gcm"`]
+`--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm.
+If not specified, aes-gcm is used.
+
+Possible values:  `"aes-gcm", "aes-xts"` [default: `"aes-gcm"`]
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to decrypt the data encryption key.
 
-Possible values:  `"AesGcm", "AesXts", "RFC5649"`
-
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+Possible values:  `"aes-gcm", "aes-xts", "rfc5649"`
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 
@@ -1903,7 +1904,7 @@ Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 `--index-id [-i] <INDEX_ID>` The index ID
 
-`--csv-path <CSV_PATH>` The path to the CSV file path containing the data to index
+`--csv <CSV>` The path to the CSV file path containing the data to index
 
 `--kek-id <KEY_ENCRYPTION_KEY_ID>` The key encryption key (KEK) unique identifier. If provided, all encryption is done client side. The KEK is first exported locally and is used in the KEM to encapsulates the ephemeral Data Encryption Key (DEK). This KEK has been created in KMS and provides the Key Encapsulation Mechanism (KEM) parameters such as algorithm and mode. KEM supported are: - RFC5649 - AES-GCM - RSA PKCS#1 v1.5 - RSA-OAEP - RSA-AES hybrid key wrapping - Salsa Sealed Box - ECIES
 
@@ -1911,7 +1912,7 @@ Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
 
-Possible values:  `"AesGcm", "AesXts"` [default: `"AesGcm"`]
+Possible values:  `"aes-gcm", "aes-xts"` [default: `"AesGcm"`]
 
 `--nonce [-n] <NONCE>` Optional nonce/IV (or tweak for XTS) as a hex string. If not provided, a random value is generated
 
@@ -1940,7 +1941,7 @@ Search keywords and decrypt the content of corresponding UUIDs.
 
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
 
-Possible values:  `"AesGcm", "AesXts"` [default: `"AesGcm"`]
+Possible values:  `"aes-gcm", "aes-xts"` [default: `"AesGcm"`]
 
 `--authentication-data [-a] <AUTHENTICATION_DATA>` Optional additional authentication data as a hex string. This data needs to be provided back for decryption. This data is ignored with XTS
 
