@@ -1760,8 +1760,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "4.22.0"
-source = "git+https://www.github.com/Cosmian/kms?tag=4.22.0#6dabca3cdb3735c4c15ba1a5372ce02f5d47e5f7"
+version = "4.22.1"
+source = "git+https://www.github.com/Cosmian/kms?tag=4.22.1#ad8b0dc8c3c8b16752d4c6053c60c80c38971837"
 dependencies = [
  "bitflags 2.8.0",
  "chrono",
@@ -1781,8 +1781,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "4.22.0"
-source = "git+https://www.github.com/Cosmian/kms?tag=4.22.0#6dabca3cdb3735c4c15ba1a5372ce02f5d47e5f7"
+version = "4.22.1"
+source = "git+https://www.github.com/Cosmian/kms?tag=4.22.1#ad8b0dc8c3c8b16752d4c6053c60c80c38971837"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1790,8 +1790,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "4.22.0"
-source = "git+https://www.github.com/Cosmian/kms?tag=4.22.0#6dabca3cdb3735c4c15ba1a5372ce02f5d47e5f7"
+version = "4.22.1"
+source = "git+https://www.github.com/Cosmian/kms?tag=4.22.1#ad8b0dc8c3c8b16752d4c6053c60c80c38971837"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1821,8 +1821,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "4.22.0"
-source = "git+https://www.github.com/Cosmian/kms?tag=4.22.0#6dabca3cdb3735c4c15ba1a5372ce02f5d47e5f7"
+version = "4.22.1"
+source = "git+https://www.github.com/Cosmian/kms?tag=4.22.1#ad8b0dc8c3c8b16752d4c6053c60c80c38971837"
 dependencies = [
  "cloudproof",
  "cosmian_config_utils 0.1.0 (git+https://www.github.com/Cosmian/http_client_server?branch=develop)",
@@ -1843,8 +1843,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "4.22.0"
-source = "git+https://www.github.com/Cosmian/kms?tag=4.22.0#6dabca3cdb3735c4c15ba1a5372ce02f5d47e5f7"
+version = "4.22.1"
+source = "git+https://www.github.com/Cosmian/kms?tag=4.22.1#ad8b0dc8c3c8b16752d4c6053c60c80c38971837"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2107,9 +2107,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.18"
+version = "0.99.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f33878137e4dafd7fa914ad4e259e18a4e8e532b9617a2d0150262bf53abfce"
+checksum = "3da29a38df43d6f156149c9b43ded5e018ddff2a855cf2cfd62e8cd7d079c69f"
 dependencies = [
  "convert_case",
  "proc-macro2",

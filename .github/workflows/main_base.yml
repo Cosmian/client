@@ -55,19 +55,6 @@ jobs:
 
       - run: find .
 
-      - name: Creating zip to be attached to release
-        run: |
-          set -x
-          apt update -y
-          apt-get install -y zip
-          for archive_name in $ARCHIVE_NAMES; do
-            zip -r "$archive_name".zip "$archive_name"
-          done
-          # Warning, no windows binaries in debug
-          if [ "${{ inputs.debug_or_release }}" = "release" ]; then
-            zip -r "$archive_name".zip windows-release
-          fi
-
       - uses: actions/checkout@v3
       - name: Push to package.cosmian.com
         shell: bash
