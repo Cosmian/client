@@ -31,7 +31,7 @@ fi
 DESTINATION_DIR=/mnt/package/cli/$BRANCH
 
 ssh -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa cosmian@package.cosmian.com mkdir -p "$DESTINATION_DIR"
-scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa "*.zip" cosmian@package.cosmian.com:"$DESTINATION_DIR"/
+scp -o 'StrictHostKeyChecking no' -i /root/.ssh/id_rsa ./*.zip cosmian@package.cosmian.com:"$DESTINATION_DIR"/
 
 # Push the packages to the package.cosmian.com server
 # if [ "$DEBUG_OR_RELEASE" = "release" ]; then
