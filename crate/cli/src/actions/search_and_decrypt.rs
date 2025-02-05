@@ -60,7 +60,7 @@ pub struct SearchAndDecryptAction {
     #[clap(
         long = "data-encryption-algorithm",
         short = 'd',
-        default_value = "AesGcm"
+        default_value = "aes-gcm"
     )]
     pub(crate) data_encryption_algorithm: DataEncryptionAlgorithm,
 

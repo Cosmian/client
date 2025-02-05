@@ -77,7 +77,7 @@ pub struct EncryptAndIndexAction {
 
     /// The data encryption algorithm.
     /// If not specified, aes-gcm is used.
-    #[clap(long, short = 'd', default_value = "AesGcm")]
+    #[clap(long, short = 'd', default_value = "aes-gcm")]
     pub(crate) data_encryption_algorithm: DataEncryptionAlgorithm,
 
     /// Optional nonce/IV (or tweak for XTS) as a hex string.
