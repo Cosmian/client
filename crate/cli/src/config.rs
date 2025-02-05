@@ -4,6 +4,7 @@ use cosmian_config_utils::{location, ConfigUtils};
 use cosmian_findex_cli::reexports::cosmian_findex_client::FindexClientConfig;
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientConfig;
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 
 use crate::error::CosmianError;
 
@@ -48,7 +49,7 @@ impl ClientConf {
     /// not a valid toml file.
     pub fn load(conf_path: Option<PathBuf>) -> Result<Self, CosmianError> {
         let conf_path_buf = Self::location(conf_path)?;
-        println!("Loading configuration from: {conf_path_buf:?}");
+        debug!("Loading configuration from: {conf_path_buf:?}");
 
         Ok(Self::from_toml(conf_path_buf.to_str().ok_or_else(
             || {
