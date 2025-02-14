@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use cosmian_findex_cli::{reexports::cosmian_findex_client::FindexRestClient, CoreFindexActions};
+use cosmian_findex_cli::{reexports::cosmian_findex_client::RestClient, CoreFindexActions};
 use cosmian_kms_cli::{reexport::cosmian_kms_client::KmsClient, KmsActions};
 use cosmian_logger::log_init;
 use tracing::{info, trace};
@@ -131,7 +131,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
             let findex_config = config.findex_config.as_ref().ok_or_else(|| {
                 cli_error!("Findex server configuration is missing in the configuration file")
             })?;
-            let mut findex_rest_client = FindexRestClient::new(findex_config.clone())?;
+            let mut findex_rest_client = RestClient::new(findex_config.clone())?;
             findex_actions
                 .run(&mut findex_rest_client, &kms_rest_client)
                 .await?;

@@ -6,11 +6,14 @@ use std::{
 
 use clap::Parser;
 use cosmian_findex_cli::{
-    actions::findex::parameters::FindexParameters,
+    actions::findex::{
+        instantiated_findex::InstantiatedFindex, parameters::FindexParameters,
+        retrieve_key_from_kms,
+    },
     reexports::{
         cosmian_findex_client::{
-            reexport::cosmian_findex::{Findex, IndexADT, Value},
-            FindexRestClient,
+            reexport::cosmian_findex::{MemoryEncryptionLayer, Value},
+            FindexRestClient, KmsEncryptionLayer, RestClient,
         },
         cosmian_findex_structs::{
             EncryptedEntries, Keyword, KeywordToDataSetsMap, Keywords, Uuids, WORD_LENGTH,
@@ -24,7 +27,7 @@ use cosmian_kms_cli::{
 use tracing::trace;
 
 use crate::{
-    cli_bail,
+    cli_bail, cli_error,
     error::result::{CliResultHelper, CosmianResult},
 };
 
@@ -264,7 +267,7 @@ impl EncryptAndIndexAction {
     #[allow(clippy::future_not_send, clippy::print_stdout)]
     pub async fn run(
         &self,
-        findex_rest_client: &FindexRestClient,
+        rest_client: &RestClient,
         kms_rest_client: &KmsClient,
     ) -> CosmianResult<Uuids> {
         let nonce = self
@@ -310,21 +313,42 @@ impl EncryptAndIndexAction {
             }
         };
 
-        findex_rest_client
+        rest_client
             .add_entries(&self.findex_parameters.index_id, &encrypted_entries)
             .await?;
 
-        let findex: Findex<WORD_LENGTH, Value, String, FindexRestClient> =
-            findex_rest_client.clone().instantiate_findex(
-                self.findex_parameters.index_id,
-                &self.findex_parameters.seed()?,
-            )?;
+        let memory = FindexRestClient::new(rest_client.clone(), self.findex_parameters.index_id);
 
-        for (key, value) in keywords_indexed_value_map.iter() {
-            findex.insert(key, value.clone()).await?;
-        }
-        let written_keywords =
-            Keywords::from(keywords_indexed_value_map.keys().collect::<Vec<_>>());
+        let written_keywords = if let Some(seed_key_id) = self.findex_parameters.seed_key_id.clone()
+        {
+            let seed = retrieve_key_from_kms(&seed_key_id, kms_rest_client.clone()).await?;
+
+            let encryption_layer = MemoryEncryptionLayer::<WORD_LENGTH, _>::new(&seed, memory);
+
+            let findex = InstantiatedFindex::new(encryption_layer);
+            findex.insert(keywords_indexed_value_map).await?
+        } else {
+            let hmac_key_id = self
+                .findex_parameters
+                .hmac_key_id
+                .clone()
+                .ok_or_else(|| cli_error!("The HMAC key ID is required for indexing"))?;
+            let aes_xts_key_id = self
+                .findex_parameters
+                .aes_xts_key_id
+                .clone()
+                .ok_or_else(|| cli_error!("The AES XTS key ID is required for indexing"))?;
+
+            let encryption_layer = KmsEncryptionLayer::<WORD_LENGTH, _>::new(
+                kms_rest_client.clone(),
+                hmac_key_id.clone(),
+                aes_xts_key_id.clone(),
+                memory,
+            );
+
+            let findex = InstantiatedFindex::new(encryption_layer);
+            findex.insert(keywords_indexed_value_map).await?
+        };
         trace!("indexing done: keywords: {written_keywords}");
 
         let uuids = encrypted_entries.get_uuids();

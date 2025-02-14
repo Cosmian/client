@@ -1,12 +1,15 @@
 use clap::Parser;
 use cosmian_findex_cli::{
-    actions::findex::parameters::FindexParameters,
+    actions::findex::{
+        instantiated_findex::InstantiatedFindex, parameters::FindexParameters,
+        retrieve_key_from_kms,
+    },
     reexports::{
         cosmian_findex_client::{
-            reexport::cosmian_findex::{Findex, IndexADT, Value},
-            FindexRestClient,
+            reexport::cosmian_findex::MemoryEncryptionLayer, FindexRestClient, KmsEncryptionLayer,
+            RestClient,
         },
-        cosmian_findex_structs::{Keywords, SearchResults, Uuids, WORD_LENGTH},
+        cosmian_findex_structs::{Uuids, WORD_LENGTH},
     },
 };
 use cosmian_kms_cli::{
@@ -16,11 +19,8 @@ use cosmian_kms_cli::{
 use tracing::trace;
 
 use crate::{
-    cli_bail,
-    error::{
-        result::{CliResultHelper, CosmianResult},
-        CosmianError,
-    },
+    cli_bail, cli_error,
+    error::result::{CliResultHelper, CosmianResult},
 };
 
 /// Search keywords and decrypt the content of corresponding UUIDs.
@@ -75,33 +75,45 @@ impl SearchAndDecryptAction {
     #[allow(clippy::future_not_send, clippy::print_stdout)]
     pub(crate) async fn run(
         &self,
-        findex_rest_client: &FindexRestClient,
+        rest_client: &RestClient,
         kms_rest_client: &KmsClient,
     ) -> CosmianResult<Vec<String>> {
-        let findex_instance: Findex<WORD_LENGTH, Value, String, FindexRestClient> =
-            findex_rest_client.clone().instantiate_findex(
-                self.findex_parameters.index_id,
-                &self.findex_parameters.seed()?,
-            )?;
+        let memory = FindexRestClient::new(rest_client.clone(), self.findex_parameters.index_id);
 
-        // First accumulate all search results in a vector
-        let mut all_results = Vec::new();
-        for k in Keywords::from(self.keyword.clone()).0 {
-            let search_result = findex_instance.search(&k).await?;
-            all_results.push(search_result);
-        }
+        let search_results = if let Some(seed_key_id) = self.findex_parameters.seed_key_id.clone() {
+            let seed = retrieve_key_from_kms(&seed_key_id, kms_rest_client.clone()).await?;
 
-        // Then take the intersection of all search results
-        let search_results = all_results
-            .into_iter()
-            .reduce(|acc, results| acc.intersection(&results).cloned().collect())
-            .ok_or_else(|| CosmianError::Default("No search results found".to_owned()))?;
-        let search_results = SearchResults(search_results);
+            let encryption_layer = MemoryEncryptionLayer::<WORD_LENGTH, _>::new(&seed, memory);
+
+            let findex = InstantiatedFindex::new(encryption_layer);
+            findex.search(self.keyword.clone()).await?
+        } else {
+            let hmac_key_id = self
+                .findex_parameters
+                .hmac_key_id
+                .clone()
+                .ok_or_else(|| cli_error!("The HMAC key ID is required for indexing"))?;
+            let aes_xts_key_id = self
+                .findex_parameters
+                .aes_xts_key_id
+                .clone()
+                .ok_or_else(|| cli_error!("The AES XTS key ID is required for indexing"))?;
+
+            let encryption_layer = KmsEncryptionLayer::<WORD_LENGTH, _>::new(
+                kms_rest_client.clone(),
+                hmac_key_id.clone(),
+                aes_xts_key_id.clone(),
+                memory,
+            );
+
+            let findex = InstantiatedFindex::new(encryption_layer);
+            findex.search(self.keyword.clone()).await?
+        };
 
         trace!("Search results: {search_results}");
         let uuids = Uuids::try_from(search_results)?;
         trace!("UUIDs of encrypted entries: {uuids}");
-        let encrypted_entries = findex_rest_client
+        let encrypted_entries = rest_client
             .get_entries(&self.findex_parameters.index_id, &uuids)
             .await?;
 

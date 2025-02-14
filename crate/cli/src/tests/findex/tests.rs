@@ -8,7 +8,7 @@ use cosmian_findex_cli::{
         permissions::{CreateIndex, GrantPermission, RevokePermission},
     },
     reexports::{
-        cosmian_findex_client::FindexRestClient,
+        cosmian_findex_client::RestClient,
         cosmian_findex_structs::{Permission, Uuids},
     },
 };
@@ -30,30 +30,25 @@ use crate::{
 
 struct TestClients {
     pub kms: KmsClient,
-    pub findex: FindexRestClient,
+    pub findex: RestClient,
 }
-
-const TEST_SEED: &str = "11223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF";
 
 fn instantiate_clients(conf_path: &str) -> CosmianResult<TestClients> {
     let client_config = ClientConf::from_toml(conf_path)?;
     let kms = KmsClient::new(client_config.kms_config)?;
-    let findex = FindexRestClient::new(client_config.findex_config.unwrap())?;
+    let findex = RestClient::new(client_config.findex_config.unwrap())?;
     Ok(TestClients { kms, findex })
 }
 
 async fn index(
-    findex: &FindexRestClient,
+    findex_parameters: FindexParameters,
+    findex: &RestClient,
     kms: &KmsClient,
-    index_id: &Uuid,
     kek_id: Option<&UniqueIdentifier>,
     dek_id: Option<&UniqueIdentifier>,
 ) -> CosmianResult<Uuids> {
     let uuids = EncryptAndIndexAction {
-        findex_parameters: FindexParameters {
-            seed: TEST_SEED.to_owned(),
-            index_id: index_id.to_owned(),
-        },
+        findex_parameters,
         csv: "../../test_data/datasets/smallpop.csv".into(),
         key_encryption_key_id: kek_id.map(std::string::ToString::to_string),
         data_encryption_key_id: dek_id.map(std::string::ToString::to_string),
@@ -68,11 +63,7 @@ async fn index(
     Ok(uuids)
 }
 
-async fn delete(
-    findex: &FindexRestClient,
-    index_id: &Uuid,
-    uuids: &Uuids,
-) -> CosmianResult<String> {
+async fn delete(findex: &RestClient, index_id: &Uuid, uuids: &Uuids) -> CosmianResult<String> {
     Ok(DeleteEntries {
         index_id: index_id.to_owned(),
         uuids: uuids.deref().clone(),
@@ -82,17 +73,14 @@ async fn delete(
 }
 
 async fn search(
-    findex: &FindexRestClient,
+    findex_parameters: FindexParameters,
+    findex: &RestClient,
     kms: &KmsClient,
-    index_id: &Uuid,
     kek_id: Option<&UniqueIdentifier>,
     dek_id: Option<&UniqueIdentifier>,
 ) -> CosmianResult<Vec<String>> {
     SearchAndDecryptAction {
-        findex_parameters: FindexParameters {
-            seed: TEST_SEED.to_owned(),
-            index_id: index_id.to_owned(),
-        },
+        findex_parameters,
         key_encryption_key_id: kek_id.map(std::string::ToString::to_string),
         data_encryption_key_id: dek_id.map(std::string::ToString::to_string),
         data_encryption_algorithm: DataEncryptionAlgorithm::AesGcm,
@@ -113,25 +101,28 @@ fn contains_substring(results: &[String], substring: &str) -> bool {
     clippy::cognitive_complexity
 )]
 async fn index_search_delete(
-    findex: &FindexRestClient,
+    findex: &RestClient,
     kms: &KmsClient,
     index_id: &Uuid,
     kek_id: Option<&UniqueIdentifier>,
     dek_id: Option<&UniqueIdentifier>,
 ) -> CosmianResult<()> {
     trace!("index_search_delete: entering");
-    let uuids = index(findex, kms, index_id, kek_id, dek_id).await?;
+    let findex_parameters = FindexParameters::new_with_encryption_keys(*index_id, kms).await?;
+
+    let uuids = index(findex_parameters.clone(), findex, kms, kek_id, dek_id).await?;
     trace!("index_search_delete: index: uuids: {uuids}");
 
     // make sure searching returns the expected results
-    let search_results = search(findex, kms, index_id, kek_id, dek_id).await?;
+    let search_results = search(findex_parameters.clone(), findex, kms, kek_id, dek_id).await?;
     trace!("index_search_delete: search_results: {search_results:?}");
     assert!(contains_substring(&search_results, "States9686")); // for Southborough
 
     delete(findex, index_id, &uuids).await?;
 
     // make sure no results are returned after deletion
-    let rerun_search_results = search(findex, kms, index_id, kek_id, dek_id).await?;
+    let rerun_search_results =
+        search(findex_parameters.clone(), findex, kms, kek_id, dek_id).await?;
     trace!(
         "index_search_delete: re-search_results (len={}): {rerun_search_results:?}",
         rerun_search_results.len()
@@ -203,10 +194,13 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     let index_id = CreateIndex.run(&owner_clients.findex).await?;
     trace!("index_id: {index_id}");
 
+    let findex_parameters =
+        FindexParameters::new_with_encryption_keys(index_id, &owner_clients.kms).await?;
+
     index(
+        findex_parameters.clone(),
         &owner_clients.findex,
         &owner_clients.kms,
-        &index_id,
         Some(&kek_id),
         None,
     )
@@ -223,9 +217,9 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
 
     // User can read...
     let search_results = search(
+        findex_parameters.clone(),
         &user_clients.findex,
         &user_clients.kms,
-        &index_id,
         Some(&kek_id),
         None,
     )
@@ -234,9 +228,9 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
 
     // ... but not write
     assert!(index(
+        findex_parameters.clone(),
         &user_clients.findex,
         &user_clients.kms,
-        &index_id,
         Some(&kek_id),
         None
     )
@@ -254,9 +248,9 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
 
     // User can read...
     let search_results = search(
+        findex_parameters.clone(),
         &user_clients.findex,
         &user_clients.kms,
-        &index_id,
         Some(&kek_id),
         None,
     )
@@ -265,9 +259,9 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
 
     // ... and write
     index(
+        findex_parameters.clone(),
         &user_clients.findex,
         &user_clients.kms,
-        &index_id,
         Some(&kek_id),
         None,
     )
@@ -291,9 +285,9 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     .await?;
 
     search(
+        findex_parameters.clone(),
         &user_clients.findex,
         &user_clients.kms,
-        &index_id,
         Some(&kek_id),
         None,
     )
