@@ -5,7 +5,7 @@ use cosmian_findex_cli::{
     actions::{
         datasets::DeleteEntries,
         findex::parameters::FindexParameters,
-        permissions::{CreateIndex, GrantPermission, RevokePermission},
+        permissions::{CreateIndex, RevokePermission, SetPermission},
     },
     reexports::{
         cosmian_findex_client::RestClient,
@@ -207,7 +207,7 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     .await?;
 
     // Grant read permission to the client
-    GrantPermission {
+    SetPermission {
         user: "user.client@acme.com".to_owned(),
         index_id,
         permission: Permission::Read,
@@ -238,7 +238,7 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     .is_err());
 
     // Grant write permission
-    GrantPermission {
+    SetPermission {
         user: "user.client@acme.com".to_owned(),
         index_id,
         permission: Permission::Write,
@@ -268,7 +268,7 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     .await?;
 
     // Try to escalade privileges from `read` to `admin`
-    GrantPermission {
+    SetPermission {
         user: "user.client@acme.com".to_owned(),
         index_id,
         permission: Permission::Admin,

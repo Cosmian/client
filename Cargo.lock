@@ -1628,12 +1628,12 @@ dependencies = [
 [[package]]
 name = "cosmian_findex"
 version = "7.0.0"
-source = "git+https://github.com/Cosmian/findex?branch=feat%2Fupgrade_rand_crates#f3dd747fb2fab1ee5f519ba4325894c719c987f1"
+source = "git+https://github.com/Cosmian/findex?branch=feat%2Fupgrade_rand_crates#e359a9c1a03ee08b3ba8f936f83b7e09b807141d"
 dependencies = [
  "aes",
  "rand 0.9.0",
  "rand_chacha 0.9.0",
- "rand_core 0.9.0",
+ "rand_core 0.9.1",
  "redis",
  "tiny-keccak",
  "xts-mode",
@@ -1643,7 +1643,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#5488f80965d38013bc7e7b8c4b5d0b9253258c16"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1666,7 +1666,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#5488f80965d38013bc7e7b8c4b5d0b9253258c16"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
 dependencies = [
  "base64 0.22.1",
  "cosmian_config_utils 0.1.0 (git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0)",
@@ -1676,7 +1676,6 @@ dependencies = [
  "cosmian_http_client 0.1.0 (git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0)",
  "cosmian_kms_cli",
  "cosmian_logger 0.1.0 (git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0)",
- "hex",
  "reqwest",
  "serde",
  "thiserror 2.0.11",
@@ -1687,7 +1686,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#5488f80965d38013bc7e7b8c4b5d0b9253258c16"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.0.0",
@@ -4578,7 +4577,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
 dependencies = [
  "rand_chacha 0.9.0",
- "rand_core 0.9.0",
+ "rand_core 0.9.1",
  "zerocopy 0.8.17",
 ]
 
@@ -4599,7 +4598,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.9.0",
+ "rand_core 0.9.1",
 ]
 
 [[package]]
@@ -4613,9 +4612,9 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b08f3c9802962f7e1b25113931d94f43ed9725bebc59db9d0c3e9a23b67e15ff"
+checksum = "a88e0da7a2c97baa202165137c158d0a2e824ac465d13d81046727b34cb247d3"
 dependencies = [
  "getrandom 0.3.1",
  "zerocopy 0.8.17",

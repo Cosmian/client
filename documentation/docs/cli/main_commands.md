@@ -64,7 +64,7 @@ Handle KMS actions
 
 **`logout`** [[1.10]](#110-cosmian-kms-logout)  Logout from the Identity Provider.
 
-**`mac`** [[1.11]](#111-cosmian-kms-mac)
+**`mac`** [[1.11]](#111-cosmian-kms-mac) 
 **`new-database`** [[1.12]](#112-cosmian-kms-new-database)  Initialize a new user encrypted database and return the secret (`SQLCipher` only).
 
 **`rsa`** [[1.13]](#113-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
@@ -2715,7 +2715,7 @@ Manage the users permissions to the indexes
 
 **`list`** [[2.8.2]](#282-cosmian-findex-server-permissions-list)  List user's permission. Returns a list of indexes with their permissions
 
-**`grant`** [[2.8.3]](#283-cosmian-findex-server-permissions-grant)  Grant permission on a index
+**`set`** [[2.8.3]](#283-cosmian-findex-server-permissions-set)  Set permission on a index
 
 **`revoke`** [[2.8.4]](#284-cosmian-findex-server-permissions-revoke)  Revoke user permission
 
@@ -2744,12 +2744,12 @@ List user's permission. Returns a list of indexes with their permissions
 
 ---
 
-## 2.8.3 cosmian findex-server permissions grant
+## 2.8.3 cosmian findex-server permissions set
 
-Grant permission on a index
+Set permission on a index
 
 ### Usage
-`cosmian findex-server permissions grant [options]`
+`cosmian findex-server permissions set [options]`
 ### Arguments
 `--user <USER>` The user identifier to allow
 
