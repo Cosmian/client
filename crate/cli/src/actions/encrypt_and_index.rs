@@ -314,7 +314,7 @@ impl EncryptAndIndexAction {
         let findex_instance = FindexInstance::<CUSTOM_WORD_LENGTH>::instantiate_findex(
             rest_client,
             kms_rest_client.clone(),
-            &self.findex_parameters,
+            self.findex_parameters.clone().instantiate_keys()?,
         )
         .await?;
 

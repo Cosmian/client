@@ -36,7 +36,7 @@ struct TestClients {
 fn instantiate_clients(conf_path: &str) -> CosmianResult<TestClients> {
     let client_config = ClientConf::from_toml(conf_path)?;
     let kms = KmsClient::new(client_config.kms_config)?;
-    let findex = RestClient::new(client_config.findex_config.unwrap())?;
+    let findex = RestClient::new(&client_config.findex_config.unwrap())?;
     Ok(TestClients { kms, findex })
 }
 
@@ -108,7 +108,7 @@ async fn index_search_delete(
     dek_id: Option<&UniqueIdentifier>,
 ) -> CosmianResult<()> {
     trace!("index_search_delete: entering");
-    let findex_parameters = FindexParameters::new_with_encryption_keys(*index_id, kms).await?;
+    let findex_parameters = FindexParameters::new(*index_id, kms, true).await?;
 
     let uuids = index(findex_parameters.clone(), findex, kms, kek_id, dek_id).await?;
     trace!("index_search_delete: index: uuids: {uuids}");
@@ -194,8 +194,7 @@ pub(crate) async fn test_encrypt_and_index_grant_and_revoke_permission() -> Cosm
     let index_id = CreateIndex.run(&owner_clients.findex).await?;
     trace!("index_id: {index_id}");
 
-    let findex_parameters =
-        FindexParameters::new_with_encryption_keys(index_id, &owner_clients.kms).await?;
+    let findex_parameters = FindexParameters::new(index_id, &owner_clients.kms, true).await?;
 
     index(
         findex_parameters.clone(),
