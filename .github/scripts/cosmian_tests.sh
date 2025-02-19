@@ -29,6 +29,30 @@ if [[ "$expected_line" != "[\"SouthboroughMAUnited States9686\"]" ]]; then
   echo "Test failed: unexpected result"
   exit 1
 else
-  echo "Test passed"
-  exit 0
+  echo "Test passed: local encryption"
 fi
+
+# Generate the HMAC key
+hmac_key_id=$($COSMIAN kms sym keys create | jq -r '.unique_identifier')
+echo "hmac_key_id: $hmac_key_id"
+
+# Generate the AES-XTS-512 key
+aes_xts_key_id=$($COSMIAN kms sym keys create | jq -r '.unique_identifier')
+echo "aes_xts_key_id: $aes_xts_key_id"
+
+# Encrypt and index the data
+$COSMIAN findex-server encrypt-and-index --hmac-key-id "$hmac_key_id" --aes-xts-key-id "$aes_xts_key_id" --index-id "$index_id" --kek-id "$kek_id" --csv test_data/datasets/smallpop.csv
+
+# Search and decrypt the data
+expected_line=$($COSMIAN findex-server search-and-decrypt --hmac-key-id "$hmac_key_id" --aes-xts-key-id "$aes_xts_key_id" --index-id "$index_id" --kek-id "$kek_id" --keyword "Southborough" | sed 's/Decrypted records: //')
+echo "expected_line: $expected_line"
+
+# Check the result
+if [[ "$expected_line" != "[\"SouthboroughMAUnited States9686\"]" ]]; then
+  echo "Test failed: unexpected result"
+  exit 1
+else
+  echo "Test passed"
+fi
+
+exit 0

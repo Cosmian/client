@@ -1643,7 +1643,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#e953f12592ff9f32a45b2e39d90ce160cb341497"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1666,7 +1666,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#e953f12592ff9f32a45b2e39d90ce160cb341497"
 dependencies = [
  "base64 0.22.1",
  "cosmian_config_utils 0.1.0 (git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0)",
@@ -1686,7 +1686,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#a0170e1ca0412f8ba3f8133f2d5d57ab7ca400aa"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fkms_memory_layer#e953f12592ff9f32a45b2e39d90ce160cb341497"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.0.0",
