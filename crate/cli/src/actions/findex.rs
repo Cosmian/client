@@ -21,7 +21,6 @@ impl FindexActions {
     ///
     /// # Errors
     /// Returns an error if the action fails
-    #[allow(clippy::future_not_send)]
     pub async fn run(
         &self,
         findex_rest_client: &mut RestClient,

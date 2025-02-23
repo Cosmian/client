@@ -85,7 +85,7 @@ pub enum CliCommands {
 /// - The command-line arguments cannot be parsed.
 /// - The configuration file cannot be located or loaded.
 /// - Any of the subcommands fail during their execution.
-#[allow(clippy::future_not_send, clippy::cognitive_complexity)]
+#[allow(clippy::cognitive_complexity)]
 pub async fn cosmian_main() -> CosmianResult<()> {
     log_init(None);
     info!("Starting Cosmian CLI");

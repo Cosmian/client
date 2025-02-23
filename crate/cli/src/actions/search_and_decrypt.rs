@@ -65,7 +65,7 @@ pub struct SearchAndDecryptAction {
 }
 
 impl SearchAndDecryptAction {
-    #[allow(clippy::future_not_send, clippy::print_stdout)]
+    #[allow(clippy::print_stdout)]
     pub(crate) async fn run(
         &self,
         rest_client: &RestClient,

@@ -258,7 +258,7 @@ impl EncryptAndIndexAction {
     /// - There is an error converting the CSV file to a hashmap.
     /// - There is an error adding the data to the Findex index.
     /// - There is an error writing the result to the console.
-    #[allow(clippy::future_not_send, clippy::print_stdout)]
+    #[allow(clippy::print_stdout)]
     pub async fn run(
         &self,
         rest_client: &RestClient,
