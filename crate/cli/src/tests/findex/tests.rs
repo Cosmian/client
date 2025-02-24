@@ -140,7 +140,7 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
     let _ctx = start_default_test_findex_server().await;
 
     let ctx = TestsCliContext::new(
-        &get_cosmian_config_filepath("../../test_data/configs/cosmian.toml"),
+        &get_cosmian_config_filepath("cosmian.toml"),
         SMALL_DATASET,
         vec!["Southborough".to_owned()],
         "States9686",
