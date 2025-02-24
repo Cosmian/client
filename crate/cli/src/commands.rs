@@ -1,13 +1,16 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use cosmian_findex_cli::{reexports::cosmian_findex_client::RestClient, CoreFindexActions};
+use cosmian_findex_client::RestClient;
 use cosmian_kms_cli::{reexport::cosmian_kms_client::KmsClient, KmsActions};
 use cosmian_logger::log_init;
 use tracing::{info, trace};
 
 use crate::{
-    actions::{findex::FindexActions, markdown::MarkdownAction},
+    actions::{
+        findex::{CoreFindexActions, FindexActions},
+        markdown::MarkdownAction,
+    },
     cli_error,
     config::ClientConf,
     error::result::CosmianResult,

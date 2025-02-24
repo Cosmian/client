@@ -1,11 +1,16 @@
 [package]
 name = "cosmian_cli"
-version.workspace = true
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-rust-version.workspace = true
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.83.0"
+authors = [
+  "Bruno Grieder <bruno.grieder@cosmian.com>",
+  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
+]
+license = "BUSL-1.1" # "Business Source License 1.1"
+repository = "https://github.com/Cosmian/cli"
+keywords = ["cosmian_cli", "kms", "findex", "findex-server", "cosmian"]
+categories = ["security"]
 description = "CLI used to manage the Cosmian KMS and Findex server."
 
 [[bin]]
@@ -22,6 +27,7 @@ doctest = false
 fips = ["cosmian_kms_cli/fips"]
 
 [dependencies]
+base64 = { workspace = true }
 clap = { workspace = true, features = [
   "help",
   "env",
@@ -32,8 +38,11 @@ clap = { workspace = true, features = [
   "cargo",
 ] }
 cosmian_kms_cli = { workspace = true }
-cosmian_findex_cli = { workspace = true }
+cosmian_findex = { workspace = true }
+cosmian_findex_client = { workspace = true }
+cosmian_findex_structs = { workspace = true }
 cosmian_config_utils = { workspace = true }
+cosmian_crypto_core = { workspace = true }
 cosmian_logger = { workspace = true }
 csv = "1.3.1"
 hex = { workspace = true }
@@ -52,9 +61,13 @@ const-oid = { version = "0.9", features = ["db"] }
 lazy_static = "1.5"
 openssl = { workspace = true }
 predicates = "3.1"
+rand = "0.9.0"
+rand_chacha = "0.9.0"
 regex = { version = "1.11", default-features = false }
 tempfile = "3.16"
 x509-parser = { workspace = true, features = ["verify"] }
+test_findex_server = { workspace = true }
+cosmian_findex = { workspace = true, features = ["test-utils"] }
 
 # ------------------------------------------------------------------------------
 # START DEBIAN PACKAGING

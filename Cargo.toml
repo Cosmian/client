@@ -38,9 +38,24 @@ incremental = false
 opt-level = 0
 
 [workspace.dependencies]
+base64 = "0.22"
 clap = { version = "4.5.28", default-features = false }
+cosmian_crypto_core = { version = "10.0", default-features = false }
+cosmian_findex = { git = "https://github.com/Cosmian/findex", features = [
+  "redis-mem",
+], rev = "98fcb6e97054e1bb9dddd7a0d620e27438cb91b7" }
+### KMS
 cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", branch = "feat/add_digest_and_mac_kmip_operations" }
-cosmian_findex_cli = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
+### findex-server
+cosmian_findex_cli = { path = "../crate/cli" }
+cosmian_findex_client = { path = "../crate/client" }
+cosmian_findex_structs = { path = "../crate/structs" }
+test_findex_server = { path = "../crate/test_server" }
+# cosmian_findex_cli = { git = "https://www.github.com/Cosmian/findex-server", branch = "merge_cli" }
+# cosmian_findex_client = { git = "https://www.github.com/Cosmian/findex-server", branch = "merge_cli" }
+# cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "merge_cli" }
+# test_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "merge_cli" }
+### http_client_server
 cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }

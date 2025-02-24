@@ -1,20 +1,20 @@
 use crate::{
+    actions::findex_server::findex::findex_instance::FindexInstance,
     cli_bail, cli_error,
-    error::result::{CliResultHelper, CosmianResult},
+    error::result::{CosmianResult, CosmianResultHelper},
 };
 use clap::Parser;
-use cosmian_findex_cli::{
-    actions::findex::{findex_instance::FindexInstance, parameters::FindexParameters},
-    reexports::{
-        cosmian_findex_client::RestClient,
-        cosmian_findex_structs::{Uuids, CUSTOM_WORD_LENGTH},
-    },
+use cosmian_findex_client::{
+    reexport::cosmian_findex_structs::{Uuids, CUSTOM_WORD_LENGTH},
+    RestClient,
 };
 use cosmian_kms_cli::{
     actions::symmetric::{DataEncryptionAlgorithm, DecryptAction},
     reexport::cosmian_kms_client::KmsClient,
 };
 use tracing::trace;
+
+use super::findex_server::findex::parameters::FindexParameters;
 
 /// Search keywords and decrypt the content of corresponding UUIDs.
 #[derive(Parser, Debug)]
