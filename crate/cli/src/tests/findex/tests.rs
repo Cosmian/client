@@ -140,7 +140,7 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
     let _ctx = start_default_test_findex_server().await;
 
     let ctx = TestsCliContext::new(
-        "../../test_data/configs/cosmian.toml",
+        &get_cosmian_config_filepath("../../test_data/configs/cosmian.toml"),
         SMALL_DATASET,
         vec!["Southborough".to_owned()],
         "States9686",
@@ -157,7 +157,7 @@ async fn test_encrypt_and_index_cert_auth() -> CosmianResult<()> {
     let _ctx = start_default_test_findex_server_with_cert_auth().await;
 
     let ctx = TestsCliContext::new(
-        "../../test_data/configs/cosmian_cert_auth_owner.toml",
+        &get_cosmian_config_filepath("cosmian_cert_auth_owner.toml"),
         SMALL_DATASET,
         vec!["Southborough".to_owned()],
         "States9686",
@@ -174,7 +174,7 @@ async fn test_encrypt_and_index_huge() -> CosmianResult<()> {
     let _ctx = start_default_test_findex_server_with_cert_auth().await;
 
     let ctx = TestsCliContext::new(
-        "../../test_data/configs/cosmian_cert_auth_owner.toml",
+        &get_cosmian_config_filepath("cosmian_cert_auth_owner.toml"),
         HUGE_DATASET,
         vec![
             "BDCQ.SEA1AA".to_owned(),
@@ -186,4 +186,11 @@ async fn test_encrypt_and_index_huge() -> CosmianResult<()> {
     )
     .await?;
     ctx.run_test_sequence().await
+}
+
+fn get_cosmian_config_filepath(filename: &str) -> String {
+    match std::env::var("KMS_HOSTNAME") {
+        Ok(_) => format!("../../test_data/docker_configs/{}", filename),
+        Err(_) => format!("../../test_data/configs/{}", filename),
+    }
 }
