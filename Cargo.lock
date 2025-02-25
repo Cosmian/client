@@ -1290,9 +1290,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.30"
+version = "4.5.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92b7b18d71fad5313a1e320fa9897994228ce274b60faa4d694fe0ea89cd9e6d"
+checksum = "027bb0d98429ae334a8698531da7077bdf906419543a35a55c2cb1b66437d767"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1300,9 +1300,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.30"
+version = "4.5.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a35db2071778a7344791a4fb4f95308b5673d219dee3ae348b86642574ecc90c"
+checksum = "5589e0cba072e0f3d23791efac0fd8627b49c829c196a492e88168e6a669d863"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1749,7 +1749,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#61625d02b1e34ca0f48914c07d89a683a93977ca"
 dependencies = [
  "base64 0.22.1",
  "cosmian_config_utils",
@@ -1769,7 +1769,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#61625d02b1e34ca0f48914c07d89a683a93977ca"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1803,7 +1803,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#61625d02b1e34ca0f48914c07d89a683a93977ca"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.0.0",
@@ -1860,7 +1860,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_digest_and_mac_kmip_operations#d71edaa6ac3c8c308c050db9882eeef6beda05ec"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#a3ea7fefd986810b7ab6e485819b352fc885f61c"
 dependencies = [
  "bitflags 2.8.0",
  "chrono",
@@ -1881,7 +1881,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_digest_and_mac_kmip_operations#d71edaa6ac3c8c308c050db9882eeef6beda05ec"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#a3ea7fefd986810b7ab6e485819b352fc885f61c"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1890,7 +1890,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_cli"
 version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_digest_and_mac_kmip_operations#d71edaa6ac3c8c308c050db9882eeef6beda05ec"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#a3ea7fefd986810b7ab6e485819b352fc885f61c"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1921,7 +1921,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_client"
 version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_digest_and_mac_kmip_operations#d71edaa6ac3c8c308c050db9882eeef6beda05ec"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#a3ea7fefd986810b7ab6e485819b352fc885f61c"
 dependencies = [
  "cloudproof",
  "cosmian_config_utils",
@@ -1943,7 +1943,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_crypto"
 version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_digest_and_mac_kmip_operations#d71edaa6ac3c8c308c050db9882eeef6beda05ec"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#a3ea7fefd986810b7ab6e485819b352fc885f61c"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2437,9 +2437,9 @@ dependencies = [
 
 [[package]]
 name = "either"
-version = "1.13.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
+checksum = "b7914353092ddf589ad78f25c5c1c21b7f80b0ff8621e7c814c3485b5306da9d"
 dependencies = [
  "serde",
 ]
@@ -2639,9 +2639,9 @@ checksum = "b3ea1ec5f8307826a5b71094dd91fc04d4ae75d5709b20ad351c7fb4815c86ec"
 
 [[package]]
 name = "flate2"
-version = "1.0.35"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c936bfdafb507ebbf50b8074c54fa31c5be9a1e7e5f467dd659697041407d07c"
+checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -3253,7 +3253,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.8",
  "tokio",
  "tower-service",
  "tracing",
@@ -3672,9 +3672,9 @@ checksum = "884e2677b40cc8c339eaefcb701c32ef1fd2493d71118dc0ca4b6a736c93bd67"
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.170"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "libloading"
@@ -5043,9 +5043,9 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.17.10"
+version = "0.17.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d34b5020fcdea098ef7d95e9f89ec15952123a4a039badd09fabebe9e963e839"
+checksum = "da5349ae27d3887ca812fb375b45a4fbb36d8d12d2df394968cd86e35683fe73"
 dependencies = [
  "cc",
  "cfg-if",
@@ -5912,7 +5912,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 [[package]]
 name = "test_findex_server"
 version = "0.2.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#61625d02b1e34ca0f48914c07d89a683a93977ca"
 dependencies = [
  "actix-server",
  "cosmian_config_utils",

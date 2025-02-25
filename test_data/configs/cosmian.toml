@@ -5,4 +5,4 @@ print_json = false
 server_url = "http://0.0.0.0:9998"
 
 [findex_config.http_config]
-server_url = "http://0.0.0.0:6668"
+server_url = "http://0.0.0.0:6670"

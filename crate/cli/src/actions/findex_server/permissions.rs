@@ -68,7 +68,7 @@ impl CreateIndex {
 #[derive(Parser, Debug)]
 pub struct ListPermissions {
     /// The user identifier to allow
-    #[clap(long, required = true)]
+    #[clap(long, short = 'u', required = true)]
     pub user: String,
 }
 

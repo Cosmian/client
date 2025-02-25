@@ -10,6 +10,10 @@ use crate::error::{result::CosmianResult, CosmianError};
 
 use super::findex_instance::FindexKeys;
 
+pub const HMAC_KEY_SIZE: u32 = 256;
+pub const AES_XTS_KEY_SIZE: u32 = 512;
+pub const SEED_KEY_SIZE: u32 = 256;
+
 #[derive(Clone, Parser, Debug, Default)]
 #[clap(verbatim_doc_comment)]
 pub struct FindexParameters {
@@ -77,17 +81,25 @@ impl FindexParameters {
             Ok(Self {
                 seed_key_id: None,
                 hmac_key_id: Some(
-                    generate_key(kms_client, 256, SymmetricAlgorithm::Sha3, "HMAC").await?,
+                    generate_key(kms_client, HMAC_KEY_SIZE, SymmetricAlgorithm::Sha3, "HMAC")
+                        .await?,
                 ),
                 aes_xts_key_id: Some(
-                    generate_key(kms_client, 512, SymmetricAlgorithm::Aes, "AES-XTS").await?,
+                    generate_key(
+                        kms_client,
+                        AES_XTS_KEY_SIZE,
+                        SymmetricAlgorithm::Aes,
+                        "AES-XTS",
+                    )
+                    .await?,
                 ),
                 index_id,
             })
         } else {
             Ok(Self {
                 seed_key_id: Some(
-                    generate_key(kms_client, 256, SymmetricAlgorithm::Aes, "seed").await?,
+                    generate_key(kms_client, SEED_KEY_SIZE, SymmetricAlgorithm::Aes, "seed")
+                        .await?,
                 ),
                 hmac_key_id: None,
                 aes_xts_key_id: None,

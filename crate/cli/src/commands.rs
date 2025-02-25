@@ -7,10 +7,7 @@ use cosmian_logger::log_init;
 use tracing::{info, trace};
 
 use crate::{
-    actions::{
-        findex_server::actions::{CoreFindexActions, FindexActions},
-        markdown::MarkdownAction,
-    },
+    actions::{findex_server::actions::FindexActions, markdown::MarkdownAction},
     cli_error,
     config::ClientConf,
     error::result::CosmianResult,
@@ -140,11 +137,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
                 .clone();
             let mut findex_rest_client = RestClient::new(&findex_config)?;
             findex_actions
-                .run(
-                    &mut findex_rest_client,
-                    &kms_rest_client,
-                    &mut findex_config,
-                )
+                .run(&mut findex_rest_client, kms_rest_client, &mut findex_config)
                 .await?;
             config.findex_config = Some(findex_config);
         }
@@ -155,9 +148,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         CliCommands::Kms(KmsActions::Login(_) | KmsActions::Logout(_)) => {
             config.save(cli.conf_path.clone())?;
         }
-        CliCommands::FindexServer(FindexActions::Findex(
-            CoreFindexActions::Login(_) | CoreFindexActions::Logout(_),
-        )) => {
+        CliCommands::FindexServer(FindexActions::Login(_) | FindexActions::Logout(_)) => {
             config.save(cli.conf_path)?;
         }
         _ => {}

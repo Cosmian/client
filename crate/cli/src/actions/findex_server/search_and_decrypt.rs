@@ -65,7 +65,6 @@ pub struct SearchAndDecryptAction {
 }
 
 impl SearchAndDecryptAction {
-    #[allow(clippy::print_stdout)]
     pub(crate) async fn run(
         &self,
         rest_client: &RestClient,
@@ -142,8 +141,6 @@ impl SearchAndDecryptAction {
             let decrypted_record_str = std::str::from_utf8(&decrypted_record)?;
             results.push(decrypted_record_str.to_string());
         }
-
-        println!("Decrypted records: {results:?}");
 
         Ok(results)
     }
