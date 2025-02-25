@@ -1749,6 +1749,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.2.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
 dependencies = [
  "base64 0.22.1",
  "cosmian_config_utils",
@@ -1768,6 +1769,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.2.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1801,6 +1803,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.2.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.0.0",
@@ -5909,6 +5912,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 [[package]]
 name = "test_findex_server"
 version = "0.2.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=merge_cli#3aef79a51357c118a63fbe88e9dbe4ee4f0f37c7"
 dependencies = [
  "actix-server",
  "cosmian_config_utils",

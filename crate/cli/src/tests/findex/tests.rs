@@ -54,7 +54,6 @@ impl TestsCliContext {
         expected_len: usize,
     ) -> CosmianResult<Self> {
         let client_config = ClientConf::from_toml(config_path)?;
-        debug!("client_config: {client_config:?}");
         let kms = KmsClient::new(client_config.kms_config)?;
         let findex = RestClient::new(&client_config.findex_config.unwrap())?;
         let kek_id = Some(CreateKeyAction::default().run(&kms).await?);
@@ -198,12 +197,4 @@ fn get_cosmian_config_filepath(filename: &str) -> String {
     };
     debug!("cosmian config filepath: {path}");
     path
-}
-
-#[test]
-fn test_load_docker() {
-    log_init(None);
-
-    let client_config = ClientConf::from_toml("../../test_data/configs_using_docker/cosmian.toml").unwrap();
-    println!("client_config: {client_config:?}");
 }
