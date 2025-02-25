@@ -167,7 +167,7 @@ pub(crate) async fn test_findex_no_auth_searching_with_bad_key() -> CosmianResul
     log_init(None);
     let ctx = start_default_test_findex_server().await;
 
-    let mut rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
+    let rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
     let kms_client = instantiate_kms_client()?;
 
     let index_id = create_index_id(rest_client.clone()).await?;
@@ -190,7 +190,7 @@ pub(crate) async fn test_findex_no_auth_searching_with_bad_key() -> CosmianResul
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(&search_options.dataset_path),
     }
-    .insert(&mut rest_client, kms_client.clone())
+    .insert(rest_client.clone(), kms_client.clone())
     .await?;
 
     // But change the findex keys
@@ -199,7 +199,7 @@ pub(crate) async fn test_findex_no_auth_searching_with_bad_key() -> CosmianResul
         findex_parameters: FindexParameters::new(Uuid::new_v4(), &kms_client, true).await?,
         keyword: search_options.keywords.clone(),
     }
-    .run(&mut rest_client, &kms_client)
+    .run(rest_client, kms_client)
     .await?;
     assert!(search_results.is_empty());
     Ok(())

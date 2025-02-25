@@ -128,18 +128,18 @@ pub async fn cosmian_main() -> CosmianResult<()> {
             config.kms_config = kms_rest_client.config.clone();
         }
         CliCommands::FindexServer(findex_actions) => {
-            let mut findex_config = config
+            let findex_config = config
                 .findex_config
                 .as_ref()
                 .ok_or_else(|| {
                     cli_error!("Findex server configuration is missing in the configuration file")
                 })?
                 .clone();
-            let mut findex_rest_client = RestClient::new(&findex_config)?;
-            findex_actions
-                .run(&mut findex_rest_client, kms_rest_client, &mut findex_config)
+            let findex_rest_client = RestClient::new(&findex_config)?;
+            let new_findex_config = findex_actions
+                .run(findex_rest_client, kms_rest_client, findex_config)
                 .await?;
-            config.findex_config = Some(findex_config);
+            config.findex_config = Some(new_findex_config);
         }
     }
 

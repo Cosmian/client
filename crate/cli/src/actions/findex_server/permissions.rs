@@ -20,7 +20,7 @@ impl PermissionsAction {
     /// # Errors
     ///
     /// Returns an error if there was a problem running the action.
-    pub async fn run(&self, rest_client: &RestClient) -> CosmianResult<String> {
+    pub async fn run(&self, rest_client: RestClient) -> CosmianResult<String> {
         match self {
             Self::Create(action) => action
                 .run(rest_client)
@@ -53,7 +53,7 @@ impl CreateIndex {
     /// # Errors
     ///
     /// Returns an error if the query execution on the Findex server fails.
-    pub async fn run(&self, rest_client: &RestClient) -> CosmianResult<Uuid> {
+    pub async fn run(&self, rest_client: RestClient) -> CosmianResult<Uuid> {
         let response = rest_client
             .create_index_id()
             .await
@@ -78,7 +78,7 @@ impl ListPermissions {
     /// # Errors
     ///
     /// Returns an error if the query execution on the Findex server fails.
-    pub async fn run(&self, rest_client: &RestClient) -> CosmianResult<String> {
+    pub async fn run(&self, rest_client: RestClient) -> CosmianResult<String> {
         let response = rest_client
             .list_permission(&self.user)
             .await
@@ -116,7 +116,7 @@ impl SetPermission {
     /// # Errors
     ///
     /// Returns an error if the query execution on the Findex server fails.
-    pub async fn run(&self, rest_client: &RestClient) -> CosmianResult<String> {
+    pub async fn run(&self, rest_client: RestClient) -> CosmianResult<String> {
         let response = rest_client
             .set_permission(&self.user, &self.permission, &self.index_id)
             .await
@@ -146,7 +146,7 @@ impl RevokePermission {
     /// # Errors
     ///
     /// Returns an error if the query execution on the Findex server fails.
-    pub async fn run(&self, rest_client: &RestClient) -> CosmianResult<String> {
+    pub async fn run(&self, rest_client: RestClient) -> CosmianResult<String> {
         let response = rest_client
             .revoke_permission(&self.user, &self.index_id)
             .await

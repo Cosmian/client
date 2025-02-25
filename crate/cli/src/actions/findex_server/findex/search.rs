@@ -25,8 +25,8 @@ impl SearchAction {
     /// writing to the console.
     pub async fn run(
         &self,
-        rest_client: &mut RestClient,
-        kms_client: &KmsClient,
+        rest_client: RestClient,
+        kms_client: KmsClient,
     ) -> CosmianResult<SearchResults> {
         // Either seed key is required or both hmac_key_id and aes_xts_key_id are required
         match (&self.findex_parameters.seed_key_id, &self.findex_parameters.hmac_key_id, &self.findex_parameters.aes_xts_key_id) {
@@ -36,7 +36,7 @@ impl SearchAction {
 
         let findex_instance = FindexInstance::<CUSTOM_WORD_LENGTH>::instantiate_findex(
             rest_client,
-            kms_client.clone(),
+            kms_client,
             self.findex_parameters.clone().instantiate_keys()?,
         )
         .await?;

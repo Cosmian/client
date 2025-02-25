@@ -67,7 +67,7 @@ pub struct SearchAndDecryptAction {
 impl SearchAndDecryptAction {
     pub(crate) async fn run(
         &self,
-        rest_client: &RestClient,
+        rest_client: RestClient,
         kms_rest_client: &KmsClient,
     ) -> CosmianResult<Vec<String>> {
         // Either seed key is required or both hmac_key_id and aes_xts_key_id are required
@@ -77,7 +77,7 @@ impl SearchAndDecryptAction {
         }
 
         let findex_instance = FindexInstance::<CUSTOM_WORD_LENGTH>::instantiate_findex(
-            rest_client,
+            rest_client.clone(),
             kms_rest_client.clone(),
             self.findex_parameters.clone().instantiate_keys()?,
         )

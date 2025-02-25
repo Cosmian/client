@@ -264,7 +264,7 @@ impl EncryptAndIndexAction {
     #[allow(clippy::print_stdout)]
     pub async fn run(
         &self,
-        rest_client: &RestClient,
+        rest_client: RestClient,
         kms_rest_client: &KmsClient,
     ) -> CosmianResult<Uuids> {
         let nonce = self

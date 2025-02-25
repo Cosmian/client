@@ -25,7 +25,7 @@ pub(crate) async fn insert_search_delete(
     search_options: SearchOptions,
     kms_client: KmsClient,
 ) -> CosmianResult<()> {
-    let mut rest_client =
+    let rest_client =
         RestClient::new(&RestClientConfig::load(Some(PathBuf::from(cli_conf_path)))?)?;
 
     // Index the dataset
@@ -33,7 +33,7 @@ pub(crate) async fn insert_search_delete(
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(&search_options.dataset_path),
     }
-    .insert(&mut rest_client, kms_client.clone())
+    .insert(rest_client.clone(), kms_client.clone())
     .await?;
 
     // Ensure searching returns the expected results
@@ -41,7 +41,7 @@ pub(crate) async fn insert_search_delete(
         findex_parameters: findex_parameters.clone(),
         keyword: search_options.keywords.clone(),
     }
-    .run(&mut rest_client, &kms_client)
+    .run(rest_client.clone(), kms_client.clone())
     .await?;
     assert_eq!(
         search_options.expected_results,
@@ -53,7 +53,7 @@ pub(crate) async fn insert_search_delete(
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(search_options.dataset_path),
     }
-    .delete(&mut rest_client, kms_client.clone())
+    .delete(rest_client.clone(), kms_client.clone())
     .await?;
 
     // Ensure no results are returned after deletion
@@ -61,7 +61,7 @@ pub(crate) async fn insert_search_delete(
         findex_parameters: findex_parameters.clone(),
         keyword: search_options.keywords,
     }
-    .run(&mut rest_client, &kms_client)
+    .run(rest_client.clone(), kms_client)
     .await?;
     assert!(search_results.is_empty());
 

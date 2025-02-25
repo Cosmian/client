@@ -32,7 +32,7 @@ impl LoginAction {
     /// Fails if the configuration file is missing or if the `oauth2_conf` object
     /// Fails if credentials are invalid. No access token could be retrieved.
     #[allow(clippy::print_stdout)]
-    pub async fn run(&self, config: &mut RestClientConfig) -> CosmianResult<String> {
+    pub async fn run(&self, mut config: RestClientConfig) -> CosmianResult<RestClientConfig> {
         let login_config = config.http_config.oauth2_conf.as_ref().ok_or_else(|| {
             CosmianError::Default(
                 "ERROR: Login command requires OAuth2 configuration\n\n\
@@ -52,10 +52,10 @@ impl LoginAction {
         println!("Browse to: {}", state.auth_url);
         let access_token = state.finalize().await?;
 
-        config.http_config.access_token = Some(access_token.clone());
+        config.http_config.access_token = Some(access_token);
 
-        info!("Saving access token in the configuration file ...",);
+        info!("Saving access token in the configuration...",);
 
-        Ok(access_token)
+        Ok(config)
     }
 }

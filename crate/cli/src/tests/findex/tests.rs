@@ -57,7 +57,7 @@ impl TestsCliContext {
         let kms = KmsClient::new(client_config.kms_config)?;
         let findex = RestClient::new(&client_config.findex_config.unwrap())?;
         let kek_id = Some(CreateKeyAction::default().run(&kms).await?);
-        let index_id = CreateIndex.run(&findex).await?;
+        let index_id = CreateIndex.run(findex.clone()).await?;
         trace!("index_id: {index_id}");
 
         Ok(Self {
@@ -106,7 +106,7 @@ impl TestsCliContext {
             nonce: None,
             authentication_data: None,
         };
-        let uuids = action.run(&self.findex, &self.kms).await?;
+        let uuids = action.run(self.findex.clone(), &self.kms).await?;
         assert_eq!(uuids.len(), self.search_options.expected_inserted_len);
         Ok(uuids)
     }
@@ -120,7 +120,7 @@ impl TestsCliContext {
             keyword: self.search_options.keywords.clone(),
             authentication_data: None,
         }
-        .run(&self.findex, &self.kms)
+        .run(self.findex.clone(), &self.kms)
         .await
     }
 
@@ -129,7 +129,7 @@ impl TestsCliContext {
             index_id: self.index_id,
             uuids: uuids.deref().clone(),
         }
-        .run(&self.findex)
+        .run(self.findex.clone())
         .await
     }
 }

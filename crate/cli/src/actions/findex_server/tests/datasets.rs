@@ -20,7 +20,7 @@ async fn dataset_add_entries(
         index_id: *index_id,
         entries,
     }
-    .run(&rest_client)
+    .run(rest_client)
     .await?;
     Ok(())
 }
@@ -34,7 +34,7 @@ async fn dataset_delete_entries(
         index_id: *index_id,
         uuids,
     }
-    .run(&rest_client)
+    .run(rest_client)
     .await?;
     Ok(())
 }
@@ -48,7 +48,7 @@ async fn dataset_get_entries(
         index_id: *index_id,
         uuids,
     }
-    .run(&rest_client)
+    .run(rest_client)
     .await
 }
 

@@ -49,45 +49,49 @@ impl FindexActions {
     #[allow(clippy::print_stdout)]
     pub async fn run(
         &self,
-        findex_client: &mut RestClient,
+        findex_client: RestClient,
         kms_client: KmsClient,
-        findex_config: &mut RestClientConfig,
-    ) -> CosmianResult<()> {
-        let result = match self {
+        findex_config: RestClientConfig,
+    ) -> CosmianResult<RestClientConfig> {
+        match self {
             // actions that don't edit the configuration
-            Self::Datasets(action) => action.run(findex_client).await,
-            Self::Permissions(action) => action.run(findex_client).await,
-            Self::ServerVersion(action) => action.run(findex_client).await,
+            Self::Datasets(action) => {
+                println!("{}", action.run(findex_client).await?);
+                Ok(findex_config)
+            }
+            Self::Permissions(action) => {
+                println!("{}", action.run(findex_client).await?);
+                Ok(findex_config)
+            }
+            Self::ServerVersion(action) => {
+                println!("{}", action.run(findex_client).await?);
+                Ok(findex_config)
+            }
             Self::Delete(action) => {
-                let deleted_keywords = action.delete(findex_client, kms_client).await?;
-                Ok(format!("Deleted keywords: {deleted_keywords}"))
+                println!("{}", action.delete(findex_client, kms_client).await?);
+                Ok(findex_config)
             }
             Self::Index(action) => {
-                let inserted_keywords = action.insert(findex_client, kms_client).await?;
-                Ok(format!("Inserted keywords: {inserted_keywords}"))
+                println!("{}", action.insert(findex_client, kms_client).await?);
+                Ok(findex_config)
             }
             Self::Search(action) => {
-                let search_results = action.run(findex_client, &kms_client).await?;
-                Ok(format!("Search results: {search_results}"))
+                println!("{}", action.run(findex_client, kms_client).await?);
+                Ok(findex_config)
             }
             Self::EncryptAndIndex(action) => {
-                Ok(action.run(findex_client, &kms_client).await?.to_string())
+                println!("{}", action.run(findex_client, &kms_client).await?);
+                Ok(findex_config)
             }
             Self::SearchAndDecrypt(action) => {
                 let res = action.run(findex_client, &kms_client).await?;
-                Ok(format!("{res:?}"))
+                println!("Decrypted records: {res:?}");
+                Ok(findex_config)
             }
 
             // actions that edit the configuration
             Self::Login(action) => action.run(findex_config).await,
             Self::Logout(action) => action.run(findex_config),
-        };
-        match result {
-            Ok(output) => {
-                println!("{output}");
-                Ok(())
-            }
-            Err(e) => Err(e),
         }
     }
 }

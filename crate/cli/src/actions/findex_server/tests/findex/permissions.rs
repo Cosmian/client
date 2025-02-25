@@ -41,10 +41,10 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
     trace!("index_id: {index_id}");
 
     let owner_conf = RestClientConfig::load(Some(PathBuf::from(&ctx.owner_client_conf_path)))?;
-    let mut owner_rest_client = RestClient::new(&owner_conf)?;
+    let owner_rest_client = RestClient::new(&owner_conf)?;
 
     let user_conf = RestClientConfig::load(Some(PathBuf::from(&ctx.user_client_conf_path)))?;
-    let mut user_rest_client = RestClient::new(&user_conf)?;
+    let user_rest_client = RestClient::new(&user_conf)?;
 
     let kms_client = instantiate_kms_client()?;
     let findex_parameters = FindexParameters::new(index_id, &kms_client, true).await?;
@@ -54,7 +54,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(SMALL_DATASET),
     }
-    .insert(&mut owner_rest_client, kms_client.clone())
+    .insert(owner_rest_client.clone(), kms_client.clone())
     .await?;
 
     // Set read permission to the client
@@ -71,7 +71,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         keyword: search_options.keywords.clone(),
     }
-    .run(&mut user_rest_client, &kms_client)
+    .run(user_rest_client.clone(), kms_client.clone())
     .await?;
     assert_eq!(
         search_options.expected_results,
@@ -83,7 +83,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(SMALL_DATASET),
     }
-    .insert(&mut user_rest_client, kms_client.clone())
+    .insert(user_rest_client.clone(), kms_client.clone())
     .await
     .unwrap_err();
 
@@ -105,7 +105,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         keyword: search_options.keywords.clone(),
     }
-    .run(&mut user_rest_client, &kms_client)
+    .run(user_rest_client.clone(), kms_client.clone())
     .await?;
     assert_eq!(
         search_options.expected_results,
@@ -117,7 +117,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(SMALL_DATASET),
     }
-    .insert(&mut user_rest_client, kms_client.clone())
+    .insert(user_rest_client.clone(), kms_client.clone())
     .await?;
 
     // Try to escalade privileges from `read` to `admin`
@@ -141,7 +141,7 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
         findex_parameters: findex_parameters.clone(),
         keyword: search_options.keywords.clone(),
     }
-    .run(&mut user_rest_client, &kms_client)
+    .run(user_rest_client.clone(), kms_client.clone())
     .await
     .unwrap_err();
 

@@ -80,7 +80,7 @@ impl<const WORD_LENGTH: usize> FindexInstance<WORD_LENGTH> {
     /// - If the seed key cannot be retrieved from the KMS
     /// - If the HMAC key ID or the AES XTS key ID cannot be retrieved from the KMS
     pub async fn instantiate_findex(
-        rest_client: &RestClient,
+        rest_client: RestClient,
         kms_client: KmsClient,
         findex_keys: FindexKeys,
     ) -> CosmianResult<Self> {

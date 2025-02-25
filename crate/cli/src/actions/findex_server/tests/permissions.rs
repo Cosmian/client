@@ -10,14 +10,14 @@ use crate::{
 };
 
 pub(crate) async fn create_index_id(rest_client: RestClient) -> CosmianResult<Uuid> {
-    CreateIndex.run(&rest_client).await
+    CreateIndex.run(rest_client).await
 }
 
 pub(crate) async fn list_permissions(
     rest_client: RestClient,
     user: String,
 ) -> CosmianResult<String> {
-    ListPermissions { user }.run(&rest_client).await
+    ListPermissions { user }.run(rest_client).await
 }
 
 pub(crate) async fn set_permission(
@@ -31,7 +31,7 @@ pub(crate) async fn set_permission(
         index_id,
         permission,
     }
-    .run(&rest_client)
+    .run(rest_client)
     .await
 }
 
@@ -40,5 +40,5 @@ pub(crate) async fn revoke_permission(
     user: String,
     index_id: Uuid,
 ) -> CosmianResult<String> {
-    RevokePermission { user, index_id }.run(&rest_client).await
+    RevokePermission { user, index_id }.run(rest_client).await
 }

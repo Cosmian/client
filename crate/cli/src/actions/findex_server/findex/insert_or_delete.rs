@@ -41,7 +41,7 @@ impl InsertOrDeleteAction {
     /// - The semaphore cannot acquire a permit.
     async fn insert_or_delete(
         &self,
-        rest_client: &RestClient,
+        rest_client: RestClient,
         kms_client: KmsClient,
         is_insert: bool,
     ) -> CosmianResult<Keywords> {
@@ -89,7 +89,7 @@ impl InsertOrDeleteAction {
     /// - If insert new indexes fails
     pub async fn insert(
         &self,
-        rest_client: &mut RestClient,
+        rest_client: RestClient,
         kms_client: KmsClient,
     ) -> CosmianResult<Keywords> {
         Self::insert_or_delete(self, rest_client, kms_client, true).await
@@ -101,7 +101,7 @@ impl InsertOrDeleteAction {
     /// - If deleting indexes fails
     pub async fn delete(
         &self,
-        rest_client: &mut RestClient,
+        rest_client: RestClient,
         kms_client: KmsClient,
     ) -> CosmianResult<Keywords> {
         Self::insert_or_delete(self, rest_client, kms_client, false).await
