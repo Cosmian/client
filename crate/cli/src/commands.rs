@@ -8,7 +8,7 @@ use tracing::{info, trace};
 
 use crate::{
     actions::{
-        findex::{CoreFindexActions, FindexActions},
+        findex_server::actions::{CoreFindexActions, FindexActions},
         markdown::MarkdownAction,
     },
     cli_error,

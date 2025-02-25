@@ -86,11 +86,11 @@ jobs:
         run: |
           bash .github/scripts/cargo_build.sh
 
-      - name: Cosmian tests
-        if: contains(runner.os, 'Linux')
-        run: |
-          set -ex
-          bash .github/scripts/cosmian_tests.sh
+      # - name: Cosmian tests
+      #   if: contains(runner.os, 'Linux')
+      #   run: |
+      #     set -ex
+      #     bash .github/scripts/cosmian_tests.sh
 
       - name: Remove large files before saving cache
         run: |

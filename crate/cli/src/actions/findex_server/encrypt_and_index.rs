@@ -26,7 +26,7 @@ use crate::{
     error::result::{CosmianResult, CosmianResultHelper},
 };
 
-use super::findex_server::findex::parameters::FindexParameters;
+use super::findex::parameters::FindexParameters;
 
 /// Encrypt entries and index the corresponding database UUIDs with the Findex.
 ///

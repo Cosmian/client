@@ -15,11 +15,11 @@ use uuid::Uuid;
 
 use crate::{
     actions::{
-        encrypt_and_index::EncryptAndIndexAction,
+        findex_server::encrypt_and_index::EncryptAndIndexAction,
+        findex_server::search_and_decrypt::SearchAndDecryptAction,
         findex_server::{
             datasets::DeleteEntries, findex::parameters::FindexParameters, permissions::CreateIndex,
         },
-        search_and_decrypt::SearchAndDecryptAction,
     },
     config::ClientConf,
     error::result::CosmianResult,

@@ -14,7 +14,7 @@ use cosmian_kms_cli::{
 };
 use tracing::trace;
 
-use super::findex_server::findex::parameters::FindexParameters;
+use super::findex::parameters::FindexParameters;
 
 /// Search keywords and decrypt the content of corresponding UUIDs.
 #[derive(Parser, Debug)]

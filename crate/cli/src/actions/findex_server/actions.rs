@@ -3,16 +3,14 @@ use cosmian_findex_client::{RestClient, RestClientConfig};
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 
 use super::{
+    datasets::DatasetsAction,
     encrypt_and_index::EncryptAndIndexAction,
-    findex_server::{
-        datasets::DatasetsAction,
-        findex::{insert_or_delete::InsertOrDeleteAction, search::SearchAction},
-        login::LoginAction,
-        logout::LogoutAction,
-        permissions::PermissionsAction,
-        version::ServerVersionAction,
-    },
+    findex::{insert_or_delete::InsertOrDeleteAction, search::SearchAction},
+    login::LoginAction,
+    logout::LogoutAction,
+    permissions::PermissionsAction,
     search_and_decrypt::SearchAndDecryptAction,
+    version::ServerVersionAction,
 };
 use crate::error::result::CosmianResult;
 
