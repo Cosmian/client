@@ -79,7 +79,7 @@ rm -f /tmp/*.json /tmp/*.toml
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE $FEATURES
 
-export RUST_LOG="cosmian_cli=trace,cosmian_client=info,cosmian_kmip=error,cosmian_kms_rest_client=info,test_findex_server=debug"
+export RUST_LOG="cosmian_cli=debug,cosmian_client=info,cosmian_kmip=error,cosmian_kms_rest_client=info,test_findex_server=debug"
 
 # shellcheck disable=SC2086
 cargo test --lib --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
