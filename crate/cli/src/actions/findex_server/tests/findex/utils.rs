@@ -8,7 +8,7 @@ use crate::{
     },
     error::result::CosmianResult,
 };
-use cosmian_findex_client::{FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig};
+use cosmian_client::{FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig};
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     reexport::cosmian_http_client::HttpClientConfig, KmsClient, KmsClientConfig,
 };

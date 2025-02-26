@@ -17,11 +17,11 @@ use crate::{
     },
     error::result::CosmianResult,
 };
+use cosmian_client::RestClient;
 use cosmian_findex::{
     test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
     Value,
 };
-use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
 use cosmian_logger::log_init;
 use test_findex_server::{

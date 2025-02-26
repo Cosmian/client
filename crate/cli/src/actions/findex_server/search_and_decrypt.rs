@@ -4,7 +4,7 @@ use crate::{
     error::result::{CosmianResult, CosmianResultHelper},
 };
 use clap::Parser;
-use cosmian_findex_client::{
+use cosmian_client::{
     reexport::cosmian_findex_structs::{Uuids, CUSTOM_WORD_LENGTH},
     RestClient,
 };

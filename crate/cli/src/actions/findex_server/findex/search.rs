@@ -1,7 +1,7 @@
 use super::{findex_instance::FindexInstance, parameters::FindexParameters};
 use crate::{cli_error, error::result::CosmianResult};
 use clap::Parser;
-use cosmian_findex_client::RestClient;
+use cosmian_client::RestClient;
 use cosmian_findex_structs::{SearchResults, CUSTOM_WORD_LENGTH};
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 

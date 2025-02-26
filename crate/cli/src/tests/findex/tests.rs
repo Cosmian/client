@@ -1,5 +1,5 @@
+use cosmian_client::RestClient;
 use cosmian_config_utils::ConfigUtils;
-use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::Uuids;
 use cosmian_kms_cli::{
     actions::symmetric::{keys::create_key::CreateKeyAction, DataEncryptionAlgorithm},

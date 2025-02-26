@@ -7,7 +7,7 @@ use std::{
 };
 
 use actix_server::ServerHandle;
-use cosmian_findex_client::{
+use cosmian_client::{
     client_bail, client_error, reexport::cosmian_http_client::HttpClientConfig, ClientError,
     RestClient, RestClientConfig,
 };
@@ -325,7 +325,7 @@ fn generate_user_conf(
 
 #[cfg(test)]
 mod test {
-    use cosmian_findex_client::ClientError;
+    use cosmian_client::ClientError;
     use tracing::trace;
 
     use crate::{

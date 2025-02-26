@@ -3,10 +3,10 @@ use std::{
     sync::Arc,
 };
 
+use cosmian_client::{FindexRestClient, KmsEncryptionLayer, RestClient};
 use cosmian_findex::{
     generic_decode, generic_encode, Findex, IndexADT, MemoryEncryptionLayer, Value,
 };
-use cosmian_findex_client::{FindexRestClient, KmsEncryptionLayer, RestClient};
 use cosmian_findex_structs::{Keyword, Keywords, SearchResults};
 use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 use tokio::sync::Semaphore;

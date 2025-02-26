@@ -40,7 +40,7 @@ clap = { workspace = true, features = [
 cosmian_config_utils = { workspace = true }
 cosmian_crypto_core = { workspace = true }
 cosmian_findex = { workspace = true }
-cosmian_findex_client = { workspace = true }
+cosmian_client = { path = "../client" }
 cosmian_findex_structs = { workspace = true }
 cosmian_kms_cli = { workspace = true }
 cosmian_logger = { workspace = true }

@@ -12,8 +12,8 @@ use crate::{
     },
     error::result::CosmianResult,
 };
+use cosmian_client::RestClient;
 use cosmian_findex::Value;
-use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::Permission;
 use cosmian_logger::log_init;
 use std::{ops::Deref, path::PathBuf};
