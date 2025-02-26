@@ -322,7 +322,11 @@ impl EncryptAndIndexAction {
         .await?;
 
         let written_keywords = findex_instance
-            .insert_or_delete(keywords_indexed_value_map.0, true)
+            .insert_or_delete(
+                keywords_indexed_value_map.0,
+                true,
+                self.findex_parameters.num_threads,
+            )
             .await?;
 
         trace!("indexing done: keywords: {written_keywords}");

@@ -75,7 +75,8 @@ impl TestsCliContext {
     }
 
     async fn run_test_sequence(&self) -> CosmianResult<()> {
-        let findex_parameters = FindexParameters::new(self.index_id, &self.kms, true).await?;
+        let findex_parameters =
+            FindexParameters::new(self.index_id, &self.kms, true, Some(1)).await?;
 
         // Index
         let uuids = self.index(&findex_parameters).await?;

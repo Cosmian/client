@@ -41,6 +41,8 @@ impl SearchAction {
         )
         .await?;
 
-        findex_instance.search(&self.keyword).await
+        findex_instance
+            .search(&self.keyword, self.findex_parameters.num_threads)
+            .await
     }
 }

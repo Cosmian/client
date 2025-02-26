@@ -83,7 +83,9 @@ impl SearchAndDecryptAction {
         )
         .await?;
 
-        let search_results = findex_instance.search(&self.keyword).await?;
+        let search_results = findex_instance
+            .search(&self.keyword, self.findex_parameters.num_threads)
+            .await?;
 
         trace!("Search results: {search_results}");
         let uuids = Uuids::try_from(search_results)?;
