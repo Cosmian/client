@@ -52,7 +52,7 @@ mod kms;
 mod permissions;
 mod rest_client;
 
-pub use config::{RestClientConfig, FINDEX_CLI_CONF_ENV};
+pub use config::RestClientConfig;
 pub use error::{result::ClientResult, ClientError};
 pub use findex_rest_client::FindexRestClient;
 pub use kms::KmsEncryptionLayer;
