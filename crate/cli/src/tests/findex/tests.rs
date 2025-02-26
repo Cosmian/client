@@ -21,7 +21,7 @@ use crate::{
             datasets::DeleteEntries, findex::parameters::FindexParameters, permissions::CreateIndex,
         },
     },
-    config::ClientConf,
+    config::ClientConfig,
     error::result::CosmianResult,
 };
 
@@ -53,7 +53,7 @@ impl TestsCliContext {
         expected_results: &str,
         expected_len: usize,
     ) -> CosmianResult<Self> {
-        let client_config = ClientConf::from_toml(config_path)?;
+        let client_config = ClientConfig::from_toml(config_path)?;
         let kms = KmsClient::new(client_config.kms_config)?;
         let findex = RestClient::new(&client_config.findex_config.unwrap())?;
         let kek_id = Some(CreateKeyAction::default().run(&kms).await?);

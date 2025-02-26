@@ -9,7 +9,7 @@ use tracing::{info, trace};
 use crate::{
     actions::{findex_server::actions::FindexActions, markdown::MarkdownAction},
     cli_error,
-    config::ClientConf,
+    config::ClientConfig,
     error::result::CosmianResult,
 };
 
@@ -91,7 +91,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     info!("Starting Cosmian CLI");
     let cli = Cli::parse();
 
-    let mut config = ClientConf::load(cli.conf_path.clone())?;
+    let mut config = ClientConfig::load(cli.conf_path.clone())?;
 
     // Handle KMS configuration
     if let Some(url) = cli.kms_url.clone() {
