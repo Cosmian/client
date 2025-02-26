@@ -21,12 +21,11 @@ pub(crate) const HUGE_DATASET: &str = "../../test_data/datasets/business-employm
 
 pub(crate) async fn insert_search_delete(
     findex_parameters: &FindexParameters,
-    cli_conf_path: &str,
+    config: &RestClientConfig,
     search_options: SearchOptions,
     kms_client: KmsClient,
 ) -> CosmianResult<()> {
-    let rest_client =
-        RestClient::new(&RestClientConfig::load(Some(PathBuf::from(cli_conf_path)))?)?;
+    let rest_client = RestClient::new(config)?;
 
     // Index the dataset
     InsertOrDeleteAction {

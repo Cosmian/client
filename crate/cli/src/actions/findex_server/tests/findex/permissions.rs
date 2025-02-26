@@ -13,7 +13,7 @@ use crate::{
     error::result::CosmianResult,
 };
 use cosmian_findex::Value;
-use cosmian_findex_client::{RestClient, RestClientConfig};
+use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::Permission;
 use cosmian_logger::log_init;
 use std::{ops::Deref, path::PathBuf};
@@ -40,13 +40,10 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
     let index_id = create_index_id(owner_rest_client).await?;
     trace!("index_id: {index_id}");
 
-    let owner_conf = RestClientConfig::load(Some(PathBuf::from(&ctx.owner_client_conf_path)))?;
-    let owner_rest_client = RestClient::new(&owner_conf)?;
-
-    let user_conf = RestClientConfig::load(Some(PathBuf::from(&ctx.user_client_conf_path)))?;
-    let user_rest_client = RestClient::new(&user_conf)?;
-
+    let owner_rest_client = RestClient::new(&ctx.owner_client_conf)?;
+    let user_rest_client = RestClient::new(&ctx.user_client_conf)?;
     let kms_client = instantiate_kms_client()?;
+
     let findex_parameters = FindexParameters::new(index_id, &kms_client, true).await?;
 
     // Index the dataset as admin
@@ -168,7 +165,7 @@ pub(crate) async fn test_findex_no_permission() -> CosmianResult<()> {
 
     assert!(insert_search_delete(
         &findex_parameters,
-        &ctx.user_client_conf_path,
+        &ctx.user_client_conf,
         search_options,
         kms_client
     )

@@ -51,7 +51,7 @@ pub(crate) async fn test_findex_no_auth() -> CosmianResult<()> {
     };
     insert_search_delete(
         &findex_parameters,
-        &ctx.owner_client_conf_path,
+        &ctx.owner_client_conf,
         search_options,
         kms_client,
     )
@@ -78,7 +78,7 @@ pub(crate) async fn test_findex_local_encryption() -> CosmianResult<()> {
     };
     insert_search_delete(
         &findex_parameters,
-        &ctx.owner_client_conf_path,
+        &ctx.owner_client_conf,
         search_options,
         kms_client,
     )
@@ -111,7 +111,7 @@ async fn run_huge_dataset_test(use_remote_crypto: bool) -> CosmianResult<()> {
     };
     insert_search_delete(
         &findex_parameters,
-        &ctx.owner_client_conf_path,
+        &ctx.owner_client_conf,
         search_options,
         kms_client,
     )
@@ -153,7 +153,7 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
 
     insert_search_delete(
         &findex_parameters,
-        &ctx.owner_client_conf_path,
+        &ctx.owner_client_conf,
         search_options,
         kms_client,
     )
