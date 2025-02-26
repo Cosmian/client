@@ -16,6 +16,9 @@ on:
       debug_or_release:
         required: true
         type: string
+      skip_services_tests:
+        required: true
+        type: string
 
 env:
   OPENSSL_DIR: /usr/local/openssl
@@ -65,7 +68,7 @@ jobs:
 
           TARGET: ${{ inputs.target }}
           DEBUG_OR_RELEASE: ${{ inputs.debug_or_release }}
-          SKIP_SERVICES_TESTS: --skip test_encrypt --skip test_create --skip findex_server
+          SKIP_SERVICES_TESTS: ${{ inputs.skip_services_tests }}
         run: |
           bash .github/scripts/cargo_build.sh
 

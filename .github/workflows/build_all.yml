@@ -21,6 +21,7 @@ jobs:
       archive-name: rhel9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
+      skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server --skip test_server_auth_matrix
 
   generic:
     strategy:
@@ -46,13 +47,13 @@ jobs:
           - distribution: macos-13
             archive-name: macos_intel
             target: x86_64-apple-darwin
-            skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server
+            skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server --skip test_server_auth_matrix
             docker_compose: false
 
           - distribution: macos-14
             archive-name: macos_arm
             target: aarch64-apple-darwin
-            skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server
+            skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server --skip test_server_auth_matrix
             docker_compose: false
 
     name: ${{ matrix.distribution }}
