@@ -21,7 +21,6 @@ jobs:
       archive-name: rhel9
       target: x86_64-unknown-linux-gnu
       debug_or_release: ${{ inputs.debug_or_release }}
-      skip_services_tests: --skip test_encrypt --skip test_create --skip findex_server --skip test_server_auth_matrix
 
   generic:
     strategy:
