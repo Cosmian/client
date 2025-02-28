@@ -2,12 +2,14 @@ use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
 use cosmian_client::RestClient;
-use cosmian_kms_cli::{reexport::cosmian_kms_client::KmsClient, KmsActions};
+use cosmian_kms_client::KmsClient;
 use cosmian_logger::log_init;
 use tracing::{info, trace};
 
 use crate::{
-    actions::{findex_server::actions::FindexActions, markdown::MarkdownAction},
+    actions::{
+        findex_server::actions::FindexActions, kms::actions::KmsActions, markdown::MarkdownAction,
+    },
     cli_error,
     config::ClientConfig,
     error::result::CosmianResult,
@@ -115,7 +117,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     trace!("Configuration: {config:?}");
 
     // Instantiate the KMS client
-    let mut kms_rest_client = KmsClient::new(config.kms_config.clone())?;
+    let mut kms_rest_client = KmsClient::new_with_config(config.kms_config.clone())?;
 
     match &cli.command {
         CliCommands::Markdown(action) => {

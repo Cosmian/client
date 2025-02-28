@@ -18,10 +18,10 @@ doctest = false
 base64 = { workspace = true }
 cosmian_config_utils = { workspace = true }
 cosmian_crypto_core = { workspace = true }
-cosmian_findex = { workspace = true }
+cosmian_findex = { workspace = true, features = ["redis-mem"] }
 cosmian_findex_structs = { workspace = true }
 cosmian_http_client = { workspace = true }
-cosmian_kms_cli = { workspace = true }
+cosmian_kms_client = { workspace = true }
 cosmian_logger = { workspace = true }
 reqwest = { workspace = true, features = ["default", "json", "native-tls"] }
 serde = { workspace = true }
@@ -34,3 +34,4 @@ cosmian_findex = { workspace = true, features = ["test-utils"] }
 rand = "0.9.0"
 rand_chacha = "0.9.0"
 tokio = { workspace = true }
+test_kms_server = { path = "../test_kms_server" }

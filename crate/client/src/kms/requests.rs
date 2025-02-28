@@ -1,5 +1,5 @@
-use cosmian_findex::{Address, MemoryADT, ADDRESS_LENGTH};
-use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::{
+use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
+use cosmian_kms_client::kmip_2_1::{
     kmip_messages::{Message, MessageBatchItem, MessageHeader},
     kmip_operations::{Decrypt, Encrypt, Mac, Operation},
     kmip_types::{
@@ -9,17 +9,13 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::{
     requests::encrypt_request,
 };
 
+use super::KmsEncryptionLayer;
 use crate::ClientResult;
 
-use super::KmsEncryptionLayer;
-
 impl<
-        const WORD_LENGTH: usize,
-        Memory: Send
-            + Sync
-            + Clone
-            + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
-    > KmsEncryptionLayer<WORD_LENGTH, Memory>
+    const WORD_LENGTH: usize,
+    Memory: Send + Sync + Clone + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
+> KmsEncryptionLayer<WORD_LENGTH, Memory>
 {
     fn build_message_request(items: Vec<MessageBatchItem>) -> ClientResult<Message> {
         let items_number = u32::try_from(items.len())?;

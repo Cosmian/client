@@ -1,10 +1,12 @@
-use crate::{error::ClientError, handle_error, RestClient};
-use base64::{engine::general_purpose, Engine};
-use cosmian_findex::{Address, MemoryADT, ADDRESS_LENGTH};
-use cosmian_findex_structs::{Addresses, Bindings, Guard, OptionalWords};
+use base64::{Engine, engine::general_purpose};
+use cosmian_findex_structs::{
+    Addresses, Bindings, Guard, OptionalWords,
+    reexport::cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT},
+};
 use tracing::{trace, warn};
-
 use uuid::Uuid;
+
+use crate::{RestClient, error::ClientError, handle_error};
 
 #[derive(Clone)]
 pub struct FindexRestClient<const WORD_LENGTH: usize> {
@@ -24,8 +26,8 @@ impl<const WORD_LENGTH: usize> FindexRestClient<WORD_LENGTH> {
 
 impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
     type Address = Address<ADDRESS_LENGTH>;
-    type Word = [u8; WORD_LENGTH];
     type Error = ClientError;
+    type Word = [u8; WORD_LENGTH];
 
     async fn batch_read(
         &self,
@@ -61,8 +63,7 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
 
         trace!(
             "batch_read successful on server url {}. result: {}",
-            &server_url,
-            words
+            &server_url, words
         );
 
         Ok(words.into_inner())

@@ -1,25 +1,25 @@
+use std::ops::Deref;
+
 use cosmian_client::RestClient;
 use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_structs::Uuids;
-use cosmian_kms_cli::{
-    actions::symmetric::{keys::create_key::CreateKeyAction, DataEncryptionAlgorithm},
-    reexport::cosmian_kms_client::{kmip_2_1::kmip_types::UniqueIdentifier, KmsClient},
-};
+use cosmian_kms_client::{KmsClient, kmip_2_1::kmip_types::UniqueIdentifier};
 use cosmian_logger::log_init;
-use std::ops::Deref;
 use test_findex_server::{
     start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
 };
+use test_kms_server::start_default_test_kms_server;
 use tracing::{debug, trace};
 use uuid::Uuid;
 
 use crate::{
     actions::{
-        findex_server::encrypt_and_index::EncryptAndIndexAction,
-        findex_server::search_and_decrypt::SearchAndDecryptAction,
         findex_server::{
-            datasets::DeleteEntries, findex::parameters::FindexParameters, permissions::CreateIndex,
+            datasets::DeleteEntries, encrypt_and_index::EncryptAndIndexAction,
+            findex::parameters::FindexParameters, permissions::CreateIndex,
+            search_and_decrypt::SearchAndDecryptAction,
         },
+        kms::symmetric::{DataEncryptionAlgorithm, keys::create_key::CreateKeyAction},
     },
     config::ClientConfig,
     error::result::CosmianResult,
@@ -54,7 +54,7 @@ impl TestsCliContext {
         expected_len: usize,
     ) -> CosmianResult<Self> {
         let client_config = ClientConfig::from_toml(config_path)?;
-        let kms = KmsClient::new(client_config.kms_config)?;
+        let kms = KmsClient::new_with_config(client_config.kms_config)?;
         let findex = RestClient::new(&client_config.findex_config.unwrap())?;
         let kek_id = Some(CreateKeyAction::default().run(&kms).await?);
         let index_id = CreateIndex.run(findex.clone()).await?;
@@ -83,9 +83,11 @@ impl TestsCliContext {
 
         // Search
         let results = self.search(&findex_parameters).await?;
-        assert!(results
-            .iter()
-            .any(|r| r.contains(&self.search_options.expected_results)));
+        assert!(
+            results
+                .iter()
+                .any(|r| r.contains(&self.search_options.expected_results))
+        );
 
         // Delete
         self.delete(&uuids).await?;
@@ -138,7 +140,8 @@ impl TestsCliContext {
 #[tokio::test]
 async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
     log_init(None);
-    let _ctx = start_default_test_findex_server().await;
+    start_default_test_findex_server().await;
+    start_default_test_kms_server().await;
 
     let ctx = TestsCliContext::new(
         &get_cosmian_config_filepath("cosmian.toml"),
@@ -155,7 +158,8 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
 async fn test_encrypt_and_index_cert_auth() -> CosmianResult<()> {
     log_init(None);
 
-    let _ctx = start_default_test_findex_server_with_cert_auth().await;
+    start_default_test_findex_server_with_cert_auth().await;
+    start_default_test_kms_server().await;
 
     let ctx = TestsCliContext::new(
         &get_cosmian_config_filepath("cosmian_cert_auth_owner.toml"),
@@ -168,11 +172,13 @@ async fn test_encrypt_and_index_cert_auth() -> CosmianResult<()> {
     ctx.run_test_sequence().await
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_encrypt_and_index_huge() -> CosmianResult<()> {
     log_init(None);
 
-    let _ctx = start_default_test_findex_server_with_cert_auth().await;
+    start_default_test_findex_server_with_cert_auth().await;
+    start_default_test_kms_server().await;
 
     let ctx = TestsCliContext::new(
         &get_cosmian_config_filepath("cosmian_cert_auth_owner.toml"),

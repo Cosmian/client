@@ -1,21 +1,17 @@
-use super::KmsEncryptionLayer;
-use crate::ClientError;
-use cosmian_findex::{Address, MemoryADT, ADDRESS_LENGTH};
+use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
 use tracing::trace;
 
+use super::KmsEncryptionLayer;
+use crate::ClientError;
+
 impl<
-        const WORD_LENGTH: usize,
-        Memory: Send
-            + Sync
-            + Clone
-            + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
-    > MemoryADT for KmsEncryptionLayer<WORD_LENGTH, Memory>
+    const WORD_LENGTH: usize,
+    Memory: Send + Sync + Clone + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
+> MemoryADT for KmsEncryptionLayer<WORD_LENGTH, Memory>
 {
     type Address = Address<ADDRESS_LENGTH>;
-
-    type Word = [u8; WORD_LENGTH];
-
     type Error = ClientError;
+    type Word = [u8; WORD_LENGTH];
 
     async fn guarded_write(
         &self,
@@ -154,44 +150,32 @@ impl<
 #[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
 mod tests {
     use cosmian_findex::{
-        test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
         InMemory,
+        test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
     };
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
-    use cosmian_kms_cli::reexport::cosmian_kms_client::{
+    use cosmian_kms_client::{
+        KmsClient, KmsClientConfig,
         kmip_2_1::{
             extra::tagging::EMPTY_TAGS, kmip_types::CryptographicAlgorithm,
             requests::symmetric_key_create_request,
         },
-        reexport::cosmian_http_client::HttpClientConfig,
-        KmsClient, KmsClientConfig,
     };
     use cosmian_logger::log_init;
     use rand::SeedableRng;
     use rand_chacha::ChaChaRng;
-
-    use crate::ClientResult;
+    use test_kms_server::start_default_test_kms_server;
 
     use super::*;
+    use crate::ClientResult;
 
-    fn instantiate_kms_client() -> ClientResult<KmsClient> {
-        Ok(KmsClient::new(KmsClientConfig {
-            http_config: HttpClientConfig {
-                server_url: format!(
-                    "http://{}:9998",
-                    std::env::var("KMS_HOSTNAME").unwrap_or_else(|_| "0.0.0.0".to_owned())
-                ),
-                ..HttpClientConfig::default()
-            },
-            ..KmsClientConfig::default()
-        })?)
-    }
-
-    async fn create_test_layer<const WORD_LENGTH: usize>() -> ClientResult<
+    async fn create_test_layer<const WORD_LENGTH: usize>(
+        kms_config: KmsClientConfig,
+    ) -> ClientResult<
         KmsEncryptionLayer<WORD_LENGTH, InMemory<Address<ADDRESS_LENGTH>, [u8; WORD_LENGTH]>>,
     > {
         let memory = InMemory::default();
-        let kms_client = instantiate_kms_client()?;
+        let kms_client = KmsClient::new_with_config(kms_config)?;
 
         let k_p = kms_client
             .create(symmetric_key_create_request(
@@ -229,7 +213,10 @@ mod tests {
         let mut rng = ChaChaRng::from_os_rng();
         let tok = Address::<ADDRESS_LENGTH>::random(&mut rng);
         let ptx = [1; CUSTOM_WORD_LENGTH];
-        let layer = create_test_layer().await?;
+
+        let ctx = start_default_test_kms_server().await;
+        let layer = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
+
         let ctx = layer.encrypt(&[ptx], &[tok.clone()]).await?.remove(0);
         let res = layer.decrypt(&[ctx], &[tok]).await?.remove(0);
         assert_eq!(ptx.len(), res.len());
@@ -244,16 +231,18 @@ mod tests {
     async fn test_single_vector_push() -> ClientResult<()> {
         log_init(None);
         let mut rng = ChaChaRng::from_os_rng();
-        let layer = create_test_layer().await?;
+
+        let ctx = start_default_test_kms_server().await;
+        let layer = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 
         let header_addr = Address::<ADDRESS_LENGTH>::random(&mut rng);
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr.clone(), None),
-                    vec![(header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),]
-                )
+                .guarded_write((header_addr.clone(), None), vec![(
+                    header_addr.clone(),
+                    [2; CUSTOM_WORD_LENGTH]
+                ),])
                 .await?,
             None
         );
@@ -272,7 +261,8 @@ mod tests {
     async fn test_twice_vector_push() -> ClientResult<()> {
         log_init(None);
         let mut rng = ChaChaRng::from_os_rng();
-        let layer = create_test_layer().await?;
+        let ctx = start_default_test_kms_server().await;
+        let layer = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 
         let header_addr = Address::<ADDRESS_LENGTH>::random(&mut rng);
 
@@ -280,13 +270,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr.clone(), None),
-                    vec![
-                        (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
-                    ]
-                )
+                .guarded_write((header_addr.clone(), None), vec![
+                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
+                ])
                 .await?,
             None
         );
@@ -305,7 +292,8 @@ mod tests {
     async fn test_vector_push() -> ClientResult<()> {
         log_init(None);
         let mut rng = ChaChaRng::from_os_rng();
-        let layer = create_test_layer().await?;
+        let ctx = start_default_test_kms_server().await;
+        let layer = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 
         let header_addr = Address::<ADDRESS_LENGTH>::random(&mut rng);
 
@@ -316,42 +304,33 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr.clone(), None),
-                    vec![
-                        (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
-                        (val_addr_2.clone(), [1; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr.clone(), None), vec![
+                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2.clone(), [1; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             None
         );
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr.clone(), None),
-                    vec![
-                        (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1.clone(), [3; CUSTOM_WORD_LENGTH]),
-                        (val_addr_2.clone(), [3; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr.clone(), None), vec![
+                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1.clone(), [3; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2.clone(), [3; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr.clone(), Some([2; CUSTOM_WORD_LENGTH])),
-                    vec![
-                        (header_addr.clone(), [4; CUSTOM_WORD_LENGTH]),
-                        (val_addr_3.clone(), [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_4.clone(), [2; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr.clone(), Some([2; CUSTOM_WORD_LENGTH])), vec![
+                    (header_addr.clone(), [4; CUSTOM_WORD_LENGTH]),
+                    (val_addr_3.clone(), [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_4.clone(), [2; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
@@ -380,21 +359,25 @@ mod tests {
     #[tokio::test]
     async fn test_sequential_read_write() -> ClientResult<()> {
         log_init(None);
-        let memory = create_test_layer().await?;
+        let ctx = start_default_test_kms_server().await;
+        let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
+
         test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;
         Ok(())
     }
 
     #[tokio::test]
     async fn test_sequential_wrong_guard() -> ClientResult<()> {
-        let memory = create_test_layer().await?;
+        let ctx = start_default_test_kms_server().await;
+        let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         test_wrong_guard::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;
         Ok(())
     }
 
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
-        let memory = create_test_layer().await?;
+        let ctx = start_default_test_kms_server().await;
+        let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;
         Ok(())
     }

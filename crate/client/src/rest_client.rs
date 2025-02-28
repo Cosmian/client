@@ -1,16 +1,18 @@
-use crate::{
-    config::RestClientConfig,
-    error::{
-        result::{ClientResult, FindexRestClientResultHelper},
-        ClientError,
-    },
-};
+use std::fmt::Display;
+
 use cosmian_http_client::HttpClient;
 use reqwest::{Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 use tracing::trace;
 use uuid::Uuid;
+
+use crate::{
+    error::{
+        ClientError,
+        result::{ClientResult, FindexRestClientResultHelper},
+    },
+    rest_client_config::RestClientConfig,
+};
 
 // Response for success
 #[derive(Deserialize, Serialize, Debug)] // Debug is required by ok_json()

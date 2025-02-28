@@ -1,9 +1,8 @@
 use std::io;
 
 use cosmian_config_utils::ConfigUtilsError;
-use cosmian_findex::{Address, ADDRESS_LENGTH};
+use cosmian_findex::{ADDRESS_LENGTH, Address};
 use cosmian_findex_structs::StructsError;
-use cosmian_kms_cli::reexport::cosmian_kms_client;
 use thiserror::Error;
 
 pub(crate) mod result;

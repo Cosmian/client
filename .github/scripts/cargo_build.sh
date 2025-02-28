@@ -84,6 +84,9 @@ export RUST_LOG="cosmian_cli=debug,cosmian_client=info,cosmian_kmip=error,cosmia
 # shellcheck disable=SC2086
 cargo test --lib --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
 
+# shellcheck disable=SC2086
+cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
+
 # while true; do
 #   sleep 1 && reset
 #   # shellcheck disable=SC2086

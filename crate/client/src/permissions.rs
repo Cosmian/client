@@ -4,10 +4,10 @@ use tracing::{instrument, trace};
 use uuid::Uuid;
 
 use crate::{
-    error::{result::ClientResult, ClientError},
-    handle_error,
-    rest_client::{handle_status_code, SuccessResponse},
     RestClient,
+    error::{ClientError, result::ClientResult},
+    handle_error,
+    rest_client::{SuccessResponse, handle_status_code},
 };
 
 impl RestClient {

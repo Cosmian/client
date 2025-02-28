@@ -1,8 +1,8 @@
-use cosmian_findex::{Address, MemoryADT, ADDRESS_LENGTH};
-use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::{
-    kmip_messages::MessageResponse, kmip_types::ResultStatusEnumeration,
+use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
+use cosmian_kms_client::{
+    KmsClient,
+    kmip_2_1::{kmip_messages::MessageResponse, kmip_types::ResultStatusEnumeration},
 };
-use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 use tracing::trace;
 
 use crate::{ClientError, ClientResult};
@@ -23,12 +23,9 @@ pub struct KmsEncryptionLayer<
 }
 
 impl<
-        const WORD_LENGTH: usize,
-        Memory: Send
-            + Sync
-            + Clone
-            + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
-    > KmsEncryptionLayer<WORD_LENGTH, Memory>
+    const WORD_LENGTH: usize,
+    Memory: Send + Sync + Clone + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
+> KmsEncryptionLayer<WORD_LENGTH, Memory>
 {
     /// Instantiates a new memory encryption layer.
     pub const fn new(

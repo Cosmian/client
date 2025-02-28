@@ -1,6 +1,11 @@
 [workspace]
-default-members = ["crate/cli", "crate/gui"]
-members = ["crate/cli", "crate/client", "crate/gui", "crate/test_findex_server"]
+members = [
+  "crate/cli",
+  "crate/client",
+  "crate/gui",
+  "crate/pkcs11/module",
+  "crate/pkcs11/provider",
+]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
 # For more details, read: https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
@@ -42,23 +47,46 @@ opt-level = 0
 actix-server = { version = "2.5", default-features = false }
 base64 = "0.22"
 clap = { version = "4.5.31", default-features = false }
+cloudproof = "3.0"
 cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
+cosmian_cli = { path = "crate/cli" }
 cosmian_crypto_core = { version = "10.0", default-features = false }
-cosmian_findex = { git = "https://github.com/Cosmian/findex", features = [
-  "redis-mem",
-], rev = "98fcb6e97054e1bb9dddd7a0d620e27438cb91b7" }
+
+cosmian_findex = { git = "https://github.com/Cosmian/findex", default-features = false, rev = "98fcb6e97054e1bb9dddd7a0d620e27438cb91b7" }
 cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
 cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
+
 cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
-cosmian_kms_cli = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+
+pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+cosmian_kms_client = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "merge_cli" }
+
+# pkcs11_sys = { path = "../crate/pkcs11/sys" }
+# cosmian_kmip = { path = "../crate/kmip" }
+# cosmian_kms_client = { path = "../crate/client" }
+# cosmian_kms_crypto = { path = "../crate/crypto" }
+# cosmian_kms_server = { path = "../crate/server" }
+# cosmian_kms_server_database = { path = "../crate/server_database" }
+
+der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
+leb128 = "0.2"
+num-format = "0.4"
+pem = "3.0"
 openssl = { version = "0.10", default-features = false }
 reqwest = { version = "0.11", default-features = false }
 serde = "1.0"
+serde_json = "1.0.138"
+strum = { version = "0.25", default-features = false }
 thiserror = "2.0"
 tokio = { version = "1.43", default-features = false }
 tracing = "0.1"
+tracing-subscriber = { version = "0.3", default-features = false }
 url = "2.5"
 uuid = "1.12"
 x509-parser = "0.17"
