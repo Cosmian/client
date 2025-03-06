@@ -49,10 +49,7 @@ mod error;
 mod findex_server;
 
 pub use error::{ClientError, result::ClientResult};
-pub use findex_server::RestClient;
-pub use findex_server::RestClientConfig;
-pub use findex_server::KmsEncryptionLayer;
-pub use findex_server::FindexRestClient;
+pub use findex_server::{FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig};
 
 pub mod reexport {
     pub use cosmian_findex;
