@@ -44,19 +44,15 @@
     clippy::redundant_pub_crate
 )]
 
-mod datasets;
 mod error;
-mod findex_rest_client;
-mod kms;
-mod permissions;
-mod rest_client;
-mod rest_client_config;
+// mod kms;
+mod findex_server;
 
 pub use error::{ClientError, result::ClientResult};
-pub use findex_rest_client::FindexRestClient;
-pub use kms::KmsEncryptionLayer;
-pub use rest_client::{RestClient, handle_error};
-pub use rest_client_config::RestClientConfig;
+pub use findex_server::RestClient;
+pub use findex_server::RestClientConfig;
+pub use findex_server::KmsEncryptionLayer;
+pub use findex_server::FindexRestClient;
 
 pub mod reexport {
     pub use cosmian_findex;
