@@ -246,7 +246,7 @@ fn read_key_from_pem(bytes: &[u8]) -> CosmianResult<Object> {
             Ok(object)
         }
         ObjectType::Certificate => Err(CosmianError::Default(
-            "For certificates, use the `ckms certificate` sub-command".to_owned(),
+            "For certificates, use the `cosmian kms certificate` sub-command".to_owned(),
         )),
         _ => Err(CosmianError::Default(format!(
             "The PEM file contains an object of type {:?} which is not supported",

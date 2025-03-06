@@ -5,7 +5,7 @@ use crate::error::result::CosmianResult;
 
 /// Logout from the Identity Provider.
 ///
-/// The access token will be removed from the ckms configuration file.
+/// The access token will be removed from the cosmian configuration file.
 #[derive(Parser, Debug)]
 #[clap(verbatim_doc_comment)]
 pub struct LogoutAction;
@@ -15,7 +15,7 @@ impl LogoutAction {
     ///
     /// # Arguments
     ///
-    /// * `conf_path` - The path to the ckms configuration file.
+    /// * `conf_path` - The path to the cosmian configuration file.
     ///
     /// # Errors
     ///

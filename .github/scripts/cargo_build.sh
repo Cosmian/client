@@ -49,7 +49,7 @@ if [ -z "$OPENSSL_DIR" ]; then
   exit 1
 fi
 
-crates=("crate/gui" "crate/cli")
+crates=("crate/gui" "crate/cli" "crate/pkcs11/provider")
 for crate in "${crates[@]}"; do
   echo "Building $crate"
   cd "$crate"

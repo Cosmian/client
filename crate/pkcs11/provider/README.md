@@ -23,6 +23,6 @@ but it can be used with any application that supports PKCS#11.
 Generating a private key and certificate:
 
 ```shell
-ckms.exe certificates certify -t disk-encryption -c primx --generate-key-pair --algorithm rsa2048 --subject-name "CN=Disk Encryption,OU=Org Unit,O=Org Name,L=City,ST=State,C=US" --certificate-extensions F:\primx.extensions` (exit code: 1)
-PS F:\projects\kms> cargo run --bin ckms -- certificates certify -t disk-encryption -c primx  --generate-key-pair --algorithm rsa2048 --subject-name "CN=Disk Encryption,OU=Org Unit,O=Org Name,L=City,ST=State,C=US" --certificate-extensions F:\primx.extensions
+cosmian.exe certificates certify -t disk-encryption -c primx --generate-key-pair --algorithm rsa2048 --subject-name "CN=Disk Encryption,OU=Org Unit,O=Org Name,L=City,ST=State,C=US" --certificate-extensions F:\primx.extensions` (exit code: 1)
+PS F:\projects\kms> cargo run --bin cosmian -- certificates certify -t disk-encryption -c primx  --generate-key-pair --algorithm rsa2048 --subject-name "CN=Disk Encryption,OU=Org Unit,O=Org Name,L=City,ST=State,C=US" --certificate-extensions F:\primx.extensions
 ```

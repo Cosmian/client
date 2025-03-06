@@ -15,6 +15,18 @@ function BuildProject {
     $env:OPENSSL_DIR = "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows-static"
     Get-ChildItem -Recurse $env:OPENSSL_DIR
 
+    # Build pkcs11 provider
+    Get-ChildItem crate\pkcs11\provider
+    if ($BuildType -eq "release")
+    {
+        cargo build --release --target x86_64-pc-windows-msvc
+    }
+    else
+    {
+        cargo build --target x86_64-pc-windows-msvc
+    }
+    Get-ChildItem ..\..\..
+
     # Build at root
     if ($BuildType -eq "release") {
         cargo build --release --target x86_64-pc-windows-msvc
