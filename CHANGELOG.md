@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 TODO(manu): Add pkcs11 client in deb/rpm packages
 TODO(manu): in KMS, delete, cli, client, pkcs11, test_server crates
 TODO(manu): move client crates du Cargo.toml from server repo
+TODO(manu): min_specialization to remove in KMS
+TODO(manu): try to remove deny.toml exceptions
 
 ## [0.2.0] - 2025-02-04
 
