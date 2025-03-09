@@ -1,2 +1,2 @@
-pub(crate) mod findex;
+pub(crate) mod findex_server;
 pub(crate) mod kms;

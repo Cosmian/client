@@ -321,7 +321,7 @@ fn generate_user_conf(
 }
 
 #[cfg(test)]
-mod test {
+mod findex_server {
     use cosmian_findex_client::ClientError;
     use tracing::trace;
 
