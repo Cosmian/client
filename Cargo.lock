@@ -2079,8 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "4.22.1"
-source = "git+https://www.github.com/Cosmian/kms?branch=merge_cli#b5276deed0c71a4836976f7474e6331232ad4467"
+version = "0.2.0"
 dependencies = [
  "cloudproof",
  "cosmian_config_utils",

@@ -1,5 +1,5 @@
 [package]
-name = "cosmian_findex_client"
+name = "cosmian_kms_client"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -13,25 +13,20 @@ rust-version.workspace = true
 doctest = false
 
 [features]
+fips = ["cosmian_kmip/fips"]
 
 [dependencies]
-base64 = { workspace = true }
+cloudproof = { workspace = true }
 cosmian_config_utils = { workspace = true }
-cosmian_crypto_core = { workspace = true }
-cosmian_findex = { workspace = true, features = ["redis-mem"] }
-cosmian_findex_structs = { workspace = true }
 cosmian_http_client = { workspace = true }
-cosmian_kms_client = { workspace = true }
-cosmian_logger = { workspace = true }
+cosmian_kmip = { workspace = true }
+cosmian_kms_access = { workspace = true }
+der = { workspace = true }
+pem = { workspace = true }
 reqwest = { workspace = true, features = ["default", "json", "native-tls"] }
 serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-uuid = { workspace = true }
-
-[dev-dependencies]
-cosmian_findex = { workspace = true, features = ["test-utils"] }
-rand = "0.9.0"
-rand_chacha = "0.9.0"
-test_kms_server = { path = "../test_kms_server" }
-tokio = { workspace = true }
+url = { workspace = true }
+zeroize = { workspace = true }
