@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use cosmian_client::RestClient;
+use cosmian_findex_client::RestClient;
 use cosmian_kms_client::KmsClient;
 use cosmian_logger::log_init;
 use tracing::{info, trace};

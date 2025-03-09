@@ -5,7 +5,7 @@ use std::{
 };
 
 use clap::Parser;
-use cosmian_client::{
+use cosmian_findex_client::{
     RestClient,
     reexport::{
         cosmian_findex::Value,

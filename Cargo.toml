@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "crate/cli",
-  "crate/client",
+  "crate/findex_client",
   "crate/gui",
   "crate/pkcs11/module",
   "crate/pkcs11/provider",
@@ -50,6 +50,7 @@ clap = { version = "4.5.31", default-features = false }
 cloudproof = "3.0"
 cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_cli = { path = "crate/cli" }
+cosmian_findex_client = { path = "crate/findex_client" }
 cosmian_crypto_core = { version = "10.0", default-features = false }
 
 cosmian_findex = { git = "https://github.com/Cosmian/findex", default-features = false, rev = "98fcb6e97054e1bb9dddd7a0d620e27438cb91b7" }

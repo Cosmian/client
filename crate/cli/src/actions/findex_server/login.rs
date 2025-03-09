@@ -1,5 +1,5 @@
 use clap::Parser;
-use cosmian_client::{RestClientConfig, reexport::cosmian_http_client::LoginState};
+use cosmian_findex_client::{RestClientConfig, reexport::cosmian_http_client::LoginState};
 use tracing::info;
 
 use crate::error::{CosmianError, result::CosmianResult};

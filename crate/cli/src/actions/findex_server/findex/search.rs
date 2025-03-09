@@ -1,5 +1,5 @@
 use clap::Parser;
-use cosmian_client::RestClient;
+use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, SearchResults};
 use cosmian_kms_client::KmsClient;
 

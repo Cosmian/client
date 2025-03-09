@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error};
 
 use base64::{Engine, engine::general_purpose};
 use clap::Parser;
-use cosmian_client::RestClient;
+use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::EncryptedEntries;
 use uuid::Uuid;
 

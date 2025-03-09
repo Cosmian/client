@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use base64::{Engine, engine::general_purpose};
-use cosmian_client::RestClient;
+use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::EncryptedEntries;
 use cosmian_logger::log_init;
 use test_findex_server::start_default_test_findex_server;

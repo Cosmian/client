@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use cosmian_client::RestClient;
 use cosmian_config_utils::ConfigUtils;
+use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::Uuids;
 use cosmian_kms_client::{KmsClient, kmip_2_1::kmip_types::UniqueIdentifier};
 use cosmian_logger::log_init;

@@ -7,6 +7,11 @@ TODO(manu): in KMS, delete, cli, client, pkcs11, test_server crates
 TODO(manu): move client crates du Cargo.toml from server repo
 TODO(manu): min_specialization to remove in KMS
 TODO(manu): try to remove deny.toml exceptions
+TODO(manu): merge build_generic and build_rhel (in both repos)
+TODO(manu): benches! be sure it still works
+TODO(manu): review names of FindexRestClient, KmsClient, RestClient...
+TODO(manu): merger les `config`
+TODO(manu): résorber les imports de cosmian_findex_* dans le KMS
 
 ## [0.2.0] - 2025-02-04
 

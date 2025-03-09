@@ -1,5 +1,5 @@
 use clap::Subcommand;
-use cosmian_client::{RestClient, RestClientConfig};
+use cosmian_findex_client::{RestClient, RestClientConfig};
 use cosmian_kms_client::KmsClient;
 
 use super::{

@@ -1,5 +1,5 @@
 use clap::Parser;
-use cosmian_client::{
+use cosmian_findex_client::{
     RestClient,
     reexport::cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Uuids},
 };

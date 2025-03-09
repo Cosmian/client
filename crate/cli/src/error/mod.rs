@@ -2,7 +2,8 @@ use std::str::Utf8Error;
 
 #[cfg(test)]
 use assert_cmd::cargo::CargoError;
-use cosmian_client::{
+use cosmian_config_utils::ConfigUtilsError;
+use cosmian_findex_client::{
     ClientError,
     reexport::{
         cosmian_findex::{self, ADDRESS_LENGTH, Address},
@@ -10,7 +11,6 @@ use cosmian_client::{
         cosmian_http_client::HttpClientError,
     },
 };
-use cosmian_config_utils::ConfigUtilsError;
 use cosmian_kms_client::KmsClientError;
 use thiserror::Error;
 

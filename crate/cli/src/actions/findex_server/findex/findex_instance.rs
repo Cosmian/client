@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use cosmian_client::{
+use cosmian_findex_client::{
     FindexRestClient, KmsEncryptionLayer, RestClient,
     reexport::cosmian_findex::{
         Findex, IndexADT, MemoryEncryptionLayer, Value, generic_decode, generic_encode,
