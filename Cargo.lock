@@ -1920,7 +1920,6 @@ name = "cosmian_findex_client"
 version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
- "cosmian_config_utils",
  "cosmian_crypto_core 10.0.0",
  "cosmian_findex 7.0.0",
  "cosmian_findex_structs",
@@ -2231,7 +2230,6 @@ dependencies = [
 name = "cosmian_pkcs11"
 version = "0.2.0"
 dependencies = [
- "cosmian_config_utils",
  "cosmian_kmip",
  "cosmian_kms_client",
  "cosmian_logger",

@@ -1,6 +1,5 @@
 use std::io;
 
-use cosmian_config_utils::ConfigUtilsError;
 use cosmian_findex::{ADDRESS_LENGTH, Address};
 use cosmian_findex_structs::StructsError;
 use thiserror::Error;
@@ -21,8 +20,6 @@ pub enum ClientError {
     ReqwestError(#[from] reqwest::Error),
     #[error(transparent)]
     IoError(#[from] io::Error),
-    #[error(transparent)]
-    ConfigUtilsError(#[from] ConfigUtilsError),
     #[error(transparent)]
     KmipError(#[from] cosmian_kms_client::cosmian_kmip::KmipError),
     #[error(transparent)]

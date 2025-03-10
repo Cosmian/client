@@ -15,7 +15,6 @@ crate-type = ["rlib", "dylib"]
 doctest = false
 
 [dependencies]
-cosmian_config_utils = { workspace = true }
 cosmian_kmip = { workspace = true }
 cosmian_kms_client = { workspace = true }
 cosmian_pkcs11_module = { path = "../module" }

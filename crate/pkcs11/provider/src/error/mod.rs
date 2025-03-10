@@ -1,6 +1,5 @@
 use std::{array::TryFromSliceError, str::Utf8Error};
 
-use cosmian_config_utils::ConfigUtilsError;
 use cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason};
 use cosmian_kms_client::KmsClientError;
 use thiserror::Error;
@@ -37,9 +36,6 @@ pub enum Pkcs11Error {
     // Other errors
     #[error("{0}")]
     Default(String),
-
-    #[error(transparent)]
-    ConfigUtilsError(#[from] ConfigUtilsError),
 }
 
 impl Pkcs11Error {}
