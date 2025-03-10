@@ -32,6 +32,9 @@ fips = [
   "test_kms_server/fips",
 ]
 
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
+
 [dependencies]
 base64 = { workspace = true }
 clap = { workspace = true, features = [
