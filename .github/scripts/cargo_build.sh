@@ -6,7 +6,7 @@ set -ex
 # export TARGET=x86_64-unknown-linux-gnu
 # export DEBUG_OR_RELEASE=debug
 # export OPENSSL_DIR=/usr/local/openssl
-# export SKIP_SERVICES_TESTS="--skip test_encrypt --skip test_create"
+# export SKIP_SERVICES_TESTS="--skip hsm"
 
 ROOT_FOLDER=$(pwd)
 

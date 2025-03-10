@@ -72,7 +72,7 @@ jobs:
       docker_compose: ${{ matrix.docker_compose }}
 
   windows-2022:
-    if: inputs.debug_or_release == 'release'
+    # if: inputs.debug_or_release == 'release'
     uses: ./.github/workflows/build_windows.yml
     with:
       toolchain: ${{ inputs.toolchain }}
