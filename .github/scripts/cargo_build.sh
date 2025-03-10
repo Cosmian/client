@@ -87,6 +87,11 @@ cargo test --lib --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture 
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
 
+if [ "$DEBUG_OR_RELEASE" = "release" ]; then
+  # shellcheck disable=SC2086
+  cargo bench --target $TARGET $FEATURES --no-run
+fi
+
 # while true; do
 #   sleep 1 && reset
 #   # shellcheck disable=SC2086

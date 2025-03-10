@@ -6,10 +6,7 @@ use cosmian_findex_structs::{
 use tracing::{trace, warn};
 use uuid::Uuid;
 
-use crate::{
-    error::ClientError,
-    findex_server::{RestClient, rest_client::handle_error},
-};
+use crate::{RestClient, error::ClientError, rest_client::handle_error};
 
 #[derive(Clone)]
 pub struct FindexRestClient<const WORD_LENGTH: usize> {

@@ -4,11 +4,9 @@ use tracing::{instrument, trace};
 use uuid::Uuid;
 
 use crate::{
+    RestClient,
     error::{ClientError, result::ClientResult},
-    findex_server::{
-        RestClient,
-        rest_client::{SuccessResponse, handle_error, handle_status_code},
-    },
+    rest_client::{SuccessResponse, handle_error, handle_status_code},
 };
 
 impl RestClient {

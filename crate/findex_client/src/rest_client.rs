@@ -7,11 +7,11 @@ use tracing::trace;
 use uuid::Uuid;
 
 use crate::{
+    config::RestClientConfig,
     error::{
         ClientError,
         result::{ClientResult, FindexRestClientResultHelper},
     },
-    findex_server::rest_client_config::RestClientConfig,
 };
 
 // Response for success
