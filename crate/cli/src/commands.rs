@@ -65,7 +65,7 @@ pub enum CliCommands {
     Kms(KmsActions),
     /// Handle Findex server actions
     #[command(subcommand)]
-    FindexServer(FindexActions),
+    Findex(FindexActions),
     /// Action to auto-generate doc in Markdown format
     /// Run `cargo run --bin cosmian -- markdown
     /// documentation/docs/cli/main_commands.md`
@@ -129,7 +129,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
             kms_actions.process(&mut kms_rest_client).await?;
             config.kms_config = kms_rest_client.config.clone();
         }
-        CliCommands::FindexServer(findex_actions) => {
+        CliCommands::Findex(findex_actions) => {
             let findex_config = config
                 .findex_config
                 .as_ref()
@@ -150,7 +150,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
         CliCommands::Kms(KmsActions::Login(_) | KmsActions::Logout(_)) => {
             config.save(cli.conf_path.clone())?;
         }
-        CliCommands::FindexServer(FindexActions::Login(_) | FindexActions::Logout(_)) => {
+        CliCommands::Findex(FindexActions::Login(_) | FindexActions::Logout(_)) => {
             config.save(cli.conf_path)?;
         }
         _ => {}

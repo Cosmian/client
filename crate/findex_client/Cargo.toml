@@ -13,6 +13,7 @@ rust-version.workspace = true
 doctest = false
 
 [features]
+fips = ["cosmian_kms_client/fips", "test_kms_server/fips"]
 
 [dependencies]
 base64 = { workspace = true }

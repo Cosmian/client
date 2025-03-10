@@ -14,6 +14,9 @@ crate-type = ["rlib", "dylib"]
 # and is not needed for internal lib
 doctest = false
 
+[features]
+fips = ["cosmian_kms_client/fips", "test_kms_server/fips"]
+
 [dependencies]
 cosmian_kmip = { workspace = true }
 cosmian_kms_client = { workspace = true }

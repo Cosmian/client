@@ -29,7 +29,7 @@ Possible values:  `"true", "false"`
 
 **`kms`** [[1]](#1-cosmian-kms)  Handle KMS actions
 
-**`findex-server`** [[2]](#2-cosmian-findex-server)  Handle Findex server actions
+**`findex`** [[2]](#2-cosmian-findex)  Handle Findex server actions
 
 **`markdown`** [[3]](#3-cosmian-markdown)  Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- markdown documentation/docs/cli/main_commands.md`
 
@@ -64,8 +64,10 @@ Handle KMS actions
 
 **`logout`** [[1.10]](#110-cosmian-kms-logout)  Logout from the Identity Provider.
 
-**`hash`** [[1.11]](#111-cosmian-kms-hash) 
-**`mac`** [[1.12]](#112-cosmian-kms-mac) 
+**`hash`** [[1.11]](#111-cosmian-kms-hash)  Hash arbitrary data.
+
+**`mac`** [[1.12]](#112-cosmian-kms-mac)  Hash arbitrary data with a MAC key.
+
 **`new-database`** [[1.13]](#113-cosmian-kms-new-database)  Initialize a new user encrypted database and return the secret (`SQLCipher` only).
 
 **`rsa`** [[1.14]](#114-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
@@ -1772,6 +1774,9 @@ Logout from the Identity Provider.
 ---
 
 ## 1.11 cosmian kms hash
+
+Hash arbitrary data.
+
 ### Usage
 `cosmian kms hash [options]`
 ### Arguments
@@ -1796,6 +1801,9 @@ Possible values:  `"true", "false"`
 ---
 
 ## 1.12 cosmian kms mac
+
+Hash arbitrary data with a MAC key.
+
 ### Usage
 `cosmian kms mac [options]`
 ### Arguments
@@ -2507,43 +2515,43 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rf
 
 ---
 
-## 2 cosmian findex-server
+## 2 cosmian findex
 
 Handle Findex server actions
 
 ### Usage
-`cosmian findex-server <subcommand>`
+`cosmian findex <subcommand>`
 
 ### Subcommands
 
-**`index`** [[2.1]](#21-cosmian-findex-server-index)  Create new indexes
+**`index`** [[2.1]](#21-cosmian-findex-index)  Create new indexes
 
-**`encrypt-and-index`** [[2.2]](#22-cosmian-findex-server-encrypt-and-index)  Encrypt entries and index the corresponding database UUIDs with the Findex.
+**`encrypt-and-index`** [[2.2]](#22-cosmian-findex-encrypt-and-index)  Encrypt entries and index the corresponding database UUIDs with the Findex.
 
-**`search`** [[2.3]](#23-cosmian-findex-server-search)  Search words among encrypted indexes.
+**`search`** [[2.3]](#23-cosmian-findex-search)  Search words among encrypted indexes.
 
-**`search-and-decrypt`** [[2.4]](#24-cosmian-findex-server-search-and-decrypt)  Search keywords and decrypt the content of corresponding UUIDs.
+**`search-and-decrypt`** [[2.4]](#24-cosmian-findex-search-and-decrypt)  Search keywords and decrypt the content of corresponding UUIDs.
 
-**`delete`** [[2.5]](#25-cosmian-findex-server-delete)  Delete indexed keywords
+**`delete`** [[2.5]](#25-cosmian-findex-delete)  Delete indexed keywords
 
-**`permissions`** [[2.6]](#26-cosmian-findex-server-permissions)  Manage the users permissions to the indexes
+**`permissions`** [[2.6]](#26-cosmian-findex-permissions)  Manage the users permissions to the indexes
 
-**`datasets`** [[2.7]](#27-cosmian-findex-server-datasets)  Manage encrypted datasets
+**`datasets`** [[2.7]](#27-cosmian-findex-datasets)  Manage encrypted datasets
 
-**`login`** [[2.8]](#28-cosmian-findex-server-login)  Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
+**`login`** [[2.8]](#28-cosmian-findex-login)  Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
 
-**`logout`** [[2.9]](#29-cosmian-findex-server-logout)  Logout from the Identity Provider.
+**`logout`** [[2.9]](#29-cosmian-findex-logout)  Logout from the Identity Provider.
 
-**`server-version`** [[2.10]](#210-cosmian-findex-server-server-version)  Print the version of the server
+**`server-version`** [[2.10]](#210-cosmian-findex-server-version)  Print the version of the server
 
 ---
 
-## 2.1 cosmian findex-server index
+## 2.1 cosmian findex index
 
 Create new indexes
 
 ### Usage
-`cosmian findex-server index [options]`
+`cosmian findex index [options]`
 ### Arguments
 `--seed-key-id [-s] <SEED_KEY_ID>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
@@ -2561,12 +2569,12 @@ Create new indexes
 
 ---
 
-## 2.2 cosmian findex-server encrypt-and-index
+## 2.2 cosmian findex encrypt-and-index
 
 Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 ### Usage
-`cosmian findex-server encrypt-and-index [options]`
+`cosmian findex encrypt-and-index [options]`
 ### Arguments
 `--seed-key-id [-s] <SEED_KEY_ID>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
@@ -2596,12 +2604,12 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv"` [de
 
 ---
 
-## 2.3 cosmian findex-server search
+## 2.3 cosmian findex search
 
 Search words among encrypted indexes.
 
 ### Usage
-`cosmian findex-server search [options]`
+`cosmian findex search [options]`
 ### Arguments
 `--seed-key-id [-s] <SEED_KEY_ID>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
@@ -2619,12 +2627,12 @@ Search words among encrypted indexes.
 
 ---
 
-## 2.4 cosmian findex-server search-and-decrypt
+## 2.4 cosmian findex search-and-decrypt
 
 Search keywords and decrypt the content of corresponding UUIDs.
 
 ### Usage
-`cosmian findex-server search-and-decrypt [options]`
+`cosmian findex search-and-decrypt [options]`
 ### Arguments
 `--seed-key-id [-s] <SEED_KEY_ID>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
@@ -2652,12 +2660,12 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv"` [de
 
 ---
 
-## 2.5 cosmian findex-server delete
+## 2.5 cosmian findex delete
 
 Delete indexed keywords
 
 ### Usage
-`cosmian findex-server delete [options]`
+`cosmian findex delete [options]`
 ### Arguments
 `--seed-key-id [-s] <SEED_KEY_ID>` The user findex seed used (to insert, search and delete). The seed is a 32 bytes hex string
 
@@ -2675,41 +2683,41 @@ Delete indexed keywords
 
 ---
 
-## 2.6 cosmian findex-server permissions
+## 2.6 cosmian findex permissions
 
 Manage the users permissions to the indexes
 
 ### Usage
-`cosmian findex-server permissions <subcommand>`
+`cosmian findex permissions <subcommand>`
 
 ### Subcommands
 
-**`create`** [[2.6.1]](#261-cosmian-findex-server-permissions-create)  Create a new index. It results on an `admin` permission on a new index
+**`create`** [[2.6.1]](#261-cosmian-findex-permissions-create)  Create a new index. It results on an `admin` permission on a new index
 
-**`list`** [[2.6.2]](#262-cosmian-findex-server-permissions-list)  List user's permission. Returns a list of indexes with their permissions
+**`list`** [[2.6.2]](#262-cosmian-findex-permissions-list)  List user's permission. Returns a list of indexes with their permissions
 
-**`set`** [[2.6.3]](#263-cosmian-findex-server-permissions-set)  Set permission on a index
+**`set`** [[2.6.3]](#263-cosmian-findex-permissions-set)  Set permission on a index
 
-**`revoke`** [[2.6.4]](#264-cosmian-findex-server-permissions-revoke)  Revoke user permission
+**`revoke`** [[2.6.4]](#264-cosmian-findex-permissions-revoke)  Revoke user permission
 
 ---
 
-## 2.6.1 cosmian findex-server permissions create
+## 2.6.1 cosmian findex permissions create
 
 Create a new index. It results on an `admin` permission on a new index
 
 ### Usage
-`cosmian findex-server permissions create`
+`cosmian findex permissions create`
 
 
 ---
 
-## 2.6.2 cosmian findex-server permissions list
+## 2.6.2 cosmian findex permissions list
 
 List user's permission. Returns a list of indexes with their permissions
 
 ### Usage
-`cosmian findex-server permissions list [options]`
+`cosmian findex permissions list [options]`
 ### Arguments
 `--user [-u] <USER>` The user identifier to allow
 
@@ -2717,12 +2725,12 @@ List user's permission. Returns a list of indexes with their permissions
 
 ---
 
-## 2.6.3 cosmian findex-server permissions set
+## 2.6.3 cosmian findex permissions set
 
 Set permission on a index
 
 ### Usage
-`cosmian findex-server permissions set [options]`
+`cosmian findex permissions set [options]`
 ### Arguments
 `--user <USER>` The user identifier to allow
 
@@ -2733,12 +2741,12 @@ Set permission on a index
 
 ---
 
-## 2.6.4 cosmian findex-server permissions revoke
+## 2.6.4 cosmian findex permissions revoke
 
 Revoke user permission
 
 ### Usage
-`cosmian findex-server permissions revoke [options]`
+`cosmian findex permissions revoke [options]`
 ### Arguments
 `--user <USER>` The user identifier to revoke
 
@@ -2749,29 +2757,29 @@ Revoke user permission
 
 ---
 
-## 2.7 cosmian findex-server datasets
+## 2.7 cosmian findex datasets
 
 Manage encrypted datasets
 
 ### Usage
-`cosmian findex-server datasets <subcommand>`
+`cosmian findex datasets <subcommand>`
 
 ### Subcommands
 
-**`add`** [[2.7.1]](#271-cosmian-findex-server-datasets-add)  Add datasets entries
+**`add`** [[2.7.1]](#271-cosmian-findex-datasets-add)  Add datasets entries
 
-**`delete`** [[2.7.2]](#272-cosmian-findex-server-datasets-delete)  Delete datasets entries using corresponding entries UUID
+**`delete`** [[2.7.2]](#272-cosmian-findex-datasets-delete)  Delete datasets entries using corresponding entries UUID
 
-**`get`** [[2.7.3]](#273-cosmian-findex-server-datasets-get)  Return datasets entries matching given UUID
+**`get`** [[2.7.3]](#273-cosmian-findex-datasets-get)  Return datasets entries matching given UUID
 
 ---
 
-## 2.7.1 cosmian findex-server datasets add
+## 2.7.1 cosmian findex datasets add
 
 Add datasets entries
 
 ### Usage
-`cosmian findex-server datasets add [options]`
+`cosmian findex datasets add [options]`
 ### Arguments
 `--index-id <INDEX_ID>` The index ID
 
@@ -2781,12 +2789,12 @@ Add datasets entries
 
 ---
 
-## 2.7.2 cosmian findex-server datasets delete
+## 2.7.2 cosmian findex datasets delete
 
 Delete datasets entries using corresponding entries UUID
 
 ### Usage
-`cosmian findex-server datasets delete [options]`
+`cosmian findex datasets delete [options]`
 ### Arguments
 `--index-id <INDEX_ID>` The index ID
 
@@ -2796,12 +2804,12 @@ Delete datasets entries using corresponding entries UUID
 
 ---
 
-## 2.7.3 cosmian findex-server datasets get
+## 2.7.3 cosmian findex datasets get
 
 Return datasets entries matching given UUID
 
 ### Usage
-`cosmian findex-server datasets get [options]`
+`cosmian findex datasets get [options]`
 ### Arguments
 `--index-id <INDEX_ID>` The index id
 
@@ -2812,32 +2820,32 @@ Return datasets entries matching given UUID
 
 ---
 
-## 2.8 cosmian findex-server login
+## 2.8 cosmian findex login
 
 Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
 
 ### Usage
-`cosmian findex-server login`
+`cosmian findex login`
 
 
 ---
 
-## 2.9 cosmian findex-server logout
+## 2.9 cosmian findex logout
 
 Logout from the Identity Provider.
 
 ### Usage
-`cosmian findex-server logout`
+`cosmian findex logout`
 
 
 ---
 
-## 2.10 cosmian findex-server server-version
+## 2.10 cosmian findex server-version
 
 Print the version of the server
 
 ### Usage
-`cosmian findex-server server-version`
+`cosmian findex server-version`
 
 
 

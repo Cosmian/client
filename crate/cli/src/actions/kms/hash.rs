@@ -7,6 +7,7 @@ use cosmian_kms_client::{
 use super::mac::CHashingAlgorithm;
 use crate::{actions::console, error::result::CosmianResult};
 
+/// Hash arbitrary data.
 #[derive(Parser, Debug)]
 #[clap(verbatim_doc_comment)]
 pub struct HashAction {

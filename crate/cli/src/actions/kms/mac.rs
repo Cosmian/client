@@ -52,6 +52,7 @@ impl From<CHashingAlgorithm> for HashingAlgorithm {
     }
 }
 
+/// Hash arbitrary data with a MAC key.
 #[derive(Parser, Debug)]
 #[clap(verbatim_doc_comment)]
 pub struct MacAction {
