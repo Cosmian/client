@@ -148,12 +148,12 @@ async fn run_huge_dataset_test(use_remote_crypto: bool) -> CosmianResult<()> {
 
 #[ignore]
 #[tokio::test]
-pub(crate) async fn test_findex_no_auth_huge_dataset_remote_crypto() -> CosmianResult<()> {
+pub(crate) async fn test_findex_huge_dataset_remote_crypto() -> CosmianResult<()> {
     run_huge_dataset_test(true).await
 }
 
 #[tokio::test]
-pub(crate) async fn test_findex_no_auth_huge_dataset_local_crypto() -> CosmianResult<()> {
+pub(crate) async fn test_findex_huge_dataset_local_crypto() -> CosmianResult<()> {
     run_huge_dataset_test(false).await
 }
 
@@ -193,7 +193,7 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
 }
 
 #[tokio::test]
-pub(crate) async fn test_findex_no_auth_searching_with_bad_key() -> CosmianResult<()> {
+pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
 

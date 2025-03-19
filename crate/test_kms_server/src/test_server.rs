@@ -223,7 +223,6 @@ pub async fn start_test_server_with_options(
     non_revocable_key_id: Option<Vec<String>>,
 ) -> Result<TestsContext, KmsClientError> {
     log_init(None);
-    println!("Starting KMS test server with options");
     let server_params = generate_server_params(
         db_config.clone(),
         port,
@@ -231,17 +230,15 @@ pub async fn start_test_server_with_options(
         non_revocable_key_id,
     )?;
 
-    println!(
-        "Starting KMS test server with server params {:?}",
-        &server_params
-    );
     // Create a (object owner) conf
     let (owner_client_conf_path, mut owner_client_conf) =
         generate_owner_conf(&server_params, authentication_options.api_token.clone())?;
     let kms_rest_client = KmsClient::new_with_config(owner_client_conf.kms_config.clone())?;
 
+    info!("KMS client configured: {:#?}", owner_client_conf.kms_config);
+
     info!(
-        "Starting KMS test server at URL: {} with server params {:?}",
+        "Starting KMS test server at URL: {} with server params {:#?}",
         owner_client_conf.kms_config.http_config.server_url, &server_params
     );
 
