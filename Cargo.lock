@@ -2262,7 +2262,7 @@ dependencies = [
  "p256",
  "pkcs1",
  "pkcs11_sys",
- "rand 0.8.5",
+ "rand 0.9.0",
  "rsa",
  "serial_test",
  "strum_macros 0.26.4",
