@@ -24,12 +24,16 @@ p256 = { version = "0.13.2", default-features = false, features = [
 ] }
 pkcs1 = "0.7.5"
 pkcs11_sys = { workspace = true }
-rand = { workspace = true }
+rand = { workspace = true, features = ["thread_rng"] }
 rsa = "0.9"
 strum_macros = "0.26.4"
 thiserror = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["fmt", "env-filter", "std"] }
+tracing-subscriber = { workspace = true, features = [
+  "fmt",
+  "env-filter",
+  "std",
+] }
 zeroize = { workspace = true }
 
 [dev-dependencies]

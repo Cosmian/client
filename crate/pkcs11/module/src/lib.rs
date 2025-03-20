@@ -1142,7 +1142,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pRandomData);
         let mut bytes = vec![0; ulRandomLen as usize];
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         rng.fill_bytes(&mut bytes);
         unsafe { slice::from_raw_parts_mut(pRandomData, ulRandomLen as usize) }
             .copy_from_slice(&bytes);
