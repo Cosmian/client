@@ -15,7 +15,7 @@ crate-type = ["rlib", "dylib"]
 doctest = false
 
 [features]
-fips = ["cosmian_kms_client/fips", "test_kms_server/fips"]
+fips = ["cosmian_kmip/fips", "cosmian_kms_client/fips", "test_kms_server/fips"]
 
 [dependencies]
 cosmian_kmip = { workspace = true }
