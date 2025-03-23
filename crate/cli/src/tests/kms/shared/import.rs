@@ -17,10 +17,13 @@ use crate::{
     actions::kms::shared::{import_key::ImportKeyFormat, utils::KeyUsage},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        shared::{ExportKeyParams, export::export_key},
-        utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            shared::{ExportKeyParams, export::export_key},
+            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
+        },
     },
 };
 
@@ -155,8 +158,8 @@ pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     // Covercrypt import/export test
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;

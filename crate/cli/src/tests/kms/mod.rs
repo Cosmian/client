@@ -15,5 +15,4 @@ mod shared;
 mod symmetric;
 pub(crate) mod utils;
 
-const PROG_NAME: &str = "cosmian";
 const KMS_SUBCOMMAND: &str = "kms";

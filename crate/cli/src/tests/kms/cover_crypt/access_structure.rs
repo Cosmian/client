@@ -8,26 +8,29 @@ use test_kms_server::start_default_test_kms_server;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        cover_crypt::{
-            SUB_COMMAND,
-            encrypt_decrypt::{decrypt, encrypt},
-            master_key_pair::create_cc_master_key_pair,
-            user_decryption_keys::create_user_decryption_key,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            cover_crypt::{
+                SUB_COMMAND,
+                encrypt_decrypt::{decrypt, encrypt},
+                master_key_pair::create_cc_master_key_pair,
+                user_decryption_keys::create_user_decryption_key,
+            },
+            utils::recover_cmd_logs,
         },
-        utils::recover_cmd_logs,
     },
 };
 
 #[tokio::test]
-async fn test_view_policy() -> CosmianResult<()> {
+async fn test_view_access_structure() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
-        "policy",
+        "access-structure",
         "view",
         "-f",
         "../../test_data/ttlv_public_key.json",
@@ -35,55 +38,34 @@ async fn test_view_policy() -> CosmianResult<()> {
     recover_cmd_logs(&mut cmd);
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Security Level::<"))
-        .stdout(predicate::str::contains("Top Secret::+"))
+        .stdout(predicate::str::contains("Security Level"))
+        .stdout(predicate::str::contains("Top Secret"))
         .stdout(predicate::str::contains("R&D"));
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
-        "policy",
+        "access-structure",
         "view",
         "-f",
         "../../test_data/ttlv_public_key.json",
-        "--detailed",
     ]);
     recover_cmd_logs(&mut cmd);
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("\"Security Level\""))
         .stdout(predicate::str::contains("\"Top Secret\""))
-        .stdout(predicate::str::contains("\"last_attribute_value\": 7"));
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_create_policy() -> CosmianResult<()> {
-    let ctx = start_default_test_kms_server().await;
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
-
-    cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
-        "policy",
-        "create",
-        "-s",
-        "../../test_data/policy_specifications.json",
-        "-p",
-        "/tmp/policy.bin",
-    ]);
-    recover_cmd_logs(&mut cmd);
-    cmd.assert().success().stdout(predicate::str::contains(
-        "The binary policy file was generated in \"/tmp/policy.bin\".",
-    ));
+        .stdout(predicate::str::contains(
+            "Attribute { id: 6, encryption_hint: Classic, write_status: EncryptDecrypt }",
+        ));
 
     Ok(())
 }
 
 pub(crate) async fn rename(
     cli_conf_path: &str,
-    master_private_key_id: &str,
+    master_secret_key_id: &str,
     attribute: &str,
     new_name: &str,
 ) -> CosmianResult<()> {
@@ -93,10 +75,10 @@ pub(crate) async fn rename(
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
-        "policy",
+        "access-structure",
         "rename-attribute",
         "--key-id",
-        master_private_key_id,
+        master_secret_key_id,
         attribute,
         new_name,
     ];
@@ -112,7 +94,7 @@ pub(crate) async fn rename(
 
 pub(crate) async fn add(
     cli_conf_path: &str,
-    master_private_key_id: &str,
+    master_secret_key_id: &str,
     new_attribute: &str,
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
@@ -121,10 +103,10 @@ pub(crate) async fn add(
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
-        "policy",
+        "access-structure",
         "add-attribute",
         "--key-id",
-        master_private_key_id,
+        master_secret_key_id,
         new_attribute,
     ];
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
@@ -139,7 +121,7 @@ pub(crate) async fn add(
 
 pub(crate) async fn disable(
     cli_conf_path: &str,
-    master_private_key_id: &str,
+    master_secret_key_id: &str,
     attribute: &str,
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
@@ -148,10 +130,10 @@ pub(crate) async fn disable(
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
-        "policy",
+        "access-structure",
         "disable-attribute",
         "--key-id",
-        master_private_key_id,
+        master_secret_key_id,
         attribute,
     ];
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
@@ -166,7 +148,7 @@ pub(crate) async fn disable(
 
 pub(crate) async fn remove(
     cli_conf_path: &str,
-    master_private_key_id: &str,
+    master_secret_key_id: &str,
     attribute: &str,
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
@@ -175,10 +157,10 @@ pub(crate) async fn remove(
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
-        "policy",
+        "access-structure",
         "remove-attribute",
         "--key-id",
-        master_private_key_id,
+        master_secret_key_id,
         attribute,
     ];
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
@@ -192,7 +174,7 @@ pub(crate) async fn remove(
 }
 
 #[tokio::test]
-async fn test_edit_policy() -> CosmianResult<()> {
+async fn test_edit_access_structure() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -204,16 +186,16 @@ async fn test_edit_policy() -> CosmianResult<()> {
     let recovered_file = tmp_path.join("plain.txt");
 
     // generate a new master key pair
-    let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
+    let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     let user_decryption_key = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
         false,
@@ -240,7 +222,7 @@ async fn test_edit_policy() -> CosmianResult<()> {
     // Rename MKG to Marketing
     rename(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::MKG",
         "Marketing",
     )
@@ -258,7 +240,7 @@ async fn test_edit_policy() -> CosmianResult<()> {
     // Adding new attribute "Department::Sales"
     add(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::Sales",
     )
     .await?;
@@ -276,7 +258,7 @@ async fn test_edit_policy() -> CosmianResult<()> {
     // Create a new user key with access to both the new and the renamed attribute
     let sales_mkg_user_decryption_key = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "(Department::Sales || Department::Marketing) && Security Level::Confidential",
         &[],
         false,
@@ -306,7 +288,7 @@ async fn test_edit_policy() -> CosmianResult<()> {
     // disable attribute Sales
     disable(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::Sales",
     )
     .await?;
@@ -336,7 +318,7 @@ async fn test_edit_policy() -> CosmianResult<()> {
     // remove attribute Sales
     remove(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::Sales",
     )
     .await?;

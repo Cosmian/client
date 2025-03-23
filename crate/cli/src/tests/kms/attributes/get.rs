@@ -11,7 +11,10 @@ use crate::{
         CosmianError,
         result::{CosmianResult, CosmianResultHelper},
     },
-    tests::kms::{KMS_SUBCOMMAND, PROG_NAME, utils::recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
+    },
 };
 
 pub(crate) fn get_attributes(

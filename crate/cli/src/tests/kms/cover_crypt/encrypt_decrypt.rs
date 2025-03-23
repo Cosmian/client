@@ -8,13 +8,16 @@ use test_kms_server::start_default_test_kms_server;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        cover_crypt::{
-            SUB_COMMAND, master_key_pair::create_cc_master_key_pair,
-            user_decryption_keys::create_user_decryption_key,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            cover_crypt::{
+                SUB_COMMAND, master_key_pair::create_cc_master_key_pair,
+                user_decryption_keys::create_user_decryption_key,
+            },
+            utils::recover_cmd_logs,
         },
-        utils::recover_cmd_logs,
     },
 };
 
@@ -98,10 +101,10 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     fs::remove_file(&output_file).ok();
     assert!(!output_file.exists());
 
-    let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
+    let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
@@ -118,7 +121,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
         false,
@@ -141,7 +144,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     // this user key should not be able to decrypt the file
     let user_ko_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &[],
         false,
@@ -188,10 +191,10 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     fs::remove_file(&output_file3).ok();
     assert!(!output_file3.exists());
 
-    let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
+    let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
@@ -216,7 +219,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
         false,
@@ -255,7 +258,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     // this user key should not be able to decrypt the file
     let user_ko_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        &master_private_key_id,
+        &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &[],
         false,
@@ -308,10 +311,10 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     fs::remove_file(&output_file).ok();
     assert!(!output_file.exists());
 
-    let (_master_private_key_id, _master_public_key_id) = create_cc_master_key_pair(
+    let (master_secret_key_id, _master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &["tag"],
         false,
     )?;
@@ -328,7 +331,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        "[\"tag\"]",
+        &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &["tag"],
         false,
@@ -372,7 +375,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     // this user key should not be able to decrypt the file
     let _user_ko_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        "[\"tag\"]",
+        &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &["tag_ko"],
         false,
@@ -431,10 +434,10 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     fs::remove_file(&output_file3).ok();
     assert!(!output_file3.exists());
 
-    let (_master_private_key_id, _master_public_key_id) = create_cc_master_key_pair(
+    let (master_secret_key_id, _master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &["tag_bulk"],
         false,
     )?;
@@ -459,7 +462,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
         &ctx.owner_client_conf_path,
-        "[\"tag_bulk\"]",
+        &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &["tag_bulk"],
         false,

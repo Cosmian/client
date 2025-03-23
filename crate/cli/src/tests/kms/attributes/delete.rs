@@ -8,7 +8,10 @@ use crate::{
     actions::kms::attributes::SetOrDeleteAttributes,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{KMS_SUBCOMMAND, PROG_NAME, utils::recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
+    },
 };
 
 pub(crate) fn delete_attributes(

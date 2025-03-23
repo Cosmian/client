@@ -10,9 +10,12 @@ use super::SUB_COMMAND;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME, elliptic_curve::create_key_pair::create_ec_key_pair,
-        utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND, elliptic_curve::create_key_pair::create_ec_key_pair,
+            utils::recover_cmd_logs,
+        },
     },
 };
 

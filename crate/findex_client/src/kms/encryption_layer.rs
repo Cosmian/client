@@ -68,6 +68,7 @@ impl<
         &self,
         addresses: Vec<Memory::Address>,
     ) -> ClientResult<Vec<Memory::Address>> {
+        trace!("hmac: Computing HMAC on addresses: {:?}", addresses);
         let tokens = self
             .kms_client
             .message(self.build_mac_message_request(&addresses)?)

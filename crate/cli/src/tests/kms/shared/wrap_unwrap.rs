@@ -5,7 +5,7 @@ use std::{
 
 use assert_cmd::prelude::CommandCargoExt;
 use base64::{Engine as _, engine::general_purpose};
-use cloudproof::reexport::crypto_core::{
+use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
@@ -22,13 +22,16 @@ use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        cover_crypt::master_key_pair::create_cc_master_key_pair,
-        elliptic_curve::create_key_pair::create_ec_key_pair,
-        shared::export::export_key,
-        symmetric::create_key::create_symmetric_key,
-        utils::{extract_uids::extract_wrapping_key, recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            cover_crypt::master_key_pair::create_cc_master_key_pair,
+            elliptic_curve::create_key_pair::create_ec_key_pair,
+            shared::export::export_key,
+            symmetric::create_key::create_symmetric_key,
+            utils::{extract_uids::extract_wrapping_key, recover_cmd_logs},
+        },
     },
 };
 
@@ -139,8 +142,8 @@ pub(crate) async fn test_password_wrap_import() -> CosmianResult<()> {
     // CC
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;

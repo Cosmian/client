@@ -1,7 +1,6 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server_with_cert_auth;
 use tracing::trace;
 
@@ -10,10 +9,12 @@ use crate::{
     actions::kms::symmetric::{DataEncryptionAlgorithm, keys::create_key::CreateKeyAction},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
+    tests::{
         PROG_NAME,
-        shared::{ExportKeyParams, destroy, export_key, revoke},
-        symmetric::encrypt_decrypt::run_encrypt_decrypt_test,
+        kms::{
+            shared::{ExportKeyParams, destroy, export_key, revoke},
+            symmetric::encrypt_decrypt::run_encrypt_decrypt_test,
+        },
     },
 };
 
@@ -507,7 +508,6 @@ pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()> {
-    log_init(None);
     // the client conf will use the owner cert
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;

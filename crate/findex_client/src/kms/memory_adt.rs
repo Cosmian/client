@@ -209,7 +209,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_encrypt_decrypt() -> ClientResult<()> {
+    async fn test_adt_encrypt_decrypt() -> ClientResult<()> {
         let mut rng = ChaChaRng::from_os_rng();
         let tok = Address::<ADDRESS_LENGTH>::random(&mut rng);
         let ptx = [1; CUSTOM_WORD_LENGTH];

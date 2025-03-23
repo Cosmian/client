@@ -6,9 +6,12 @@ use cosmian_kms_client::{KmsClient, kmip_2_1::requests::encrypt_request, read_by
 use crate::{
     actions::{
         console,
-        kms::rsa::{HashFn, RsaEncryptionAlgorithm},
+        kms::{
+            labels::KEY_ID,
+            rsa::{HashFn, RsaEncryptionAlgorithm},
+            shared::get_key_uid,
+        },
     },
-    cli_bail,
     error::result::{CosmianResult, CosmianResultHelper},
 };
 
@@ -46,7 +49,7 @@ pub struct EncryptAction {
 
     /// The public key unique identifier.
     /// If not specified, tags should be specified
-    #[clap(long = "key-id", short = 'k', group = "key-tags")]
+    #[clap(long = KEY_ID, short = 'k', group = "key-tags")]
     key_id: Option<String>,
 
     /// Tag to use to retrieve the key when no key id is specified.
@@ -97,20 +100,13 @@ impl EncryptAction {
             .with_context(|| "Cannot read bytes from the file to encrypt")?;
 
         // Recover the unique identifier or set of tags
-        let id = if let Some(key_id) = &self.key_id {
-            key_id.clone()
-        } else if let Some(tags) = &self.tags {
-            serde_json::to_string(&tags)?
-        } else {
-            cli_bail!("Either `--key-id` or one or more `--tag` must be specified")
-        };
+        let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         // Create the kmip query
         let encrypt_request = encrypt_request(
             &id,
             None,
             data,
-            None,
             None,
             None,
             Some(

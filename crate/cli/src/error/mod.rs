@@ -34,7 +34,7 @@ pub enum CosmianError {
     #[error(transparent)]
     ConfigUtilsError(#[from] ConfigUtilsError),
     #[error(transparent)]
-    CovercryptError(#[from] cloudproof::reexport::cover_crypt::Error),
+    CovercryptError(#[from] cosmian_cover_crypt::Error),
     #[error(transparent)]
     CryptoError(#[from] cosmian_kms_crypto::CryptoError),
     #[error(transparent)]

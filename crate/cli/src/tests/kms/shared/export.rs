@@ -33,12 +33,15 @@ use crate::{
     },
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        elliptic_curve::create_key_pair::create_ec_key_pair,
-        rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
-        symmetric::create_key::create_symmetric_key,
-        utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            elliptic_curve::create_key_pair::create_ec_key_pair,
+            rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
+            symmetric::create_key::create_symmetric_key,
+            utils::recover_cmd_logs,
+        },
     },
 };
 
@@ -381,8 +384,8 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
@@ -440,8 +443,8 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
     // generate a new master key pair
     let (master_private_key_id, _master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
@@ -712,13 +715,13 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &[],
         true,
     )?;
 
-    // Master private key should not be exportable
+    // master secret key should not be exportable
     assert!(
         export_key(ExportKeyParams {
             cli_conf_path: ctx.owner_client_conf_path.clone(),
@@ -734,7 +737,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
         .is_err()
     );
 
-    // Master public key should not be exportable
+    // Master public key should be exportable
     assert!(
         export_key(ExportKeyParams {
             cli_conf_path: ctx.owner_client_conf_path.clone(),

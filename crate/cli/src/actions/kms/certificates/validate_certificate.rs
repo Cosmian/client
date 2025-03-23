@@ -6,7 +6,10 @@ use cosmian_kms_client::{
     kmip_2_1::{kmip_types::ValidityIndicator, requests::build_validate_certificate_request},
 };
 
-use crate::{actions::console, error::result::CosmianResult};
+use crate::{
+    actions::{console, kms::labels::CERTIFICATE_ID},
+    error::result::CosmianResult,
+};
 
 /// Validate a certificate.
 ///
@@ -19,8 +22,8 @@ pub struct ValidateCertificatesAction {
     #[clap(long = "certificate", short = 'v')]
     certificate: Vec<PathBuf>,
     /// One or more Unique Identifiers of Certificate Objects.
-    #[clap(long = "unique-identifier", short = 'k')]
-    unique_identifier: Vec<String>,
+    #[clap(long = CERTIFICATE_ID, short = 'k')]
+    certificate_id: Vec<String>,
     /// A Date-Time object indicating when the certificate chain needs to be
     /// valid. If omitted, the current date and time SHALL be assumed.
     #[clap(long = "validity-time", short = 't')]
@@ -31,7 +34,7 @@ impl ValidateCertificatesAction {
     pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
         let request = build_validate_certificate_request(
             &self.certificate,
-            &self.unique_identifier,
+            &self.certificate_id,
             self.validity_time.clone(),
         )?;
         let validity_indicator = client_connector.validate(request).await?.validity_indicator;

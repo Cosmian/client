@@ -9,7 +9,7 @@ use crate::{
     actions::kms::{hash::HashAction, mac::CHashingAlgorithm},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{PROG_NAME, utils::recover_cmd_logs},
+    tests::{PROG_NAME, kms::utils::recover_cmd_logs},
 };
 
 const SUB_COMMAND: &str = "hash";

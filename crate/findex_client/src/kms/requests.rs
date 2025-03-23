@@ -63,7 +63,6 @@ impl<
             &self.aes_xts_key_id,
             None,
             plaintext,
-            None,
             Some(nonce),
             None,
             Some(CryptographicParameters {

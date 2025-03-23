@@ -19,7 +19,13 @@ use tracing::{info, trace};
 use crate::{
     actions::{
         console,
-        kms::shared::utils::{KeyUsage, build_usage_mask_from_key_usage},
+        kms::{
+            labels::ATTRIBUTE_ID,
+            shared::{
+                get_key_uid,
+                utils::{KeyUsage, build_usage_mask_from_key_usage},
+            },
+        },
     },
     cli_bail,
     error::result::CosmianResult,
@@ -147,7 +153,7 @@ impl TryFrom<&VendorAttributeCli> for VendorAttribute {
 pub struct SetOrDeleteAttributes {
     /// The unique identifier of the cryptographic object.
     /// If not specified, tags should be specified
-    #[clap(long = "id", short = 'i', group = "id-tags")]
+    #[clap(long = ATTRIBUTE_ID, short = 'i', group = "id-tags")]
     pub(crate) id: Option<String>,
 
     /// Tag to use to retrieve the key when no key id is specified.
@@ -348,13 +354,11 @@ impl SetAttributesAction {
     ///
     pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         trace!("SetAttributeAction: {:?}", self);
-        let id = if let Some(key_id) = &self.requested_attributes.id {
-            key_id.clone()
-        } else if let Some(tags) = &self.requested_attributes.tags {
-            serde_json::to_string(&tags)?
-        } else {
-            cli_bail!("Either --id or one or more --tag must be specified")
-        };
+        let id = get_key_uid(
+            self.requested_attributes.id.as_ref(),
+            self.requested_attributes.tags.as_ref(),
+            ATTRIBUTE_ID,
+        )?;
 
         let attributes_to_set = self.requested_attributes.get_attributes_from_args()?;
         if attributes_to_set.is_empty() {

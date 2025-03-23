@@ -289,7 +289,6 @@ pub(crate) async fn encrypt(
         cleartext,
         None,
         None,
-        None,
         Some(cryptographic_parameters.to_owned()),
     )
     .unwrap();
@@ -339,7 +338,6 @@ pub(crate) async fn message_encrypt(
         pk,
         None,
         plaintext.to_vec(),
-        None,
         None,
         None,
         Some(cryptographic_parameters.to_owned()),

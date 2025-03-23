@@ -7,11 +7,14 @@ use super::SUB_COMMAND;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        utils::{
-            extract_uids::{extract_private_key, extract_public_key},
-            recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            utils::{
+                extract_uids::{extract_private_key, extract_public_key},
+                recover_cmd_logs,
+            },
         },
     },
 };

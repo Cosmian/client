@@ -13,7 +13,13 @@ use serde_json::Value;
 use strum::{EnumIter, IntoEnumIterator};
 use tracing::{debug, trace};
 
-use crate::{actions::console, cli_bail, error::result::CosmianResult};
+use crate::{
+    actions::{
+        console,
+        kms::{labels::ATTRIBUTE_ID, shared::get_key_uid},
+    },
+    error::result::CosmianResult,
+};
 
 #[derive(ValueEnum, Debug, Clone, PartialEq, Eq, EnumIter)]
 pub enum CLinkType {
@@ -113,7 +119,7 @@ impl From<CLinkType> for LinkType {
 pub struct GetAttributesAction {
     /// The unique identifier of the cryptographic object.
     /// If not specified, tags should be specified
-    #[clap(long = "id", short = 'i', group = "id-tags")]
+    #[clap(long = ATTRIBUTE_ID, short = 'i', group = "id-tags")]
     id: Option<String>,
 
     /// Tag to use to retrieve the key when no key id is specified.
@@ -176,13 +182,7 @@ impl GetAttributesAction {
     /// - There is an error writing to the console.
     pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         trace!("GetAttributesAction: {:?}", self);
-        let id = if let Some(key_id) = &self.id {
-            key_id.clone()
-        } else if let Some(tags) = &self.tags {
-            serde_json::to_string(&tags)?
-        } else {
-            cli_bail!("Either --id or one or more --tag must be specified")
-        };
+        let id = get_key_uid(self.id.as_ref(), self.tags.as_ref(), ATTRIBUTE_ID)?;
 
         let mut references: Vec<AttributeReference> = Vec::with_capacity(self.attribute_tags.len());
         for tag in &self.attribute_tags {

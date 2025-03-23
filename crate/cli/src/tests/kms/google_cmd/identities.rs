@@ -10,7 +10,7 @@ use tracing::trace;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::CosmianError,
-    tests::kms::{PROG_NAME, utils::recover_cmd_logs},
+    tests::{PROG_NAME, kms::utils::recover_cmd_logs},
 };
 
 #[derive(Deserialize)]

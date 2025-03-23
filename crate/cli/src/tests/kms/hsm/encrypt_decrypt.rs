@@ -1,7 +1,9 @@
 use std::{fs, path::PathBuf};
 
 use cosmian_kms_client::read_bytes_from_file;
+use cosmian_logger::log_init;
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 use tracing::trace;
 use uuid::Uuid;
 
@@ -15,7 +17,6 @@ use crate::{
     },
     error::result::CosmianResult,
     tests::kms::{
-        hsm::KMS_HSM_CLIENT_CONF,
         rsa::{
             create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
             encrypt_decrypt::{decrypt, encrypt},
@@ -24,16 +25,19 @@ use crate::{
     },
 };
 
-#[test]
-pub(crate) fn test_aes_gcm() -> CosmianResult<()> {
-    let dek = create_symmetric_key(KMS_HSM_CLIENT_CONF, CreateKeyAction {
-        key_id: Some("hsm::4::".to_string() + &Uuid::new_v4().to_string()),
+#[tokio::test]
+pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
+    log_init(None);
+    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+
+    let dek = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+        key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
         number_of_bits: Some(256),
         algorithm: SymmetricAlgorithm::Aes,
         ..Default::default()
     })?;
     run_encrypt_decrypt_test(
-        KMS_HSM_CLIENT_CONF,
+        &ctx.owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesGcm,
         Some(KeyEncryptionAlgorithm::AesGcm),
@@ -43,13 +47,16 @@ pub(crate) fn test_aes_gcm() -> CosmianResult<()> {
     )
 }
 
-#[test]
-pub(crate) fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
+#[tokio::test]
+pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
+    log_init(None);
+    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
 
-    let input_file = PathBuf::from("test_data/plain.txt");
+    let input_file = PathBuf::from("../../test_data/plain.txt");
     let output_file = tmp_path.join("plain.enc");
     let recovered_file = tmp_path.join("plain.txt");
 
@@ -57,15 +64,15 @@ pub(crate) fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_rsa_key_pair(KMS_HSM_CLIENT_CONF, &RsaKeyPairOptions {
-            key_id: Some("hsm::4::".to_string() + &Uuid::new_v4().to_string()),
+        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+            key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
         })?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        KMS_HSM_CLIENT_CONF,
+        &ctx.owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -76,7 +83,7 @@ pub(crate) fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        KMS_HSM_CLIENT_CONF,
+        &ctx.owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -93,7 +100,7 @@ pub(crate) fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     // the user key should NOT be able to decrypt with another algorithm
     assert!(
         decrypt(
-            KMS_HSM_CLIENT_CONF,
+            &ctx.owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -127,13 +134,16 @@ pub(crate) fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-#[test]
-pub(crate) fn test_rsa_pkcs_v15() -> CosmianResult<()> {
+#[tokio::test]
+pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
+    log_init(None);
+    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
 
-    let input_file = PathBuf::from("test_data/plain.txt");
+    let input_file = PathBuf::from("../../test_data/plain.txt");
     let output_file = tmp_path.join("plain.enc");
     let recovered_file = tmp_path.join("plain.txt");
 
@@ -141,15 +151,15 @@ pub(crate) fn test_rsa_pkcs_v15() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_rsa_key_pair(KMS_HSM_CLIENT_CONF, &RsaKeyPairOptions {
-            key_id: Some("hsm::4::".to_string() + &Uuid::new_v4().to_string()),
+        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+            key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
         })?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        KMS_HSM_CLIENT_CONF,
+        &ctx.owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,
@@ -160,7 +170,7 @@ pub(crate) fn test_rsa_pkcs_v15() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        KMS_HSM_CLIENT_CONF,
+        &ctx.owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,

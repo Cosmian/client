@@ -5,7 +5,7 @@ use cosmian_kms_client::{
 };
 
 use crate::{
-    actions::console,
+    actions::{console, kms::labels::KEY_ID},
     error::result::{CosmianResult, CosmianResultHelper},
 };
 
@@ -15,7 +15,7 @@ use crate::{
 pub struct ReKeyAction {
     /// The tag to associate with the key.
     /// To specify multiple tags, use the option multiple times.
-    #[clap(long = "key-id", short = 'k')]
+    #[clap(long = KEY_ID, short = 'k')]
     key_id: String,
 }
 

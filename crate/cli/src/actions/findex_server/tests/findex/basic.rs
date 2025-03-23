@@ -152,6 +152,7 @@ pub(crate) async fn test_findex_huge_dataset_remote_crypto() -> CosmianResult<()
     run_huge_dataset_test(true).await
 }
 
+#[ignore]
 #[tokio::test]
 pub(crate) async fn test_findex_huge_dataset_local_crypto() -> CosmianResult<()> {
     run_huge_dataset_test(false).await

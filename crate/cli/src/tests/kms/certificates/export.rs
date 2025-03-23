@@ -26,14 +26,19 @@ use crate::{
     },
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        certificates::{
-            certify::{CertifyOp, certify, create_self_signed_cert, import_root_and_intermediate},
-            import::{ImportCertificateInput, import_certificate},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            certificates::{
+                certify::{
+                    CertifyOp, certify, create_self_signed_cert, import_root_and_intermediate,
+                },
+                import::{ImportCertificateInput, import_certificate},
+            },
+            shared::{ExportKeyParams, export_key},
+            utils::recover_cmd_logs,
         },
-        shared::{ExportKeyParams, export_key},
-        utils::recover_cmd_logs,
     },
 };
 

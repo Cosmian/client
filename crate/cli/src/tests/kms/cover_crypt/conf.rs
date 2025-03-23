@@ -9,7 +9,10 @@ use tracing::info;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::result::CosmianResult,
-    tests::kms::{KMS_SUBCOMMAND, PROG_NAME, utils::recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
+    },
 };
 
 #[tokio::test]

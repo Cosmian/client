@@ -1,10 +1,8 @@
 use clap::Parser;
 use cosmian_kms_client::KmsClient;
 
-use crate::{
-    actions::console,
-    error::result::{CosmianResult, CosmianResultHelper},
-};
+use super::console;
+use crate::error::result::{CosmianResult, CosmianResultHelper};
 
 /// Print the version of the server
 #[derive(Parser, Debug)]

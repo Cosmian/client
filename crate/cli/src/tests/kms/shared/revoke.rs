@@ -15,12 +15,15 @@ use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        elliptic_curve::create_key_pair::create_ec_key_pair,
-        shared::{ExportKeyParams, export::export_key},
-        symmetric::create_key::create_symmetric_key,
-        utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            elliptic_curve::create_key_pair::create_ec_key_pair,
+            shared::{ExportKeyParams, export::export_key},
+            symmetric::create_key::create_symmetric_key,
+            utils::recover_cmd_logs,
+        },
     },
 };
 
@@ -156,8 +159,8 @@ async fn test_revoke_cover_crypt() -> CosmianResult<()> {
         // generate a new master key pair
         let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
             &ctx.owner_client_conf_path,
-            "--policy-specifications",
-            "../../test_data/policy_specifications.json",
+            "--specification",
+            "../../test_data/access_structure_specifications.json",
             &[],
             false,
         )?;
@@ -196,8 +199,8 @@ async fn test_revoke_cover_crypt() -> CosmianResult<()> {
         // generate a new master key pair
         let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
             &ctx.owner_client_conf_path,
-            "--policy-specifications",
-            "../../test_data/policy_specifications.json",
+            "--specification",
+            "../../test_data/access_structure_specifications.json",
             &[],
             false,
         )?;
@@ -236,8 +239,8 @@ async fn test_revoke_cover_crypt() -> CosmianResult<()> {
         // generate a new master key pair
         let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
             &ctx.owner_client_conf_path,
-            "--policy-specifications",
-            "../../test_data/policy_specifications.json",
+            "--specification",
+            "../../test_data/access_structure_specifications.json",
             &[],
             false,
         )?;

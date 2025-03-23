@@ -354,7 +354,7 @@ Manage Covercrypt keys and policies. Rotate attributes. Encrypt and decrypt data
 
 **`keys`** [[1.4.1]](#141-cosmian-kms-cc-keys)  Create, destroy, import, export, and rekey `Covercrypt` master and user keys
 
-**`policy`** [[1.4.2]](#142-cosmian-kms-cc-policy)  Extract, view, or edit policies of existing keys, and create a binary policy from specifications
+**`access-structure`** [[1.4.2]](#142-cosmian-kms-cc-access-structure)  Extract, view, or edit policies of existing keys
 
 **`encrypt`** [[1.4.3]](#143-cosmian-kms-cc-encrypt)  Encrypt a file using Covercrypt
 
@@ -371,9 +371,11 @@ Create, destroy, import, export, and rekey `Covercrypt` master and user keys
 
 ### Subcommands
 
-**`create-master-key-pair`** [[1.4.1.1]](#1411-cosmian-kms-cc-keys-create-master-key-pair)  Create a new master key pair for a given policy and return the key IDs.
+**`create-master-key-pair`** [[1.4.1.1]](#1411-cosmian-kms-cc-keys-create-master-key-pair)  Create a new master keypair for a given access structure and return the key
+IDs.
 
-**`create-user-key`** [[1.4.1.2]](#1412-cosmian-kms-cc-keys-create-user-key)  Create a new user decryption key given an access policy expressed as a boolean expression.
+**`create-user-key`** [[1.4.1.2]](#1412-cosmian-kms-cc-keys-create-user-key)  Create a new user secret key for an access policy, and index it under some
+(optional) tags, that can later be used to retrieve the key.
 
 **`export`** [[1.4.1.3]](#1413-cosmian-kms-cc-keys-export)  Export a key from the KMS
 
@@ -387,22 +389,21 @@ Create, destroy, import, export, and rekey `Covercrypt` master and user keys
 
 **`destroy`** [[1.4.1.8]](#1418-cosmian-kms-cc-keys-destroy)  Destroy a Covercrypt master or user decryption key
 
-**`rekey`** [[1.4.1.9]](#1419-cosmian-kms-cc-keys-rekey)  Rekey the master and user keys for a given access policy.
+**`rekey`** [[1.4.1.9]](#1419-cosmian-kms-cc-keys-rekey)  Rekey the given access policy.
 
-**`prune`** [[1.4.1.10]](#14110-cosmian-kms-cc-keys-prune)  Prune the master and user keys for a given access policy.
+**`prune`** [[1.4.1.10]](#14110-cosmian-kms-cc-keys-prune)  Prune all keys linked to an MSK w.r.t an given access policy.
 
 ---
 
 ## 1.4.1.1 cosmian kms cc keys create-master-key-pair
 
-Create a new master key pair for a given policy and return the key IDs.
+Create a new master keypair for a given access structure and return the key
+IDs.
 
 ### Usage
 `cosmian kms cc keys create-master-key-pair [options]`
 ### Arguments
-`--policy-specifications [-s] <POLICY_SPECIFICATIONS_FILE>` The JSON policy specifications file to use to generate the keys. See the inline doc of the `create-master-key-pair` command for details
-
-`--policy-binary [-b] <POLICY_BINARY_FILE>` When not using policy specifications, a policy binary file can be used instead. See the `policy` command, to create this binary file from policy specifications or to extract it from existing keys
+`--specification [-s] <SPECIFICATION>` The JSON access structure specifications file to use to generate the keys. See the inline doc of the `create-master-key-pair` command for details
 
 `--tag [-t] <TAG>` The tag to associate with the master key pair. To specify multiple tags, use the option multiple times
 
@@ -416,16 +417,17 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ## 1.4.1.2 cosmian kms cc keys create-user-key
 
-Create a new user decryption key given an access policy expressed as a boolean expression.
+Create a new user secret key for an access policy, and index it under some
+(optional) tags, that can later be used to retrieve the key.
 
 ### Usage
-`cosmian kms cc keys create-user-key [options] <MASTER_PRIVATE_KEY_ID>
+`cosmian kms cc keys create-user-key [options] <MASTER_SECRET_KEY_ID>
  <ACCESS_POLICY>
 `
 ### Arguments
-` <MASTER_PRIVATE_KEY_ID>` The master private key unique identifier
+` <MASTER_SECRET_KEY_ID>` The master secret key unique identifier
 
-` <ACCESS_POLICY>` The access policy as a boolean expression combining policy attributes
+` <ACCESS_POLICY>` The access policy should be expressed as a boolean expression of attributes. For example (provided the corresponding attributes are defined in the MSK):
 
 `--tag [-t] <TAG>` The tag to associate with the user decryption key. To specify multiple tags, use the option multiple times
 
@@ -624,17 +626,17 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ## 1.4.1.9 cosmian kms cc keys rekey
 
-Rekey the master and user keys for a given access policy.
+Rekey the given access policy.
 
 ### Usage
 `cosmian kms cc keys rekey [options] <ACCESS_POLICY>
 `
 ### Arguments
-` <ACCESS_POLICY>` The access policy to rekey. Example: `department::marketing && level::confidential`
+` <ACCESS_POLICY>` The access policy should be expressed as a boolean expression of attributes. For example (provided the corresponding attributes are defined in the MSK):
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <MSK_UID>` The MSK UID stored in the KMS. If not specified, tags should be specified
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+`--tag [-t] <TAG>` Tag to use to retrieve the MSK when no key id is specified. To specify multiple tags, use the option multiple times
 
 
 
@@ -642,15 +644,15 @@ Rekey the master and user keys for a given access policy.
 
 ## 1.4.1.10 cosmian kms cc keys prune
 
-Prune the master and user keys for a given access policy.
+Prune all keys linked to an MSK w.r.t an given access policy.
 
 ### Usage
 `cosmian kms cc keys prune [options] <ACCESS_POLICY>
 `
 ### Arguments
-` <ACCESS_POLICY>` The access policy to prune. Example: `department::marketing && level::confidential`
+` <ACCESS_POLICY>` The access policy should be expressed as a boolean expression of attributes. For example (provided the corresponding attributes are defined in the MSK):
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <MSK_UID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -659,118 +661,59 @@ Prune the master and user keys for a given access policy.
 
 ---
 
-## 1.4.2 cosmian kms cc policy
+## 1.4.2 cosmian kms cc access-structure
 
-Extract, view, or edit policies of existing keys, and create a binary policy from specifications
+Extract, view, or edit policies of existing keys
 
 ### Usage
-`cosmian kms cc policy <subcommand>`
+`cosmian kms cc access-structure <subcommand>`
 
 ### Subcommands
 
-**`view`** [[1.4.2.1]](#1421-cosmian-kms-cc-policy-view)  View the policy of an existing public or private master key.
+**`view`** [[1.4.2.1]](#1421-cosmian-kms-cc-access-structure-view)  View the access structure of an existing public or private master key.
 
-**`specs`** [[1.4.2.2]](#1422-cosmian-kms-cc-policy-specs)  Extract the policy specifications from a public or private master key to a policy specifications file
+**`add-attribute`** [[1.4.2.2]](#1422-cosmian-kms-cc-access-structure-add-attribute)  Add an attribute to the access structure of an existing private master key.
 
-**`binary`** [[1.4.2.3]](#1423-cosmian-kms-cc-policy-binary)  Extract the policy from a public or private master key to a policy binary file
-
-**`create`** [[1.4.2.4]](#1424-cosmian-kms-cc-policy-create)  Create a policy binary file from policy specifications
-
-**`add-attribute`** [[1.4.2.5]](#1425-cosmian-kms-cc-policy-add-attribute)  Add an attribute to the policy of an existing private master key.
-
-**`remove-attribute`** [[1.4.2.6]](#1426-cosmian-kms-cc-policy-remove-attribute)  Remove an attribute from the policy of an existing private master key.
+**`remove-attribute`** [[1.4.2.3]](#1423-cosmian-kms-cc-access-structure-remove-attribute)  Remove an attribute from the access structure of an existing private master key.
 Permanently removes the ability to use this attribute in both encryptions and decryptions.
 
-**`disable-attribute`** [[1.4.2.7]](#1427-cosmian-kms-cc-policy-disable-attribute)  Disable an attribute from the policy of an existing private master key.
-Prevents the encryption of new messages for this attribute while keeping the ability to decrypt existing ciphertexts.
+**`disable-attribute`** [[1.4.2.4]](#1424-cosmian-kms-cc-access-structure-disable-attribute)  Disable an attribute from the access structure of an existing private master key.
+Prevents the creation of new ciphertexts for this attribute while keeping the ability to decrypt existing ones.
 
-**`rename-attribute`** [[1.4.2.8]](#1428-cosmian-kms-cc-policy-rename-attribute)  Rename an attribute in the policy of an existing private master key.
+**`rename-attribute`** [[1.4.2.5]](#1425-cosmian-kms-cc-access-structure-rename-attribute)  Rename an attribute in the access structure of an existing private master key.
 
 ---
 
-## 1.4.2.1 cosmian kms cc policy view
+## 1.4.2.1 cosmian kms cc access-structure view
 
-View the policy of an existing public or private master key.
+View the access structure of an existing public or private master key.
 
 ### Usage
-`cosmian kms cc policy view [options]`
+`cosmian kms cc access-structure view [options]`
 ### Arguments
 `--key-id [-i] <KEY_ID>` The public or private master key ID if the key is stored in the KMS
 
-`--key-file [-f] <KEY_FILE>` If `key-id` is not provided, the file containing the public or private master key in TTLV format
-
-`--detailed [-d] <DETAILED>` Show all the policy details rather than just the specifications
-
-Possible values:  `"true", "false"` [default: `"false"`]
+`--key-file [-f] <KEY_FILE>` If `key-id` is not provided, use `--key-file` to provide the file containing the public or private master key in TTLV format
 
 
 
 ---
 
-## 1.4.2.2 cosmian kms cc policy specs
+## 1.4.2.2 cosmian kms cc access-structure add-attribute
 
-Extract the policy specifications from a public or private master key to a policy specifications file
-
-### Usage
-`cosmian kms cc policy specs [options]`
-### Arguments
-`--key-id [-i] <KEY_ID>` The public or private master key ID if the key is stored in the KMS
-
-`--key-file [-f] <KEY_FILE>` If `key-id` is not provided, the file containing the public or private master key in JSON TTLV format
-
-`--specifications [-s] <POLICY_SPECS_FILE>` The output policy specifications file
-
-
-
----
-
-## 1.4.2.3 cosmian kms cc policy binary
-
-Extract the policy from a public or private master key to a policy binary file
+Add an attribute to the access structure of an existing private master key.
 
 ### Usage
-`cosmian kms cc policy binary [options]`
-### Arguments
-`--key-id [-i] <KEY_ID>` The public or private master key ID if the key is stored in the KMS
-
-`--key-file [-f] <KEY_FILE>` If `key-id` is not provided, the file containing the public or private master key in TTLV format
-
-`--policy [-p] <POLICY_BINARY_FILE>` The output binary policy file
-
-
-
----
-
-## 1.4.2.4 cosmian kms cc policy create
-
-Create a policy binary file from policy specifications
-
-### Usage
-`cosmian kms cc policy create [options]`
-### Arguments
-`--specifications [-s] <POLICY_SPECIFICATIONS_FILE>` The policy specifications filename. The policy is expressed as a JSON object describing the Policy axes. See the documentation for details
-
-`--policy [-p] <POLICY_BINARY_FILE>` The output binary policy file generated from the specifications file
-
-
-
----
-
-## 1.4.2.5 cosmian kms cc policy add-attribute
-
-Add an attribute to the policy of an existing private master key.
-
-### Usage
-`cosmian kms cc policy add-attribute [options] <ATTRIBUTE>
+`cosmian kms cc access-structure add-attribute [options] <ATTRIBUTE>
 `
 ### Arguments
-` <ATTRIBUTE>` The name of the attribute to create. Example: `department::rd`
+` <ATTRIBUTE>` The name of the attribute to create. Example: `department::rnd`
 
-`--hybridized <HYBRIDIZED>` Set encryption hint for the new attribute to use hybridized keys
+`--hybridized <HYBRIDIZED>` Hybridize this qualified attribute
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <SECRET_KEY_ID>` The master secret key unique identifier stored in the KMS. If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -778,18 +721,18 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.4.2.6 cosmian kms cc policy remove-attribute
+## 1.4.2.3 cosmian kms cc access-structure remove-attribute
 
-Remove an attribute from the policy of an existing private master key.
+Remove an attribute from the access structure of an existing private master key.
 Permanently removes the ability to use this attribute in both encryptions and decryptions.
 
 ### Usage
-`cosmian kms cc policy remove-attribute [options] <ATTRIBUTE>
+`cosmian kms cc access-structure remove-attribute [options] <ATTRIBUTE>
 `
 ### Arguments
-` <ATTRIBUTE>` The name of the attribute to remove. Example: `department::marketing`
+` <ATTRIBUTE>` The name of the attribute to remove. Example: `department::marketing` Note: prevents ciphertexts only targeting this qualified attribute to be decrypted
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <MASTER_SECRET_KEY_ID>` The master secret key unique identifier stored in the KMS. If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -797,18 +740,18 @@ Permanently removes the ability to use this attribute in both encryptions and de
 
 ---
 
-## 1.4.2.7 cosmian kms cc policy disable-attribute
+## 1.4.2.4 cosmian kms cc access-structure disable-attribute
 
-Disable an attribute from the policy of an existing private master key.
-Prevents the encryption of new messages for this attribute while keeping the ability to decrypt existing ciphertexts.
+Disable an attribute from the access structure of an existing private master key.
+Prevents the creation of new ciphertexts for this attribute while keeping the ability to decrypt existing ones.
 
 ### Usage
-`cosmian kms cc policy disable-attribute [options] <ATTRIBUTE>
+`cosmian kms cc access-structure disable-attribute [options] <ATTRIBUTE>
 `
 ### Arguments
 ` <ATTRIBUTE>` The name of the attribute to disable. Example: `department::marketing`
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <MASTER_SECRET_KEY_ID>` The master secret key unique identifier stored in the KMS. If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -816,12 +759,12 @@ Prevents the encryption of new messages for this attribute while keeping the abi
 
 ---
 
-## 1.4.2.8 cosmian kms cc policy rename-attribute
+## 1.4.2.5 cosmian kms cc access-structure rename-attribute
 
-Rename an attribute in the policy of an existing private master key.
+Rename an attribute in the access structure of an existing private master key.
 
 ### Usage
-`cosmian kms cc policy rename-attribute [options] <ATTRIBUTE>
+`cosmian kms cc access-structure rename-attribute [options] <ATTRIBUTE>
  <NEW_NAME>
 `
 ### Arguments
@@ -829,7 +772,7 @@ Rename an attribute in the policy of an existing private master key.
 
 ` <NEW_NAME>` The new name for the attribute. Example: `marketing`
 
-`--key-id [-k] <SECRET_KEY_ID>` The private master key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <MASTER_SECRET_KEY_ID>` The master secret key unique identifier stored in the KMS. If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -1029,7 +972,7 @@ Export a certificate from the KMS
 ### Arguments
 ` <CERTIFICATE_FILE>` The file to export the certificate to
 
-`--certificate-id [-c] <UNIQUE_ID>` The certificate unique identifier stored in the KMS; for PKCS#12, provide the private key id
+`--certificate-id [-c] <CERTIFICATE_ID>` The certificate unique identifier stored in the KMS; for PKCS#12, provide the private key id
 If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the certificate/private key when no unique id is specified.
@@ -1146,7 +1089,7 @@ Validate a certificate
 ### Arguments
 `--certificate [-v] <CERTIFICATE>` One or more Certificates filepath
 
-`--unique-identifier [-k] <UNIQUE_IDENTIFIER>` One or more Unique Identifiers of Certificate Objects
+`--certificate-id [-k] <CERTIFICATE_ID>` One or more Unique Identifiers of Certificate Objects
 
 `--validity-time [-t] <VALIDITY_TIME>` A Date-Time object indicating when the certificate chain needs to be valid. If omitted, the current date and time SHALL be assumed
 

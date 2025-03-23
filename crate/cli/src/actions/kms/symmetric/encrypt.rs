@@ -23,9 +23,12 @@ use zeroize::Zeroizing;
 use crate::{
     actions::{
         console,
-        kms::symmetric::{DataEncryptionAlgorithm, KeyEncryptionAlgorithm},
+        kms::{
+            labels::KEY_ID,
+            shared::get_key_uid,
+            symmetric::{DataEncryptionAlgorithm, KeyEncryptionAlgorithm},
+        },
     },
-    cli_bail,
     error::{
         CosmianError,
         result::{CosmianResult, CosmianResultHelper},
@@ -62,7 +65,7 @@ pub struct EncryptAction {
 
     /// The symmetric key unique identifier.
     /// If not specified, tags should be specified
-    #[clap(long = "key-id", short = 'k', group = "key-tags")]
+    #[clap(long = KEY_ID, short = 'k', group = "key-tags")]
     key_id: Option<String>,
 
     /// The data encryption algorithm.
@@ -115,13 +118,7 @@ pub struct EncryptAction {
 impl EncryptAction {
     pub(crate) async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         // Recover the unique identifier or set of tags
-        let id = if let Some(key_id) = &self.key_id {
-            key_id.clone()
-        } else if let Some(tags) = &self.tags {
-            serde_json::to_string(&tags)?
-        } else {
-            cli_bail!("Either `--key-id` or one or more `--tag` must be specified")
-        };
+        let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         let nonce = self
             .nonce
@@ -209,7 +206,6 @@ impl EncryptAction {
             data_encryption_key_id,
             None,
             plaintext,
-            None,
             nonce,
             authenticated_data,
             Some(cryptographic_parameters),

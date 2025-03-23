@@ -2,7 +2,7 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use base64::{Engine as _, engine::general_purpose};
-use cloudproof::reexport::crypto_core::{
+use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
@@ -13,9 +13,12 @@ use crate::{
     actions::kms::symmetric::keys::create_key::{CreateKeyAction, SymmetricAlgorithm},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        utils::{extract_uids::extract_uid, recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            utils::{extract_uids::extract_uid, recover_cmd_logs},
+        },
     },
 };
 

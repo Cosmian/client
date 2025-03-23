@@ -15,11 +15,14 @@ use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        elliptic_curve::create_key_pair::create_ec_key_pair,
-        symmetric::create_key::create_symmetric_key,
-        utils::{extract_uids::extract_locate_uids, recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            elliptic_curve::create_key_pair::create_ec_key_pair,
+            symmetric::create_key::create_symmetric_key,
+            utils::{extract_uids::extract_locate_uids, recover_cmd_logs},
+        },
     },
 };
 
@@ -75,8 +78,8 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &["test_cc"],
         false,
     )?;
@@ -385,8 +388,8 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
         &ctx.owner_client_conf_path,
-        "--policy-specifications",
-        "../../test_data/policy_specifications.json",
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
         &["test_grant"],
         false,
     )?;

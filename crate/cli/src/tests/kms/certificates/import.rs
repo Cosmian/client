@@ -7,9 +7,12 @@ use crate::{
     actions::kms::{certificates::CertificateInputFormat, shared::utils::KeyUsage},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
+        },
     },
 };
 

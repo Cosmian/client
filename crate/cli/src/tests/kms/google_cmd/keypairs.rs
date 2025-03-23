@@ -7,8 +7,9 @@ use test_kms_server::start_default_test_kms_server;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::CosmianError,
-    tests::kms::{
-        PROG_NAME, google_cmd::identities::create_gmail_api_conf, utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{google_cmd::identities::create_gmail_api_conf, utils::recover_cmd_logs},
     },
 };
 

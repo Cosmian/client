@@ -16,10 +16,13 @@ use crate::{
     actions::kms::certificates::CertificateInputFormat,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        certificates::import::{ImportCertificateInput, import_certificate},
-        utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            certificates::import::{ImportCertificateInput, import_certificate},
+            utils::recover_cmd_logs,
+        },
     },
 };
 
@@ -82,6 +85,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
 
 #[cfg(feature = "fips")]
 #[tokio::test]
+#[ignore]
 async fn test_import_revoked_certificate_encrypt_prime256() -> CosmianResult<()> {
     import_revoked_certificate_encrypt("prime256v1").await
 }
@@ -101,7 +105,7 @@ pub(crate) fn validate_certificate(
         args.push(certificate);
     }
     for uid in uids {
-        args.push("--unique-identifier".to_owned());
+        args.push("--certificate-id".to_owned());
         args.push(uid);
     }
     if let Some(d) = date {

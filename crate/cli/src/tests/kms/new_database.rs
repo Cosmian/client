@@ -15,11 +15,14 @@ use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::result::CosmianResult,
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        shared::{ExportKeyParams, export_key},
-        symmetric::create_key::create_symmetric_key,
-        utils::recover_cmd_logs,
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            shared::{ExportKeyParams, export_key},
+            symmetric::create_key::create_symmetric_key,
+            utils::recover_cmd_logs,
+        },
     },
 };
 
@@ -163,6 +166,7 @@ async fn test_multiple_databases() -> CosmianResult<()> {
             api_token_id: None,
             api_token: None,
         },
+        None,
         None,
     )
     .await?;

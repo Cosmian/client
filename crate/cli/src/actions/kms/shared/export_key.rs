@@ -12,9 +12,9 @@ use cosmian_kms_client::{
     write_bytes_to_file, write_kmip_object_to_file,
 };
 
+use super::get_key_uid;
 use crate::{
-    actions::console,
-    cli_bail,
+    actions::{console, kms::labels::KEY_ID},
     error::result::{CosmianResult, CosmianResultHelper},
 };
 
@@ -86,7 +86,7 @@ pub struct ExportKeyAction {
 
     /// The key unique identifier stored in the KMS.
     /// If not specified, tags should be specified
-    #[clap(long = "key-id", short = 'k', group = "key-tags")]
+    #[clap(long = KEY_ID, short = 'k', group = "key-tags")]
     key_id: Option<String>,
 
     /// Tag to use to retrieve the key when no key id is specified.
@@ -174,13 +174,7 @@ impl ExportKeyAction {
     /// - There is a server error while exporting the object.
     ///
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
-        let id_or_tags = if let Some(key_id) = &self.key_id {
-            key_id.clone()
-        } else if let Some(tags) = &self.tags {
-            serde_json::to_string(&tags)?
-        } else {
-            cli_bail!("Either --key-id or one or more --tag must be specified")
-        };
+        let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         let (key_format_type, encode_to_pem) = match self.key_format {
             // For Raw: use the default format then do the local extraction of the bytes
@@ -236,7 +230,7 @@ impl ExportKeyAction {
                 });
 
         // export the object
-        let (id, object, _) = export_object(kms_rest_client, &id_or_tags, ExportObjectParams {
+        let (id, object, _) = export_object(kms_rest_client, &id, ExportObjectParams {
             unwrap: self.unwrap,
             wrapping_key_id: self.wrap_key_id.as_deref(),
             allow_revoked: self.allow_revoked,

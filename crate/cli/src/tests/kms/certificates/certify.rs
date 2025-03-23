@@ -22,15 +22,18 @@ use crate::{
     actions::kms::certificates::{Algorithm, CertificateExportFormat, CertificateInputFormat},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{
-        KMS_SUBCOMMAND, PROG_NAME,
-        certificates::{
-            export::export_certificate,
-            import::{ImportCertificateInput, import_certificate},
+    tests::{
+        PROG_NAME,
+        kms::{
+            KMS_SUBCOMMAND,
+            certificates::{
+                export::export_certificate,
+                import::{ImportCertificateInput, import_certificate},
+            },
+            rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
+            shared::{ExportKeyParams, export_key},
+            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
         },
-        rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
-        shared::{ExportKeyParams, export_key},
-        utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
     },
 };
 

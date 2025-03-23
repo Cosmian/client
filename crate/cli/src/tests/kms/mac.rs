@@ -12,7 +12,10 @@ use crate::{
     },
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::kms::{PROG_NAME, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs},
+    },
 };
 
 const SUB_COMMAND: &str = "mac";

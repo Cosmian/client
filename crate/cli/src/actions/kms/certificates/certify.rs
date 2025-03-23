@@ -21,7 +21,10 @@ use cosmian_kms_client::{
 };
 
 use crate::{
-    actions::console,
+    actions::{
+        console,
+        kms::labels::{CERTIFICATE_ID, CERTIFICATE_RECERTIFY},
+    },
     error::{CosmianError, result::CosmianResult},
 };
 
@@ -141,7 +144,7 @@ pub struct CertifyAction {
     /// The unique identifier of the certificate to issue or renew.
     /// If not provided, a random one will be generated when issuing a certificate,
     /// or the original one will be used when renewing a certificate.
-    #[clap(long = "certificate-id", short = 'c')]
+    #[clap(long = CERTIFICATE_ID, short = 'c')]
     certificate_id: Option<String>,
 
     /// The path to a certificate signing request.
@@ -169,7 +172,7 @@ pub struct CertifyAction {
 
     /// The id of a certificate to re-certify
     #[clap(
-        long = "certificate-id-to-re-certify",
+        long = CERTIFICATE_RECERTIFY,
         short = 'n',
         group = "csr_pk",
         required = false

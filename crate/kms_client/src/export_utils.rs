@@ -186,7 +186,6 @@ pub async fn export_object(
 }
 
 /// Export a batch of Objects from the KMS
-///
 /// The objects are exported in a single request and the response is a list of results.
 /// The objects are exported in the order they are provided.
 /// If the object was successfully exported, the result is the exported object and the object attributes augmented with the tags
