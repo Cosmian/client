@@ -52,7 +52,8 @@ pub(crate) fn extract_locate_uids(text: &str) -> Option<Vec<String>> {
         .dot_matches_new_line(true)
         .build()
         .unwrap();
-    let uids = uid_regex.captures(text).and_then(|cap| {
+
+    uid_regex.captures(text).and_then(|cap| {
         cap.name("uids").map(|uid| {
             let uids = uid.as_str();
             uids.lines()
@@ -61,8 +62,7 @@ pub(crate) fn extract_locate_uids(text: &str) -> Option<Vec<String>> {
                 .map(std::borrow::ToOwned::to_owned)
                 .collect::<Vec<String>>()
         })
-    });
-    uids
+    })
 }
 
 /// Extract the wrapping key from a test.
