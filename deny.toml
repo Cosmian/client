@@ -71,7 +71,6 @@ feature-depth = 1
 # output a note when they are encountered.
 ignore = [
     { id = "RUSTSEC-2023-0071", reason = "rsa" },
-    { id = "RUSTSEC-2023-0079", reason = "pqc-kyber" },
     { id = "RUSTSEC-2024-0388", reason = "unmaintained derivative" },
     { id = "RUSTSEC-2024-0384", reason = "unmaintained instant" },
     { id = "RUSTSEC-2024-0416", reason = "unmaintained atk-sys" },

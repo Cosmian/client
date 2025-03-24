@@ -25,18 +25,18 @@ use crate::{
 
 const COSMIAN_PKCS11_DISK_ENCRYPTION_TAG: &str = "disk-encryption";
 
-pub(crate) struct CkmsBackend {
+pub(crate) struct CliBackend {
     kms_rest_client: KmsClient,
 }
 
-impl CkmsBackend {
-    /// Instantiate a new `CkmsBackend` using the
+impl CliBackend {
+    /// Instantiate a new `CliBackend` using the
     pub(crate) fn instantiate(kms_rest_client: KmsClient) -> Self {
-        CkmsBackend { kms_rest_client }
+        CliBackend { kms_rest_client }
     }
 }
 
-impl Backend for CkmsBackend {
+impl Backend for CliBackend {
     fn token_label(&self) -> [u8; 32] {
         *b"Cosmian-KMS                     "
     }

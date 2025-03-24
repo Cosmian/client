@@ -10,7 +10,7 @@ use cosmian_pkcs11_module::traits::Backend;
 use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
-use crate::{backend::CkmsBackend, error::Pkcs11Error, kms_object::get_kms_objects_async};
+use crate::{backend::CliBackend, error::Pkcs11Error, kms_object::get_kms_objects_async};
 
 #[tokio::test]
 async fn test_kms_client() -> Result<(), Pkcs11Error> {
@@ -35,7 +35,7 @@ async fn test_kms_client() -> Result<(), Pkcs11Error> {
     Ok(())
 }
 
-fn initialize_backend() -> Result<CkmsBackend, Pkcs11Error> {
+fn initialize_backend() -> Result<CliBackend, Pkcs11Error> {
     log_init(None);
     // log_init(Some("fatal,cosmian_kms_client=debug"));
     let rt = tokio::runtime::Runtime::new()?;
@@ -51,7 +51,7 @@ fn initialize_backend() -> Result<CkmsBackend, Pkcs11Error> {
         ctx.owner_client_conf.clone()
     });
 
-    Ok(CkmsBackend::instantiate(KmsClient::new_with_config(
+    Ok(CliBackend::instantiate(KmsClient::new_with_config(
         owner_client_conf.kms_config,
     )?))
 }

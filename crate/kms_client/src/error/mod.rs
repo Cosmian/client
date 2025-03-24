@@ -58,6 +58,9 @@ pub enum KmsClientError {
 
     #[error(transparent)]
     ConfigUtils(#[from] cosmian_config_utils::ConfigUtilsError),
+
+    #[error(transparent)]
+    TryFromIntError(#[from] std::num::TryFromIntError),
 }
 
 impl From<TtlvError> for KmsClientError {
@@ -108,7 +111,7 @@ impl From<KmipError> for KmsClientError {
             KmipError::TryFromSliceError(e) => Self::Conversion(e.to_string()),
             KmipError::SerdeJsonError(e) => Self::Conversion(e.to_string()),
             KmipError::Deserialization(e) | KmipError::Serialization(e) => {
-                Self::KmipNotSupported(ErrorReason::Codec_Error, e.to_string())
+                Self::KmipNotSupported(ErrorReason::Codec_Error, e)
             }
             KmipError::DeserializationSize(expected, actual) => Self::KmipNotSupported(
                 ErrorReason::Codec_Error,

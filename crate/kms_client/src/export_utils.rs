@@ -27,7 +27,7 @@ fn export_request(
     authenticated_encryption_additional_data: Option<String>,
 ) -> Export {
     Export::new(
-        UniqueIdentifier::TextString(object_id_or_tags.to_string()),
+        UniqueIdentifier::TextString(object_id_or_tags.to_owned()),
         unwrap,
         wrapping_key_id.map(|wrapping_key_id| {
             key_wrapping_specification(
@@ -51,7 +51,7 @@ fn get_request(
     authenticated_encryption_additional_data: Option<String>,
 ) -> Get {
     Get::new(
-        UniqueIdentifier::TextString(object_id_or_tags.to_string()),
+        UniqueIdentifier::TextString(object_id_or_tags.to_owned()),
         unwrap,
         wrapping_key_id.map(|wrapping_key_id| {
             key_wrapping_specification(
@@ -75,7 +75,7 @@ fn key_wrapping_specification(
     KeyWrappingSpecification {
         wrapping_method: WrappingMethod::Encrypt,
         encryption_key_information: Some(EncryptionKeyInformation {
-            unique_identifier: UniqueIdentifier::TextString(wrapping_key_id.to_string()),
+            unique_identifier: UniqueIdentifier::TextString(wrapping_key_id.to_owned()),
             cryptographic_parameters,
         }),
         attribute_name: authenticated_encryption_additional_data.map(|data| vec![data]),
@@ -108,7 +108,7 @@ pub struct ExportObjectParams<'a> {
 
 impl ExportObjectParams<'_> {
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             unwrap: false,
             wrapping_key_id: None,
@@ -186,6 +186,7 @@ pub async fn export_object(
 }
 
 /// Export a batch of Objects from the KMS
+///
 /// The objects are exported in a single request and the response is a list of results.
 /// The objects are exported in the order they are provided.
 /// If the object was successfully exported, the result is the exported object and the object attributes augmented with the tags
@@ -195,6 +196,8 @@ pub async fn export_object(
 /// * `kms_rest_client` - The KMS client connector
 /// * `object_ids_or_tags` - The KMS object ids or tags
 /// * `params` - Export parameters
+/// # Errors
+/// * If the KMS cannot be reached
 pub async fn batch_export_objects(
     kms_rest_client: &KmsClient,
     object_ids_or_tags: Vec<String>,
@@ -253,7 +256,7 @@ async fn batch_get(
                     authenticated_encryption_additional_data.clone(),
                 )),
                 Operation::GetAttributes(GetAttributes {
-                    unique_identifier: Some(UniqueIdentifier::TextString(id.to_string())),
+                    unique_identifier: Some(UniqueIdentifier::TextString(id.clone())),
                     attribute_references: None, //all attributes
                 }),
             ]
@@ -316,7 +319,7 @@ async fn batch_export(
                     authenticated_encryption_additional_data.clone(),
                 )),
                 Operation::GetAttributes(GetAttributes {
-                    unique_identifier: Some(UniqueIdentifier::TextString(id.to_string())),
+                    unique_identifier: Some(UniqueIdentifier::TextString(id.clone())),
                     attribute_references: Some(vec![AttributeReference::tags_reference()]), //tags
                 }),
             ]
@@ -334,7 +337,7 @@ async fn batch_export(
                 let object =
                     Object::post_fix(export_response.object_type, export_response.object.clone());
                 let mut attributes = export_response.attributes.clone();
-                let _ = attributes.set_tags(get_attributes_response.attributes.get_tags());
+                attributes.set_tags(get_attributes_response.attributes.get_tags())?;
                 results.push((
                     get_attributes_response.unique_identifier.clone(),
                     object,

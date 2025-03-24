@@ -16,6 +16,8 @@ use crate::{
 };
 
 /// Read all bytes from a file
+/// # Errors
+/// If the file cannot be opened or read, an error is returned.
 pub fn read_bytes_from_file(file: &impl AsRef<Path>) -> Result<Vec<u8>, KmsClientError> {
     let mut buffer = Vec::new();
     File::open(file)
@@ -27,6 +29,8 @@ pub fn read_bytes_from_file(file: &impl AsRef<Path>) -> Result<Vec<u8>, KmsClien
 }
 
 /// Read an object T from a JSON file
+/// # Errors
+/// If the file cannot be opened or read, an error is returned.
 pub fn read_from_json_file<T>(file: &impl AsRef<Path>) -> Result<T, KmsClientError>
 where
     T: DeserializeOwned,
@@ -37,6 +41,8 @@ where
 }
 
 /// Read an object from KMIP JSON TTLV bytes slice
+/// # Errors
+/// If the file cannot be opened or read, an error is returned.
 pub fn read_object_from_json_ttlv_bytes(bytes: &[u8]) -> Result<Object, KmsClientError> {
     // Read the object from the file
     let ttlv = serde_json::from_slice::<TTLV>(bytes)
@@ -47,12 +53,16 @@ pub fn read_object_from_json_ttlv_bytes(bytes: &[u8]) -> Result<Object, KmsClien
 }
 
 /// Read an  object from a KMIP JSON TTLV file
+/// # Errors
+/// If the file cannot be opened or read, an error is returned.
 pub fn read_object_from_json_ttlv_file(object_file: &PathBuf) -> Result<Object, KmsClientError> {
     let bytes = read_bytes_from_file(object_file)?;
     read_object_from_json_ttlv_bytes(&bytes)
 }
 
 /// Write all bytes to a file
+/// # Errors
+/// If the file cannot be opened or written, an error is returned.
 pub fn write_bytes_to_file(bytes: &[u8], file: &impl AsRef<Path>) -> Result<(), KmsClientError> {
     fs::write(file, bytes).with_context(|| {
         format!(
@@ -64,6 +74,8 @@ pub fn write_bytes_to_file(bytes: &[u8], file: &impl AsRef<Path>) -> Result<(), 
 }
 
 /// Write a JSON object to a file
+/// # Errors
+/// If the file cannot be opened or written, an error is returned.
 pub fn write_json_object_to_file<T>(
     json_object: &T,
     file: &impl AsRef<Path>,
@@ -76,7 +88,9 @@ where
     write_bytes_to_file(&bytes, file)
 }
 
-// Writes a KMIP Object to a JSON TTLV in a file.
+/// Writes a KMIP Object to a JSON TTLV in a file.
+/// # Errors
+/// If the file cannot be opened or written, an error is returned.
 pub fn write_kmip_object_to_file(
     kmip_object: &Object,
     object_file: &impl AsRef<Path>,
@@ -93,6 +107,8 @@ pub fn write_kmip_object_to_file(
 /// Return the KMIP tag for a given object
 /// This is required to match the Java library behavior which expects
 /// the first tag to describe the type of object and not simply equal 'Object'
+/// # Errors
+/// If the object is not supported, an error is returned.
 // TODO: check what is specified by the KMIP norm if any
 fn tag_from_object(object: &Object) -> String {
     match &object {
@@ -106,13 +122,15 @@ fn tag_from_object(object: &Object) -> String {
         Object::OpaqueObject { .. } => "OpaqueObject",
         Object::PrivateKey { .. } => "PrivateKey",
     }
-    .to_string()
+    .to_owned()
 }
 
 /// Write the decrypted data to a file
 ///
 /// If no `output_file` is provided, then
 /// it reuses the `input_file` name with the extension `plain`.
+/// # Errors
+/// If the file cannot be opened or written, an error is returned.
 pub fn write_single_decrypted_data(
     plaintext: &[u8],
     input_file: &Path,
@@ -134,6 +152,8 @@ pub fn write_single_decrypted_data(
 ///
 /// If no `output_file` is provided, then
 /// it reuses the `input_file` name with the extension `enc`.
+/// # Errors
+/// If the file cannot be opened or written, an error is returned.
 pub fn write_single_encrypted_data(
     encrypted_data: &[u8],
     input_file: &Path,
@@ -154,13 +174,15 @@ pub fn write_single_encrypted_data(
 
 /// Read all bytes from multiple files and serialize them
 /// into a unique vector using LEB128 serialization (bulk mode)
+/// # Errors
+/// If the file cannot be opened or read, an error is returned.
 pub fn read_bytes_from_files_to_bulk(input_files: &[PathBuf]) -> Result<Vec<u8>, KmsClientError> {
     let mut ser = Serializer::new();
 
     // number of files to decrypt
-    let nb_input_files = u64::try_from(input_files.len()).map_err(|_| {
+    let nb_input_files = u64::try_from(input_files.len()).map_err(|e| {
         KmsClientError::Conversion(format!(
-            "number of input files is too big for architecture: {} bytes",
+            "number of input files is too big for architecture: {} bytes. Error: {e}",
             input_files.len()
         ))
     })?;
@@ -181,6 +203,9 @@ pub fn read_bytes_from_files_to_bulk(input_files: &[PathBuf]) -> Result<Vec<u8>,
 /// Sizes are written using LEB-128 serialization.
 ///
 /// Each chunk of plaintext data is written to its own file.
+/// # Errors
+/// If decryption fails
+#[allow(clippy::indexing_slicing)]
 pub fn write_bulk_decrypted_data(
     plaintext: &[u8],
     input_files: &[PathBuf],
@@ -191,9 +216,9 @@ pub fn write_bulk_decrypted_data(
     // number of decrypted chunks
     let nb_chunks = {
         let len = de.read_leb128_u64()?;
-        usize::try_from(len).map_err(|_| {
+        usize::try_from(len).map_err(|e| {
             KmsClientError::Conversion(format!(
-                "size of vector is too big for architecture: {len} bytes",
+                "size of vector is too big for architecture: {len} bytes. Error: {e}",
             ))
         })?
     };
@@ -235,6 +260,11 @@ pub fn write_bulk_decrypted_data(
 /// Each chunk of data:
 /// - is compound of encrypted header + encrypted data
 /// - is written to its own file.
+/// # Errors:
+/// If encryption fails
+/// # Errors
+/// If encryption fails
+#[allow(clippy::indexing_slicing)]
 pub fn write_bulk_encrypted_data(
     plaintext: &[u8],
     input_files: &[PathBuf],
@@ -245,9 +275,9 @@ pub fn write_bulk_encrypted_data(
     // number of encrypted chunks
     let nb_chunks = {
         let len = de.read_leb128_u64()?;
-        usize::try_from(len).map_err(|_| {
+        usize::try_from(len).map_err(|e| {
             KmsClientError::Conversion(format!(
-                "size of vector is too big for architecture: {len} bytes",
+                "size of vector is too big for architecture: {len} bytes. Error: {e}",
             ))
         })?
     };

@@ -1,15 +1,13 @@
 [package]
 name = "cosmian_cli"
-version = "0.2.0"
-authors = [
-  "Bruno Grieder <bruno.grieder@cosmian.com>",
-  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
-]
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 categories = ["security"]
-edition = "2021"
 keywords = ["cosmian_cli", "kms", "findex", "findex-server", "cosmian"]
-license = "BUSL-1.1" # "Business Source License 1.1"
-repository = "https://github.com/Cosmian/cli"
 description = "CLI used to manage the Cosmian KMS and Findex server."
 
 [[bin]]
@@ -42,7 +40,7 @@ clap = { workspace = true, features = [
 ] }
 cosmian_config_utils = { workspace = true }
 cosmian_cover_crypt = { workspace = true }
-cosmian_crypto_core = {  workspace = true, features = ["ser"] }
+cosmian_crypto_core = { workspace = true, features = ["ser"] }
 cosmian_findex = { workspace = true, features = ["redis-mem"] }
 cosmian_findex_client = { workspace = true }
 cosmian_findex_structs = { workspace = true }

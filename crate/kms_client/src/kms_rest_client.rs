@@ -38,20 +38,21 @@ pub struct KmsClient {
     pub config: KmsClientConfig,
 }
 
+#[allow(clippy::missing_errors_doc)]
 impl KmsClient {
     /// Initialize a KMS REST client.
     ///
     /// Parameters `server_url` and `accept_invalid_certs` from the command line
     /// will override the ones from the configuration file.
-    pub fn new() -> Result<KmsClient, KmsClientError> {
-        KmsClient::new_with_config(KmsClientConfig::default())
+    pub fn new() -> Result<Self, KmsClientError> {
+        Self::new_with_config(KmsClientConfig::default())
     }
 
     /// Initialize a KMS REST client.
     ///
     /// Parameters `server_url` and `accept_invalid_certs` from the command line
     /// will override the ones from the configuration file.
-    pub fn new_with_config(config: KmsClientConfig) -> Result<KmsClient, KmsClientError> {
+    pub fn new_with_config(config: KmsClientConfig) -> Result<Self, KmsClientError> {
         // Instantiate a KMS server REST client with the given configuration
         let kms_rest_client = HttpClient::instantiate(&config.http_config).with_context(|| {
             format!(
@@ -60,7 +61,7 @@ impl KmsClient {
             )
         })?;
 
-        Ok(KmsClient {
+        Ok(Self {
             client: kms_rest_client,
             print_json: config.print_json.unwrap_or_default(),
             config,
@@ -542,7 +543,7 @@ impl KmsClient {
     ) -> Result<R, KmsClientError>
     where
         R: serde::de::DeserializeOwned + Sized + 'static,
-        O: Serialize,
+        O: Serialize + Sync,
     {
         let server_url = format!("{}{endpoint}", self.client.server_url);
         let response = match data {
@@ -560,6 +561,7 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
+    #[allow(clippy::future_not_send)]
     pub async fn delete_no_ttlv<O, R>(&self, endpoint: &str, data: &O) -> Result<R, KmsClientError>
     where
         O: Serialize,
@@ -584,6 +586,7 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
+    #[allow(clippy::future_not_send)]
     pub async fn post_no_ttlv<O, R>(
         &self,
         endpoint: &str,
@@ -620,6 +623,7 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
+    #[allow(clippy::print_stdout, clippy::future_not_send)]
     pub async fn post_ttlv<O, R>(&self, kmip_request: &O) -> Result<R, KmsClientError>
     where
         O: Serialize,
@@ -632,7 +636,7 @@ impl KmsClient {
         if self.print_json {
             println!(
                 "\nKMIP Request ==>\n{}",
-                serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_string())
+                serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
             );
         }
         trace!(
@@ -648,7 +652,7 @@ impl KmsClient {
             if self.print_json {
                 println!(
                     "\nKMIP Response <==\n{}\n",
-                    serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_string())
+                    serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
                 );
             }
             trace!(

@@ -90,14 +90,14 @@ where
 macro_rules! cryptoki_fn {
     (fn $name:ident ( $($arg:ident : $type:ty),* $(,)?) $body:block) => {
         #[tracing::instrument(level = tracing::Level::TRACE, ret)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn $name($($arg: $type),*) -> CK_RV {
             result_to_rv(stringify!($name), || $body)
         }
     };
     (unsafe fn $name:ident ( $($arg:ident : $type:ty),* $(,)?) $body:block) => {
         #[tracing::instrument(level = tracing::Level::TRACE, ret)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn $name($($arg: $type),*) -> CK_RV {
             result_to_rv(stringify!($name), || $body)
         }

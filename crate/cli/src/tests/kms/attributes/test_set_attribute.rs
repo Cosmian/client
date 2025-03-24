@@ -317,7 +317,7 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
 /// fail or if the test KMS server fails to start.
 /// ```
 #[tokio::test]
-async fn test_set_attribute_ckms() -> CosmianResult<()> {
+async fn test_set_attribute() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
 

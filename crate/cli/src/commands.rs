@@ -73,11 +73,11 @@ pub enum CliCommands {
     Markdown(MarkdownAction),
 }
 
-/// Main function for the CKMS CLI application.
+/// Main function for the Cosmian CLI application.
 ///
 /// This function initializes logging, parses command-line arguments, and
 /// executes the appropriate command based on the provided arguments. It
-/// supports various subcommands for interacting with the CKMS, such as login,
+/// supports various subcommands for interacting with the Cosmian CLI, such as login,
 /// logout, locating objects, and more.
 ///
 /// # Errors

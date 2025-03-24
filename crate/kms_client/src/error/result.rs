@@ -32,7 +32,7 @@ where
 
 impl<T> KmsClientResultHelper<T> for Option<T> {
     fn context(self, context: &str) -> KmsClientResult<T> {
-        self.ok_or_else(|| KmsClientError::Default(context.to_string()))
+        self.ok_or_else(|| KmsClientError::Default(context.to_owned()))
     }
 
     fn with_context<D, O>(self, op: O) -> KmsClientResult<T>

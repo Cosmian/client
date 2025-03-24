@@ -41,6 +41,8 @@ use crate::{KmsClientError, kms_client_bail};
 /// | CERTIFICATE REQUEST | PKCS#10 |
 /// | PKCS12 | PKCS#12 |
 ///
+/// # Errors
+/// * `KmsClientError::PemError` - The PEM file is not valid
 pub fn objects_from_pem(bytes: &[u8]) -> Result<Vec<Object>, KmsClientError> {
     let mut objects = Vec::<Object>::new();
     let pem_s = pem::parse_many(bytes)?;
@@ -68,7 +70,7 @@ pub fn objects_from_pem(bytes: &[u8]) -> Result<Vec<Object>, KmsClientError> {
                 return Err(KmsClientError::NotSupported(
                     "PEM files with EC PUBLIC KEY are not supported: SEC1 should be reserved for \
                      EC private keys only"
-                        .to_string(),
+                        .to_owned(),
                 ))
             }
             "CERTIFICATE" => objects.push(Object::Certificate {
@@ -121,6 +123,8 @@ fn key_block(key_format_type: KeyFormatType, bytes: Vec<u8>) -> KeyBlock {
 }
 
 /// Converts DER bytes to PEM bytes for keys
+/// # Errors
+/// * `KmsClientError::PemError` - The PEM file is not valid
 pub fn der_to_pem(
     bytes: &[u8],
     key_format_type: KeyFormatType,

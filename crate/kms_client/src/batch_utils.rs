@@ -24,7 +24,7 @@ pub(crate) async fn batch_operations(
                 protocol_version_minor: 0,
             },
             maximum_response_size: Some(9999),
-            batch_count: operations.len() as u32,
+            batch_count: u32::try_from(operations.len())?,
             ..Default::default()
         },
         items: operations.into_iter().map(MessageBatchItem::new).collect(),
@@ -47,5 +47,5 @@ pub(crate) async fn batch_operations(
         .collect::<Vec<_>>()
         .into_iter()
         .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| KmsClientError::Default(e.to_string()))
+        .map_err(KmsClientError::Default)
 }
