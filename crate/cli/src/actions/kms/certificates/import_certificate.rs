@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use cosmian_kms_client::{
     KmsClient,
     cosmian_kmip::kmip_2_1::{
@@ -8,8 +8,13 @@ use cosmian_kms_client::{
         kmip_types::{
             Attributes, CertificateType, KeyFormatType, LinkType, LinkedObjectIdentifier,
         },
+        requests::import_object_request,
     },
     import_object, read_bytes_from_file, read_object_from_json_ttlv_file,
+    reexport::cosmian_kms_client_utils::import_utils::{
+        CertificateInputFormat, KeyUsage, build_private_key_from_der_bytes,
+        build_usage_mask_from_key_usage,
+    },
 };
 use der::{Decode, DecodePem, Encode};
 use tracing::{debug, trace};
@@ -17,28 +22,12 @@ use x509_cert::Certificate;
 use zeroize::Zeroizing;
 
 use crate::{
-    actions::{
-        console,
-        kms::shared::{
-            import_key::build_private_key_from_der_bytes,
-            utils::{KeyUsage, build_usage_mask_from_key_usage},
-        },
-    },
+    actions::console,
     error::{CosmianError, result::CosmianResult},
 };
 
 const MOZILLA_CCADB: &str =
     "https://ccadb.my.salesforce-sites.com/mozilla/IncludedRootsPEMTxt?TrustBitsInclude=Websites";
-
-#[derive(ValueEnum, Debug, Clone)]
-pub enum CertificateInputFormat {
-    JsonTtlv,
-    Pem,
-    Der,
-    Chain,
-    CCADB,
-    Pkcs12,
-}
 
 /// Import one of the following:
 /// - a certificate: formatted as a X509 PEM (pem), X509 DER (der) or JSON TTLV (json-ttlv)
@@ -301,16 +290,19 @@ impl ImportCertificateAction {
             );
         }
 
-        let private_key_id = import_object(
-            kms_rest_client,
+        let import_object_request = import_object_request(
             self.certificate_id.clone(),
             private_key,
             Some(attributes),
             false,
             self.replace_existing,
             &self.tags,
-        )
-        .await?;
+        );
+        let private_key_id = kms_rest_client
+            .import(import_object_request)
+            .await?
+            .unique_identifier
+            .to_string();
         Ok(private_key_id)
     }
 

@@ -74,4 +74,5 @@ pub mod reexport {
     pub use cosmian_http_client;
     pub use cosmian_kmip;
     pub use cosmian_kms_access;
+    pub use cosmian_kms_client_utils;
 }
