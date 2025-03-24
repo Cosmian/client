@@ -92,7 +92,7 @@ pub struct ExportCertificateAction {
 impl ExportCertificateAction {
     /// Export a certificate from the KMS
     pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
-        trace!("Export certificate: {:?}", self);
+        trace!("Export certificate: {self:?}");
 
         let id = get_key_uid(
             self.certificate_id.as_ref(),
