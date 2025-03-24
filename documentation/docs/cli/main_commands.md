@@ -1,7 +1,11 @@
 
 ##  cosmian
 
-CLI used to manage the Cosmian KMS and Findex server.
+Command Line Interface used to manage the KMS and Findex servers.
+
+If any assistance is needed, please either visit the Cosmian technical documentation at https://docs.cosmian.com
+or contact the Cosmian support team on Discord https://discord.com/invite/7kPMNtHpnz
+
 
 ### Usage
 `cosmian <subcommand> [options]`
