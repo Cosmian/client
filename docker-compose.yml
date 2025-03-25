@@ -2,9 +2,9 @@
 services:
   redis:
     image: redis:latest
-    user: "1007"
-    ports:
-      - 6379:6379
+    user: '1007'
+    expose:
+      - '6379'
     healthcheck:
       test: [CMD, redis-cli, ping]
       interval: 10s
@@ -25,7 +25,6 @@ services:
 
   kms:
     container_name: kms
-    # image: ghcr.io/cosmian/kms:4.22.1
     image: ghcr.io/cosmian/kms:develop
     ports:
       - 19998:9998
