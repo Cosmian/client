@@ -83,7 +83,7 @@ cargo build --target $TARGET $RELEASE $FEATURES
 # export RUST_LOG="cosmian_cli=error,cosmian_findex_client=error,cosmian_kmip=error,cosmian_kms_client=error,test_findex_server=error"
 
 # shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS
+cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored
 
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
