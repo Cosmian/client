@@ -376,10 +376,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
-        log_init(Some(
-            "cosmian_cli=trace,cosmian_findex_client=trace,cosmian_kmip=error,\
-             cosmian_kms_client=trace,test_kms_server=trace",
-        ));
+        log_init(None);
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;

@@ -137,7 +137,7 @@ impl TestsCliContext {
 
 #[tokio::test]
 async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
-    log_init(Some("trace"));
+    log_init(None);
     let findex_ctx = start_default_test_findex_server().await;
     let kms_ctx = start_default_test_kms_server().await;
 
