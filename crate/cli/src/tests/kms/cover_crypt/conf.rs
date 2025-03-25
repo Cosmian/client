@@ -17,7 +17,7 @@ use crate::{
 
 #[tokio::test]
 pub(crate) async fn test_bad_conf() -> CosmianResult<()> {
-    log_init(option_env!("RUST_LOG"));
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
 
     if ctx
@@ -78,7 +78,7 @@ pub(crate) async fn test_bad_conf() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_secrets_group_id_bad() -> CosmianResult<()> {
-    log_init(option_env!("RUST_LOG"));
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
 
     if ctx

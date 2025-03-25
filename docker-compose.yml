@@ -2,7 +2,6 @@
 services:
   redis:
     image: redis:latest
-    user: '1007'
     expose:
       - '6379'
     healthcheck:
