@@ -15,6 +15,7 @@ pub enum DataEncryptionAlgorithm {
     Chacha20Poly1305,
     #[default]
     AesGcm,
+    AesCbc,
     AesXts,
     #[cfg(not(feature = "fips"))]
     AesGcmSiv,
@@ -33,6 +34,11 @@ impl From<DataEncryptionAlgorithm> for CryptographicParameters {
                 block_cipher_mode: Some(BlockCipherMode::GCM),
                 ..Self::default()
             },
+            DataEncryptionAlgorithm::AesCbc => Self {
+                cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+                block_cipher_mode: Some(BlockCipherMode::CBC),
+                ..Self::default()
+            },
             DataEncryptionAlgorithm::AesXts => Self {
                 cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
                 block_cipher_mode: Some(BlockCipherMode::XTS),
@@ -47,6 +53,20 @@ impl From<DataEncryptionAlgorithm> for CryptographicParameters {
         }
     }
 }
+
+/// AES 128 CBC key length in bytes.
+pub const AES_128_CBC_KEY_LENGTH: usize = 16;
+/// AES 128 CBC nonce length in bytes.
+pub const AES_128_CBC_IV_LENGTH: usize = 16;
+/// AES 128 CBC tag/mac length in bytes.
+pub const AES_128_CBC_MAC_LENGTH: usize = 0;
+
+/// AES 256 CBC key length in bytes.
+pub const AES_256_CBC_KEY_LENGTH: usize = 32;
+/// AES 256 CBC nonce length in bytes.
+pub const AES_256_CBC_IV_LENGTH: usize = 16;
+/// AES 256 CBC tag/mac length in bytes.
+pub const AES_256_CBC_MAC_LENGTH: usize = 0;
 
 /// AES 128 GCM key length in bytes.
 pub const AES_128_GCM_KEY_LENGTH: usize = 16;
@@ -122,38 +142,77 @@ pub fn parse_decrypt_elements(
     cryptographic_parameters: &CryptographicParameters,
     mut ciphertext: Vec<u8>,
 ) -> Result<ParsedSymEncrypted, UtilsError> {
-    let (nonce_size, tag_size) = match &cryptographic_parameters
-        .cryptographic_algorithm
-        .unwrap_or(CryptographicAlgorithm::AES)
-    {
-        CryptographicAlgorithm::AES => match cryptographic_parameters
-            .block_cipher_mode
-            .unwrap_or(BlockCipherMode::GCM)
+    // let (nonce_size, tag_size) = match &cryptographic_parameters
+    //     .cryptographic_algorithm
+    //     .unwrap_or(CryptographicAlgorithm::AES)
+    // {
+    //     CryptographicAlgorithm::AES => match cryptographic_parameters
+    //         .block_cipher_mode
+    //         .unwrap_or(BlockCipherMode::GCM)
+    //     {
+    //         BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
+    //             (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
+    //         }
+    //         BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
+    //         BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
+    //         _ => {
+    //             return Err(UtilsError::Default(
+    //                 "Unsupported block cipher mode".to_owned(),
+    //             ))
+    //         }
+    //     },
+    //     #[cfg(not(feature = "fips"))]
+    //     CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
+    //         (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
+    //     }
+    //     _ => {
+    //         return Err(UtilsError::Default(
+    //             "Unsupported cryptographic algorithm".to_owned(),
+    //         ))
+    //     }
+    // };
+    // let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
+    // let tag = ciphertext
+    //     .drain(ciphertext.len() - tag_size..)
+    //     .collect::<Vec<_>>();
+            let (nonce_size, tag_size) = match &cryptographic_parameters
+            .cryptographic_algorithm
+            .unwrap_or(CryptographicAlgorithm::AES)
         {
-            BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
-                (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
+            CryptographicAlgorithm::AES => match cryptographic_parameters
+                .block_cipher_mode
+                .unwrap_or(BlockCipherMode::GCM)
+            {
+                BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
+                    (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
+                }
+                BlockCipherMode::CBC => (AES_128_CBC_IV_LENGTH, AES_128_CBC_MAC_LENGTH),
+                BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
+                BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
+                _ => {
+                    return Err(UtilsError::Default(
+                        "Unsupported block cipher mode".to_owned(),
+                    ))
+                }
+            },
+            #[cfg(not(feature = "fips"))]
+            CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
+                (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
             }
-            BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
-            BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
-            _ => {
+            a => {
                 return Err(UtilsError::Default(
-                    "Unsupported block cipher mode".to_owned(),
+                    format!("Unsupported cryptographic algorithm: {a}"),
                 ))
             }
-        },
-        #[cfg(not(feature = "fips"))]
-        CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
-            (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
-        }
-        _ => {
+        };
+        if nonce_size + tag_size > ciphertext.len() {
             return Err(UtilsError::Default(
-                "Unsupported cryptographic algorithm".to_owned(),
+                "The ciphertext is too short to contain the nonce/tweak and the tag".to_owned(),
             ))
         }
-    };
-    let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
-    let tag = ciphertext
-        .drain(ciphertext.len() - tag_size..)
-        .collect::<Vec<_>>();
+        let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
+        let tag = ciphertext
+            .drain(ciphertext.len() - tag_size..)
+            .collect::<Vec<_>>();
     Ok((ciphertext, nonce, tag))
 }

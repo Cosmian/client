@@ -1,7 +1,7 @@
 use clap::Subcommand;
 use cosmian_kms_client::KmsClient;
 #[cfg(test)]
-pub(crate) use cosmian_kms_client::reexport::cosmian_kms_ui_utils::certificate_utils::Algorithm;
+pub(crate) use cosmian_kms_client::reexport::cosmian_kms_client_utils::certificate_utils::Algorithm;
 
 use self::{
     certify::CertifyAction, decrypt_certificate::DecryptCertificateAction,

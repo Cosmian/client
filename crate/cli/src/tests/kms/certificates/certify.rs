@@ -8,6 +8,9 @@ use cosmian_kms_client::{
         ttlv::{TTLV, deserializer::from_ttlv},
     },
     read_from_json_file, read_object_from_json_ttlv_file,
+    reexport::cosmian_kms_client_utils::{
+        export_utils::CertificateExportFormat, import_utils::CertificateInputFormat,
+    },
 };
 use cosmian_logger::log_init;
 use openssl::{nid::Nid, x509::X509};
@@ -19,7 +22,7 @@ use x509_parser::{der_parser::oid, prelude::*};
 
 use super::validate;
 use crate::{
-    actions::kms::certificates::{Algorithm, CertificateExportFormat, CertificateInputFormat},
+    actions::kms::certificates::Algorithm,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{

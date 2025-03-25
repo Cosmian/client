@@ -10,7 +10,7 @@ use cosmian_kms_client::{
         },
         requests::import_object_request,
     },
-    import_object, read_bytes_from_file, read_object_from_json_ttlv_file,
+    read_bytes_from_file, read_object_from_json_ttlv_file,
     reexport::cosmian_kms_client_utils::import_utils::{
         CertificateInputFormat, KeyUsage, build_private_key_from_der_bytes,
         build_usage_mask_from_key_usage,
@@ -341,17 +341,20 @@ impl ImportCertificateAction {
                 );
             }
             // import the certificate
-            let unique_identifier = import_object(
-                kms_rest_client,
+            let import_object_request = import_object_request(
                 self.certificate_id.clone(),
                 object,
                 import_attributes,
                 false,
                 replace_existing,
                 &self.tags,
-            )
-            .await?;
-            previous_identifier = Some(unique_identifier);
+            );
+            let unique_identifier = kms_rest_client
+                .import(import_object_request)
+                .await?
+                .unique_identifier;
+
+            previous_identifier = Some(unique_identifier.to_string());
         }
         // return the identifier of the leaf certificate
         previous_identifier.ok_or_else(|| {

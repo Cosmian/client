@@ -352,13 +352,10 @@ pub fn prepare_key_import_elements(
         .set_cryptographic_usage_mask(cryptographic_usage_mask);
 
     // Generate the import attributes if links are specified.
-    let mut import_attributes = object
-        .attributes()
-        .unwrap_or(&Attributes {
-            cryptographic_usage_mask,
-            ..Default::default()
-        })
-        .clone();
+    let mut import_attributes = object.attributes().cloned().unwrap_or_else(|_| Attributes {
+        cryptographic_usage_mask,
+        ..Default::default()
+    });
 
     if let Some(issuer_certificate_id) = &certificate_id {
         //let attributes = import_attributes.get_or_insert(Attributes::default());

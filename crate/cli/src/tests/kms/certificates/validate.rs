@@ -4,23 +4,25 @@ use std::process::Command;
 
 use assert_cmd::cargo::CommandCargoExt;
 #[cfg(feature = "fips")]
+use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat;
+#[cfg(feature = "fips")]
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 #[cfg(feature = "fips")]
 use tracing::debug;
 use tracing::info;
 
-#[cfg(feature = "fips")]
-use crate::tests::kms::certificates::encrypt::encrypt;
 use crate::{
-    actions::kms::certificates::CertificateInputFormat,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            certificates::import::{ImportCertificateInput, import_certificate},
+            certificates::{
+                encrypt::encrypt,
+                import::{ImportCertificateInput, import_certificate},
+            },
             utils::recover_cmd_logs,
         },
     },
