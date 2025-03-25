@@ -2,6 +2,7 @@
 services:
   redis:
     image: redis:latest
+    user: "1007"
     ports:
       - 6379:6379
     healthcheck:

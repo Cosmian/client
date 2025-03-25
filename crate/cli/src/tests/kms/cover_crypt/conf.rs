@@ -49,8 +49,8 @@ pub(crate) async fn test_bad_conf() -> CosmianResult<()> {
         .args(vec!["keys", "create"]);
     recover_cmd_logs(&mut cmd);
     cmd.assert().failure().stderr(predicate::str::contains(
-        "Configuration file \"notfound.toml\" specified in KMS_CLI_CONF environment variable does \
-         not exist",
+        "Configuration file \"notfound.toml\" specified in COSMIAN_CLI_CONF environment variable \
+         does not exist",
     ));
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
@@ -60,7 +60,10 @@ pub(crate) async fn test_bad_conf() -> CosmianResult<()> {
     cmd.assert().success();
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/kms.bad.toml");
+    cmd.env(
+        COSMIAN_CLI_CONF_ENV,
+        "../../test_data/configs/cosmian.bad.toml",
+    );
 
     cmd.arg(KMS_SUBCOMMAND)
         .arg("ec")
