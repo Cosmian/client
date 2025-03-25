@@ -15,6 +15,7 @@ use crate::{backend::CliBackend, error::Pkcs11Error, kms_object::get_kms_objects
 #[ignore = "to be re-included"]
 #[tokio::test]
 async fn test_kms_client() -> Result<(), Pkcs11Error> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
 
     let kms_rest_client = KmsClient::new_with_config(ctx.owner_client_conf.kms_config.clone())?;
