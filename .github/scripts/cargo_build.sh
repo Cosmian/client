@@ -87,11 +87,11 @@ export RUST_LOG="cosmian_cli=error,cosmian_findex_client=error,cosmian_kmip=erro
 
 # TO remove
 export RUST_LOG="cosmian_cli=debug,cosmian_findex_client=debug,cosmian_kms_client=debug,test_findex_server=trace,test_kms_server=trace"
-# while true; do
-#   sleep 1
+while true; do
+  sleep 1
   # shellcheck disable=SC2086
   cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored concurrent_read_write
-# done
+done
 
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
