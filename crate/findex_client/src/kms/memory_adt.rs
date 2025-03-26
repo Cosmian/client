@@ -21,7 +21,6 @@ impl<
         trace!("guarded_write: guard: {:?}", guard);
         let (address, optional_word) = guard;
 
-        debug!("guarded_write: entering");
         // Split bindings into two vectors
         let (mut bindings, mut bindings_words): (Vec<_>, Vec<_>) = bindings.into_iter().unzip();
         trace!("guarded_write: bindings_addresses: {bindings:?}");
@@ -31,7 +30,6 @@ impl<
         bindings.push(address); // size: n+1
         let mut tokens = self.hmac(bindings).await?;
         trace!("guarded_write: tokens: {tokens:?}");
-        debug!("guarded_write: tokens");
 
         // Put apart the last token
         let token = tokens
@@ -39,7 +37,6 @@ impl<
             .ok_or_else(|| ClientError::Default("No token found".to_owned()))?;
 
         let (ciphertexts_and_tokens, old) = if let Some(word) = optional_word {
-            debug!("guarded_write[some]: optional_word is not none");
             // Zip words and tokens
             bindings_words.push(word); // size: n+1
             tokens.push(token.clone()); // size: n+1
@@ -47,7 +44,6 @@ impl<
             // Bulk Encrypt
             let mut ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
             trace!("guarded_write[some]: ciphertexts: {ciphertexts:?}");
-            debug!("guarded_write[some]: ciphertexts");
 
             // Pop the old value
             let old = ciphertexts
@@ -60,7 +56,6 @@ impl<
             // Bulk Encrypt
             let ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
             trace!("guarded_write: ciphertexts: {ciphertexts:?}");
-            debug!("guarded_write[none]: ciphertexts");
 
             // Zip ciphertexts and tokens
             (ciphertexts.into_iter().zip(tokens), None)
@@ -68,7 +63,6 @@ impl<
 
         //
         // Send bindings to server
-        debug!("guarded_write: send bindings to server");
         let cur = self
             .mem
             .guarded_write(
@@ -83,7 +77,6 @@ impl<
 
         //
         // Decrypt the current value (if any)
-        debug!("guarded_write: decrypt the current value");
         let res = match cur {
             Some(ctx) => Some(
                 *self

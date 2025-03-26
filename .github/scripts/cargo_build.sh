@@ -80,18 +80,9 @@ rm -f /tmp/*.json /tmp/*.toml
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE $FEATURES
 
-export RUST_LOG="cosmian_cli=error,cosmian_findex_client=error,cosmian_kmip=error,cosmian_kms_client=error,test_findex_server=error"
-
-# # shellcheck disable=SC2086
-# cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored
-
-# TO remove
-export RUST_LOG="cosmian_cli=debug,cosmian_findex_client=debug,cosmian_kms_client=debug,test_findex_server=trace,test_kms_server=trace"
-while true; do
-  sleep 1
-  # shellcheck disable=SC2086
-  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored concurrent_read_write
-done
+export RUST_LOG="cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=error,test_findex_server=error"
+# shellcheck disable=SC2086
+cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored concurrent_read_write
 
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
@@ -104,5 +95,5 @@ fi
 # while true; do
 #   sleep 1 && reset
 #   # shellcheck disable=SC2086
-#   cargo test -v --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
+#   cargo test -v --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS concurrent_read_write
 # done
