@@ -1,5 +1,5 @@
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
-use tracing::trace;
+use tracing::{debug, trace};
 
 use super::KmsEncryptionLayer;
 use crate::ClientError;
@@ -21,6 +21,7 @@ impl<
         trace!("guarded_write: guard: {:?}", guard);
         let (address, optional_word) = guard;
 
+        debug!("guarded_write: entering");
         // Split bindings into two vectors
         let (mut bindings, mut bindings_words): (Vec<_>, Vec<_>) = bindings.into_iter().unzip();
         trace!("guarded_write: bindings_addresses: {bindings:?}");
@@ -30,6 +31,7 @@ impl<
         bindings.push(address); // size: n+1
         let mut tokens = self.hmac(bindings).await?;
         trace!("guarded_write: tokens: {tokens:?}");
+        debug!("guarded_write: tokens");
 
         // Put apart the last token
         let token = tokens
@@ -37,13 +39,15 @@ impl<
             .ok_or_else(|| ClientError::Default("No token found".to_owned()))?;
 
         let (ciphertexts_and_tokens, old) = if let Some(word) = optional_word {
+            debug!("guarded_write[some]: optional_word is not none");
             // Zip words and tokens
             bindings_words.push(word); // size: n+1
             tokens.push(token.clone()); // size: n+1
 
             // Bulk Encrypt
             let mut ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
-            trace!("guarded_write: ciphertexts: {ciphertexts:?}");
+            trace!("guarded_write[some]: ciphertexts: {ciphertexts:?}");
+            debug!("guarded_write[some]: ciphertexts");
 
             // Pop the old value
             let old = ciphertexts
@@ -56,6 +60,7 @@ impl<
             // Bulk Encrypt
             let ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
             trace!("guarded_write: ciphertexts: {ciphertexts:?}");
+            debug!("guarded_write[none]: ciphertexts");
 
             // Zip ciphertexts and tokens
             (ciphertexts.into_iter().zip(tokens), None)
@@ -63,7 +68,7 @@ impl<
 
         //
         // Send bindings to server
-        trace!("guarded_write: send bindings to server");
+        debug!("guarded_write: send bindings to server");
         let cur = self
             .mem
             .guarded_write(
@@ -78,7 +83,7 @@ impl<
 
         //
         // Decrypt the current value (if any)
-        trace!("guarded_write: decrypt the current value");
+        debug!("guarded_write: decrypt the current value");
         let res = match cur {
             Some(ctx) => Some(
                 *self
@@ -89,7 +94,7 @@ impl<
             ),
             None => None,
         };
-        trace!("guarded_write: res: {res:?}");
+        debug!("guarded_write: res: {res:?}");
 
         Ok(res)
     }
@@ -151,6 +156,8 @@ impl<
 #[cfg(test)]
 #[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
 mod tests {
+    use std::sync::Arc;
+
     use cosmian_findex::{
         InMemory,
         test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
@@ -167,6 +174,7 @@ mod tests {
     use rand::SeedableRng;
     use rand_chacha::ChaChaRng;
     use test_kms_server::start_default_test_kms_server;
+    use tokio::task;
 
     use super::*;
     use crate::ClientResult;
@@ -211,6 +219,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[allow(clippy::panic_in_result_fn, clippy::unwrap_used)]
     async fn test_adt_encrypt_decrypt() -> ClientResult<()> {
         let mut rng = ChaChaRng::from_os_rng();
         let tok = Address::<ADDRESS_LENGTH>::random(&mut rng);
@@ -219,10 +228,22 @@ mod tests {
         let ctx = start_default_test_kms_server().await;
         let layer = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 
-        let ctx = layer.encrypt(&[ptx], &[tok.clone()]).await?.remove(0);
-        let res = layer.decrypt(&[ctx], &[tok]).await?.remove(0);
-        assert_eq!(ptx.len(), res.len());
-        assert_eq!(ptx, res);
+        let layer = Arc::new(layer);
+        let mut handles = vec![];
+
+        handles.push(task::spawn(async move {
+            for _ in 0..100_000 {
+                let ctx = layer.encrypt(&[ptx], &[tok.clone()]).await?.remove(0);
+                let res = layer.decrypt(&[ctx], &[tok.clone()]).await?.remove(0);
+                assert_eq!(ptx, res);
+                assert_eq!(ptx.len(), res.len());
+            }
+            Ok::<(), ClientError>(())
+        }));
+
+        for handle in handles {
+            handle.await.unwrap()?;
+        }
         Ok(())
     }
 
