@@ -89,7 +89,7 @@ export RUST_LOG="cosmian_cli=error,cosmian_findex_client=error,cosmian_kmip=erro
 export RUST_LOG="cosmian_cli=trace,cosmian_findex_client=trace,cosmian_kms_client=debug,test_findex_server=trace,test_kms_server=trace"
 
 while true; do
-  sleep 1 && reset
+  sleep 1
   # shellcheck disable=SC2086
   cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --include-ignored concurrent_read_write test_kms_client
 done
