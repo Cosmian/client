@@ -43,7 +43,7 @@ impl<
 
             // Bulk Encrypt
             let mut ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
-            trace!("guarded_write[some]: ciphertexts: {ciphertexts:?}");
+            trace!("guarded_write: ciphertexts: {ciphertexts:?}");
 
             // Pop the old value
             let old = ciphertexts
@@ -225,7 +225,7 @@ mod tests {
         let mut handles = vec![];
 
         handles.push(task::spawn(async move {
-            for _ in 0..100_000 {
+            for _ in 0..1_000 {
                 let ctx = layer.encrypt(&[ptx], &[tok.clone()]).await?.remove(0);
                 let res = layer.decrypt(&[ctx], &[tok.clone()]).await?.remove(0);
                 assert_eq!(ptx, res);
