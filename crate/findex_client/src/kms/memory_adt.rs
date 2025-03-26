@@ -63,6 +63,7 @@ impl<
 
         //
         // Send bindings to server
+        trace!("guarded_write: send bindings to server");
         let cur = self
             .mem
             .guarded_write(
@@ -77,6 +78,7 @@ impl<
 
         //
         // Decrypt the current value (if any)
+        trace!("guarded_write: decrypt the current value");
         let res = match cur {
             Some(ctx) => Some(
                 *self
