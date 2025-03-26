@@ -1,5 +1,5 @@
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
-use tracing::{debug, trace};
+use tracing::trace;
 
 use super::KmsEncryptionLayer;
 use crate::ClientError;
@@ -87,7 +87,7 @@ impl<
             ),
             None => None,
         };
-        debug!("guarded_write: res: {res:?}");
+        trace!("guarded_write: res: {res:?}");
 
         Ok(res)
     }
