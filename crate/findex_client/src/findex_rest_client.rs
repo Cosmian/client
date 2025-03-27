@@ -58,8 +58,7 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
             return Err(ClientError::RequestFailed(err));
         }
 
-        let words: OptionalWords<WORD_LENGTH> =
-            OptionalWords::deserialize(&response.bytes().await?)?;
+        let words = OptionalWords::deserialize(&response.bytes().await?)?;
 
         trace!(
             "batch_read successful on server url {}. result: {}",
