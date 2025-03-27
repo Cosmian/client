@@ -3,7 +3,7 @@ use cosmian_findex_structs::{
     Addresses, Bindings, Guard, OptionalWords,
     reexport::cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT},
 };
-use tracing::{trace, warn};
+use tracing::{debug, trace, warn};
 use uuid::Uuid;
 
 use crate::{RestClient, error::ClientError, rest_client::handle_error};
@@ -88,8 +88,8 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
         let guard_bytes = Guard::new(guard.0, guard.1).serialize()?;
         let bindings_bytes = Bindings::new(bindings).serialize()?;
         let length = guard_bytes.len() + bindings_bytes.len();
-        if length > 1024 {
-            println!("FindexRestClient: guarded_write: {length}");
+        if length > 1_000_000 {
+            debug!("FindexRestClient: guarded_write: allocating {length}");
         }
 
         let mut request_bytes = Vec::with_capacity(guard_bytes.len() + bindings_bytes.len());
