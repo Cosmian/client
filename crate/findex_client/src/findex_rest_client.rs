@@ -87,6 +87,11 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
         // concatenation. Anyway, this should be abstracted away in a function.
         let guard_bytes = Guard::new(guard.0, guard.1).serialize()?;
         let bindings_bytes = Bindings::new(bindings).serialize()?;
+        let length = guard_bytes.len() + bindings_bytes.len();
+        if length > 1024 {
+            println!("FindexRestClient: guarded_write: {length}");
+        }
+
         let mut request_bytes = Vec::with_capacity(guard_bytes.len() + bindings_bytes.len());
         request_bytes.extend_from_slice(&guard_bytes);
         request_bytes.extend_from_slice(&bindings_bytes);
@@ -108,8 +113,7 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
         }
 
         let guard = {
-            let bytes = response.bytes().await?;
-            let words: Vec<_> = OptionalWords::deserialize(&bytes)?.into();
+            let words: Vec<_> = OptionalWords::deserialize(&response.bytes().await?)?.into();
             words.into_iter().next().ok_or_else(|| {
                 ClientError::RequestFailed(
                     "Unexpected response from server. Expected 1 word, got None".to_owned(),
