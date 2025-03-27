@@ -92,7 +92,7 @@ impl<const WORD_LENGTH: usize> MemoryADT for FindexRestClient<WORD_LENGTH> {
             debug!("FindexRestClient: guarded_write: allocating {length}");
         }
 
-        let mut request_bytes = Vec::with_capacity(guard_bytes.len() + bindings_bytes.len());
+        let mut request_bytes = Vec::with_capacity(length);
         request_bytes.extend_from_slice(&guard_bytes);
         request_bytes.extend_from_slice(&bindings_bytes);
         // END TODO

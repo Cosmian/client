@@ -1905,7 +1905,7 @@ dependencies = [
 [[package]]
 name = "cosmian_http_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0#66c4e05ebbfa6d205ae16bacf99d197bab3a70a9"
+source = "git+https://www.github.com/Cosmian/http_client_server?branch=fix%2Fremove_keep_alive#69b568701da9b2317c3741481eb99f96d5fd84c4"
 dependencies = [
  "actix-web",
  "derive_more 0.99.19",
