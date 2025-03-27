@@ -58,7 +58,8 @@ cosmian_findex_client = { path = "crate/findex_client" }
 cosmian_findex = { git = "https://github.com/Cosmian/findex", default-features = false, rev = "98fcb6e97054e1bb9dddd7a0d620e27438cb91b7" }
 cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
 cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
-cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
+cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", branch = "fix/remove_keep_alive" }
+# cosmian_http_client = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_logger = { git = "https://www.github.com/Cosmian/http_client_server", tag = "0.1.0" }
 cosmian_kms_client = { path = "crate/kms_client" }
 pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }

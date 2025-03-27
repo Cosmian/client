@@ -84,20 +84,16 @@ rm -f /tmp/*.json /tmp/*.toml
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE $FEATURES
 
-export RUST_LOG="cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=error,test_findex_server=error"
-# shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- $SKIP_SERVICES_TESTS --skip test_findex_concurrent_read_write --include-ignored
-
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
 
+export RUST_LOG="cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=error,test_findex_server=error"
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # shellcheck disable=SC2086
+  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS --skip --include-ignored
+  # shellcheck disable=SC2086
   cargo bench --target $TARGET $FEATURES --no-run
+else
+  # shellcheck disable=SC2086
+  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS --skip
 fi
-
-# while true; do
-#   sleep 1 && reset
-#   # shellcheck disable=SC2086
-#   cargo test -v --target $TARGET $RELEASE $FEATURES --workspace -- --nocapture $SKIP_SERVICES_TESTS
-# done
