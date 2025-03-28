@@ -3,7 +3,7 @@ import { Button, Card, Checkbox, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendKmipRequest } from "./utils";
-import { destroy_ttlv_request, parse_destroy_ttlv_response } from "./wasm/pkg/cosmian_kms_ui_utils";
+import { destroy_ttlv_request, parse_destroy_ttlv_response } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 interface DestroyFormData {
     objectId?: string;

@@ -893,7 +893,7 @@ the subject name to use.
 
 `--algorithm [-a] <ALGORITHM>` The algorithm to use for the keypair generation
 
-Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "rsa1024", "rsa2048", "rsa3072", "rsa4096"` [default: `"rsa4096"`]
+Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "ed25519", "ed448", "rsa1024", "rsa2048", "rsa3072", "rsa4096"` [default: `"rsa4096"`]
 
 `--issuer-private-key-id [-k] <ISSUER_PRIVATE_KEY_ID>` The unique identifier of the private key of the issuer. A certificate must be linked to that private key if no issuer certificate id is provided
 
@@ -2807,7 +2807,3 @@ Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- m
 `
 ### Arguments
 ` <MARKDOWN_FILE>` The file to export the markdown to
-
-
-
-

@@ -9,26 +9,18 @@ interface SymmetricDecryptFormData {
     fileName: string;
     keyId?: string;
     tags?: string[];
-    dataEncryptionAlgorithm: "AesGcm" | "AesXts" | "AesGcmSiv" | "Chacha20Poly1305";
-    // keyEncryptionAlgorithm?: 'nist-key-wrap' | 'aes-gcm' | 'rsa-pkcs-v15' | 'rsa-oaep' | 'rsa-aes-key-wrap';
+    dataEncryptionAlgorithm: "AesGcm" | "AesXts" | "AesGcmSiv" | "Chacha20Poly1305" | "AesCbc";
     outputFile?: string;
     authenticationData?: Uint8Array;
 }
 
 const DATA_ENCRYPTION_ALGORITHMS = [
     { label: "AES-GCM (default)", value: "AesGcm" },
+    { label: "AES-CBC", value: "AesCbc" },
     { label: "AES-XTS", value: "AesXts" },
     { label: "AES-GCM-SIV", value: "AesGcmSiv" },
     { label: "ChaCha20-Poly1305", value: "Chacha20Poly1305" },
 ];
-
-// const KEY_ENCRYPTION_ALGORITHMS = [
-//     { label: 'NIST Key Wrap (RFC 5649)', value: 'nist-key-wrap' },
-//     { label: 'AES GCM', value: 'aes-gcm' },
-//     { label: 'RSA PKCS v1.5', value: 'rsa-pkcs-v15' },
-//     { label: 'RSA OAEP', value: 'rsa-oaep' },
-//     { label: 'RSA AES Key Wrap', value: 'rsa-aes-key-wrap' },
-// ];
 
 const SymmetricDecryptForm: React.FC = () => {
     const [form] = Form.useForm<SymmetricDecryptFormData>();
@@ -36,6 +28,7 @@ const SymmetricDecryptForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
+    const selectedEncryptionAlgorithm = Form.useWatch("dataEncryptionAlgorithm", form);
 
     useEffect(() => {
         if (res && responseRef.current) {
@@ -141,25 +134,15 @@ const SymmetricDecryptForm: React.FC = () => {
                             <Select options={DATA_ENCRYPTION_ALGORITHMS} />
                         </Form.Item>
 
-                        {/* <Form.Item
-                        name="keyEncryptionAlgorithm"
-                        label="Key Encryption Algorithm"
-                        help="Optional. If not specified, decryption happens server-side"
-                    >
-                        <Select
-                            options={KEY_ENCRYPTION_ALGORITHMS}
-                            allowClear
-                            placeholder="Select for client-side decryption"
-                        />
-                    </Form.Item> */}
-
-                        <Form.Item
-                            name="authenticationData"
-                            label="Authentication Data"
-                            help="Optional hex-encoded authentication data used during encryption"
-                        >
-                            <Input placeholder="Enter authentication data (hex)" />
-                        </Form.Item>
+                        {selectedEncryptionAlgorithm !== "AesXts" && selectedEncryptionAlgorithm !== "AesCbc" && (
+                            <Form.Item
+                                name="authenticationData"
+                                label="Authentication Data"
+                                help="Optional hex-encoded authentication data used during encryption"
+                            >
+                                <Input placeholder="Enter authentication data (hex)" />
+                            </Form.Item>
+                        )}
                     </Card>
 
                     <Form.Item>

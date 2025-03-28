@@ -31,8 +31,6 @@ const ALGORITHM_OPTIONS = [
     { label: "NIST P-384", value: "nist-p384" },
     { label: "NIST P-521", value: "nist-p521" },
     { label: "Ed25519", value: "ed25519" },
-    { label: "X25519", value: "x25519" },
-    { label: "X448", value: "x448" },
     { label: "Ed448", value: "ed448" },
 ];
 
@@ -43,8 +41,6 @@ const CertificateCertifyForm: React.FC = () => {
     const [certifyMethod, setCertifyMethod] = useState<string>("csr");
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
-
-    console.log("algo", ALGORITHM_OPTIONS);
 
     useEffect(() => {
         if (res && responseRef.current) {

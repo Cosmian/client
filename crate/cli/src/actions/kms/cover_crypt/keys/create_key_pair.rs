@@ -1,10 +1,11 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use cosmian_kms_client::KmsClient;
-use cosmian_kms_crypto::crypto::cover_crypt::{
-    access_structure::access_structure_from_json_file,
-    kmip_requests::build_create_covercrypt_master_keypair_request,
+use cosmian_kms_client::{
+    KmsClient,
+    kmip_2_1::requests::cover_crypt::{
+        access_structure_from_json_file, build_create_covercrypt_master_keypair_request,
+    },
 };
 use tracing::debug;
 

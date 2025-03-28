@@ -33,10 +33,6 @@ pub struct DecryptAction {
     /// The encrypted output file path
     #[clap(required = false, long, short = 'o')]
     output_file: Option<PathBuf>,
-
-    /// Optional authentication data that was supplied during encryption.
-    #[clap(required = false, long, short)]
-    authentication_data: Option<String>,
 }
 
 impl DecryptAction {
@@ -54,9 +50,7 @@ impl DecryptAction {
             None,
             data,
             None,
-            self.authentication_data
-                .as_deref()
-                .map(|s| s.as_bytes().to_vec()),
+            None,
             None,
         );
 

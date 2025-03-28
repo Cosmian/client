@@ -42,8 +42,8 @@ impl RsaEncryptionAlgorithm {
                 ..Default::default()
             },
             Self::CkmRsaAesKeyWrap => CryptographicParameters {
-                cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-                padding_method: Some(PaddingMethod::OAEP),
+                cryptographic_algorithm: Some(CryptographicAlgorithm::RSA),
+                padding_method: Some(PaddingMethod::None),
                 hashing_algorithm: Some(hash_fn.into()),
                 ..Default::default()
             },

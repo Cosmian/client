@@ -5,7 +5,7 @@ use cosmian_cover_crypt::{
     AccessPolicy, EncryptedHeader, MasterSecretKey, UserSecretKey, api::Covercrypt,
 };
 use cosmian_crypto_core::bytes_ser_de::{Deserializer, Serializable, test_serialization};
-use cosmian_kms_crypto::crypto::cover_crypt::access_structure::access_structure_from_json_file;
+use cosmian_kmip::kmip_2_1::requests::access_structure_from_json_file;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 

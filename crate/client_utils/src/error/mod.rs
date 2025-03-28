@@ -77,6 +77,7 @@ impl From<KmipError> for UtilsError {
                 ErrorReason::Codec_Error,
                 format!("Deserialization: invalid size: {actual}, expected: {expected}"),
             ),
+            KmipError::Covercrypt(e) => Self::Default(format!("Covercrypt error: {e}")),
         }
     }
 }

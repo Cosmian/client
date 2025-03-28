@@ -6,7 +6,8 @@ members = [
   "crate/gui",
   "crate/pkcs11/module",
   "crate/pkcs11/provider",
-  "crate/client_utils"
+  "crate/client_utils",
+  "crate/wasm"
 ]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
@@ -53,6 +54,7 @@ cosmian_config_utils = { git = "https://www.github.com/Cosmian/http_client_serve
 cosmian_cover_crypt = { version = "15.0", default-features = false }
 cosmian_cli = { path = "crate/cli" }
 cosmian_kms_client_utils = { path = "crate/client_utils" }
+cosmian_kms_client_wasm = { path = "crate/wasm" }
 cosmian_crypto_core = { version = "10.0.1", default-features = false, features = [
   "ser",
 ] }

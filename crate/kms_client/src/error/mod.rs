@@ -117,6 +117,7 @@ impl From<KmipError> for KmsClientError {
                 ErrorReason::Codec_Error,
                 format!("Deserialization: invalid size: {actual}, expected: {expected}"),
             ),
+            KmipError::Covercrypt(e) => Self::Default(format!("Covercrypt error: {e}")),
         }
     }
 }

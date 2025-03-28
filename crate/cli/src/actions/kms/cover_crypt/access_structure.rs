@@ -9,16 +9,12 @@ use cosmian_kms_client::{
     export_object,
     kmip_2_1::{
         kmip_objects::Object,
+        requests::cover_crypt::{RekeyEditAction, build_rekey_keypair_request},
         ttlv::{TTLV, deserializer::from_ttlv},
     },
     read_from_json_file,
 };
-use cosmian_kms_crypto::{
-    CryptoError,
-    crypto::cover_crypt::{
-        attributes::RekeyEditAction, kmip_requests::build_rekey_keypair_request,
-    },
-};
+use cosmian_kms_crypto::CryptoError;
 
 use crate::{
     actions::{

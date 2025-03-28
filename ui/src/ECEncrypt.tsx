@@ -9,7 +9,6 @@ interface ECEncryptFormData {
     fileName: string;
     keyId?: string;
     tags?: string[];
-    authenticationData?: Uint8Array;
     outputFile?: string;
 }
 
@@ -36,7 +35,7 @@ const ECEncryptForm: React.FC = () => {
                 setRes("Missing key identifier.");
                 throw Error("Missing key identifier");
             }
-            const request = encrypt_ec_ttlv_request(id, values.inputFile, values.authenticationData);
+            const request = encrypt_ec_ttlv_request(id, values.inputFile);
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const response = await parse_encrypt_ttlv_response(result_str);
@@ -102,15 +101,6 @@ const ECEncryptForm: React.FC = () => {
 
                         <Form.Item name="tags" label="Tags" help="Alternative to Key ID: specify tags to identify the key">
                             <Select mode="tags" placeholder="Enter tags" open={false} />
-                        </Form.Item>
-                    </Card>
-                    <Card>
-                        <Form.Item
-                            name="authenticationData"
-                            label="Authentication Data"
-                            help="Optional: this data needs to be provided back for decryption"
-                        >
-                            <Input.TextArea placeholder="Enter authentication data" rows={2} />
                         </Form.Item>
                     </Card>
                     <Form.Item>

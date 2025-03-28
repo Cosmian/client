@@ -1,7 +1,7 @@
 use clap::Parser;
-use cosmian_kms_client::KmsClient;
-use cosmian_kms_crypto::crypto::cover_crypt::{
-    attributes::RekeyEditAction, kmip_requests::build_rekey_keypair_request,
+use cosmian_kms_client::{
+    KmsClient,
+    kmip_2_1::requests::cover_crypt::{RekeyEditAction, build_rekey_keypair_request},
 };
 
 use crate::{

@@ -8,13 +8,15 @@
 //         LinkedObjectIdentifier, VendorAttribute,
 //     },
 // };
-
+// use cosmian_kms_crypto::crypto::cover_crypt::{
+//     kmip_requests::build_create_covercrypt_master_keypair_request,
+// };
 // use crate::error::UtilsError;
 
 // pub const VENDOR_ATTR_COVER_CRYPT_POLICY: &str = "cover_crypt_policy";
 // pub const VENDOR_ATTR_COVER_CRYPT_ACCESS_POLICY: &str = "cover_crypt_access_policy";
 
-// /// Convert an policy to a vendor attribute
+// Convert an policy to a vendor attribute
 // pub fn policy_as_vendor_attribute(policy: &Policy) -> Result<VendorAttribute, UtilsError> {
 //     Ok(VendorAttribute {
 //         vendor_identification: VENDOR_ID_COSMIAN.to_owned(),

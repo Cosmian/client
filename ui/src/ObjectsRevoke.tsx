@@ -3,7 +3,7 @@ import { Button, Card, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendKmipRequest } from "./utils";
-import { parse_revoke_ttlv_response, revoke_ttlv_request } from "./wasm/pkg/cosmian_kms_ui_utils";
+import { parse_revoke_ttlv_response, revoke_ttlv_request } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 interface RevokeFormData {
     revocationReason: string;

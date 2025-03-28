@@ -66,6 +66,7 @@ impl From<KmipError> for Pkcs11Error {
                 ErrorReason::Codec_Error,
                 format!("Expected size: {}, Actual size: {}", expected, actual),
             ),
+            KmipError::Covercrypt(e) => Self::Default(format!("Covercrypt error: {e}")),
         }
     }
 }

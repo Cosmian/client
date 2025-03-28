@@ -1,16 +1,16 @@
-import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd";
-import React, { useEffect, useRef, useState } from "react";
-import { useAuth } from "./AuthContext";
-import { sendKmipRequest } from "./utils";
-import { create_cc_master_keypair_ttlv_request, parse_create_keypair_ttlv_response } from "./wasm/pkg";
+import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd"
+import React, { useEffect, useRef, useState } from "react"
+import { useAuth } from "./AuthContext"
+import { sendKmipRequest } from "./utils"
+import { create_cc_master_keypair_ttlv_request, parse_create_keypair_ttlv_response } from "./wasm/pkg"
 
 interface CovercryptMasterKeyFormData {
-    policy: Uint8Array;
+    specification: string;
     tags: string[];
     sensitive: boolean;
 }
 
-const POLICY_EXAMPLE = `{
+const SPECIFICATION_EXAMPLE = `{
     "Security Level::<": [
         "Protected",
         "Confidential",
@@ -26,7 +26,7 @@ const POLICY_EXAMPLE = `{
 
 const CovercryptMasterKeyForm: React.FC = () => {
     const [form] = Form.useForm<CovercryptMasterKeyFormData>();
-    const [policyType, setPolicyType] = React.useState<"json-file" | "json-text">("json-file");
+    const [specificationType, setSpecificationType] = React.useState<"json-file" | "json-text">("json-file");
     const [res, setRes] = useState<undefined | string>(undefined);
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
@@ -43,7 +43,7 @@ const CovercryptMasterKeyForm: React.FC = () => {
         setIsLoading(true);
         setRes(undefined);
         try {
-            const request = create_cc_master_keypair_ttlv_request(values.policy, values.tags, values.sensitive);
+            const request = create_cc_master_keypair_ttlv_request(values.specification, values.tags, values.sensitive);
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const result = await parse_create_keypair_ttlv_response(result_str);
@@ -59,12 +59,12 @@ const CovercryptMasterKeyForm: React.FC = () => {
         }
     };
 
-    const PolicyExplanation = () => (
+    const SpecificationExplanation = () => (
         <div className="mt-2 space-y-1">
-            <p className="font-medium">This example creates a policy with:</p>
+            <p className="font-medium">This example creates a specification with:</p>
             <ul className="list-disc pl-5 space-y-1">
                 <li>
-                    Two policy axes: <code>Security Level</code> and <code>Department</code>
+                    Two specification axes: <code>Security Level</code> and <code>Department</code>
                 </li>
                 <li>
                     Hierarchical <code>Security Level</code> axis (indicated by <code>::&lt;</code> suffix)
@@ -84,7 +84,7 @@ const CovercryptMasterKeyForm: React.FC = () => {
             <h1 className="text-2xl font-bold  mb-6">Create a Covercrypt master key pair</h1>
 
             <div className="mb-8 space-y-2">
-                <p>Create a new master key pair for a given policy.</p>
+                <p>Create a new master key pair for a given specification.</p>
                 <ul className="list-disc pl-5 space-y-1">
                     <li>The master public key is used to encrypt files and can be safely shared</li>
                     <li>The master secret key is used to generate user decryption keys and must be kept confidential</li>
@@ -103,68 +103,65 @@ const CovercryptMasterKeyForm: React.FC = () => {
                 <Space direction="vertical" size="middle" style={{ display: "flex" }}>
                     <Card>
                         <div className="p-4 rounded-lg space-y-4">
-                            <h3 className="text-m font-bold mb-4">Policy Configuration (required)</h3>
+                            <h3 className="text-m font-bold mb-4">Specification Configuration (required)</h3>
 
-                            <Form.Item name="policy" style={{ display: "none" }}>
+                            <Form.Item name="specification" style={{ display: "none" }}>
                                 <Input />
                             </Form.Item>
 
                             <Form.Item>
                                 <Select
-                                    value={policyType}
-                                    onChange={(value) => setPolicyType(value)}
+                                    value={specificationType}
+                                    onChange={(value) => setSpecificationType(value)}
                                     options={[
-                                        { label: "Upload JSON Policy File", value: "json-file" },
-                                        { label: "Enter JSON Policy", value: "json-text" },
+                                        { label: "Upload JSON Specification File", value: "json-file" },
+                                        { label: "Enter JSON Specification", value: "json-text" },
                                     ]}
                                 />
                             </Form.Item>
 
                             <div className="p-4 rounded mb-4">
-                                <p className="text-sm mb-2">Example Policy Format:</p>
-                                <pre className="p-2 rounded text-xs overflow-auto">{POLICY_EXAMPLE}</pre>
-                                <PolicyExplanation />
+                                <p className="text-sm mb-2">Example Specification Format:</p>
+                                <pre className="p-2 rounded text-xs overflow-auto">{SPECIFICATION_EXAMPLE}</pre>
+                                <SpecificationExplanation />
                             </div>
 
-                            {policyType === "json-file" && (
+                            {specificationType === "json-file" && (
                                 <Form.Item
-                                    name="policySpecifications"
-                                    rules={[{ required: true, message: "Please provide policy specifications" }]}
+                                    name="specificationFile"
+                                    rules={[{ required: true, message: "Please provide specifications" }]}
                                 >
                                     <Upload.Dragger
                                         accept=".json"
                                         beforeUpload={(file) => {
                                             const reader = new FileReader();
                                             reader.onload = (e) => {
-                                                const arrayBuffer = e.target?.result;
-                                                if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
-                                                    const bytes = new Uint8Array(arrayBuffer);
-                                                    form.setFieldsValue({ policy: bytes });
+                                                const text = e.target?.result as string;
+                                                if (text) {
+                                                    form.setFieldsValue({ specification: text });
                                                 }
                                             };
-                                            reader.readAsArrayBuffer(file);
+                                            reader.readAsText(file);
                                             return false;
                                         }}
                                         maxCount={1}
                                     >
-                                        <p className="ant-upload-text">Click or drag JSON policy file</p>
+                                        <p className="ant-upload-text">Click or drag JSON specification file</p>
                                     </Upload.Dragger>
                                 </Form.Item>
                             )}
 
-                            {policyType === "json-text" && (
+                            {specificationType === "json-text" && (
                                 <Form.Item
-                                    name="policyJson"
+                                    name="specificationText"
                                     rules={[
-                                        { required: true, message: "Please enter policy JSON" },
+                                        { required: true, message: "Please enter specification JSON" },
                                         {
                                             validator: async (_, value) => {
                                                 if (value) {
                                                     try {
-                                                        const jsonObject = JSON.parse(value);
-                                                        const encoder = new TextEncoder();
-                                                        const uint8Array = encoder.encode(JSON.stringify(jsonObject));
-                                                        form.setFieldValue("policy", uint8Array);
+                                                        JSON.parse(value); // Ensure it's valid JSON
+                                                        form.setFieldValue("specification", value);
                                                     } catch (e) {
                                                         throw new Error(`Invalid JSON format: ${e}`);
                                                     }
@@ -173,7 +170,11 @@ const CovercryptMasterKeyForm: React.FC = () => {
                                         },
                                     ]}
                                 >
-                                    <Input.TextArea placeholder="Paste your JSON policy here" rows={10} className="font-mono text-sm" />
+                                    <Input.TextArea
+                                        placeholder="Paste your JSON Specification here"
+                                        rows={10}
+                                        className="font-mono text-sm"
+                                    />
                                 </Form.Item>
                             )}
                         </div>

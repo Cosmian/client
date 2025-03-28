@@ -85,9 +85,7 @@ const ECKeyCreateForm: React.FC = () => {
                                 <Select.Option value="nist-p256">NIST P-256</Select.Option>
                                 <Select.Option value="nist-p384">NIST P-384</Select.Option>
                                 <Select.Option value="nist-p521">NIST P-521</Select.Option>
-                                <Select.Option value="x25519">X25519</Select.Option>
                                 <Select.Option value="ed25519">Ed25519</Select.Option>
-                                <Select.Option value="x448">X448</Select.Option>
                                 <Select.Option value="ed448">Ed448</Select.Option>
                             </Select>
                         </Form.Item>

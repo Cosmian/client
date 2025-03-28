@@ -2037,6 +2037,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmian_kms_client_wasm"
+version = "0.2.0"
+dependencies = [
+ "base64 0.22.1",
+ "cosmian_cover_crypt",
+ "cosmian_crypto_core 10.0.1",
+ "cosmian_kmip",
+ "cosmian_kms_client_utils",
+ "getrandom 0.2.15",
+ "js-sys",
+ "pem",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
+ "strum",
+ "wasm-bindgen",
+ "web-sys",
+ "x509-cert",
+ "zeroize",
+]
+
+[[package]]
 name = "cosmian_kms_crypto"
 version = "4.22.1"
 source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_ui#778881c8e7a9f4628205e89d39cd8e9c79f6ffc7"

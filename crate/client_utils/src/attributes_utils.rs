@@ -336,6 +336,147 @@ pub fn parse_selected_attributes(
     Ok(results)
 }
 
+pub fn parse_selected_attributes_flatten(
+    attributes: &Attributes,
+    selected_attributes: &[&str],
+) -> Result<HashMap<String, Value>, UtilsError> {
+    let mut results: HashMap<String, Value> = HashMap::new();
+    if selected_attributes.is_empty() {
+    let values = serde_json::to_value(attributes)?;
+
+    if let Value::Object(map) = values {
+        results = map.into_iter()
+            .map(|(key, val)| (key, serde_json::to_value(val).unwrap_or(Value::Null)))
+            .collect();
+        }
+        return Ok(results)
+    }
+    for &selected_attribute_name in selected_attributes {
+        match selected_attribute_name {
+            "activation_date" => {
+                if let Some(v) = attributes.activation_date.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned().clone(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "cryptographic_algorithm" => {
+                if let Some(v) = attributes.cryptographic_algorithm.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "cryptographic_length" => {
+                if let Some(v) = attributes.cryptographic_length.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "key_usage" => {
+                if let Some(v) = attributes.cryptographic_usage_mask.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "key_format_type" => {
+                if let Some(v) = attributes.key_format_type.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "object_type" => {
+                if let Some(v) = attributes.object_type.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "vendor_attributes" => {
+                if let Some(vendor_attributes) = attributes.vendor_attributes.as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(vendor_attributes).unwrap_or_default(),
+                    );
+                }
+            }
+            "public_key_id" => {
+                if let Some(v) = attributes.get_link(LinkType::PublicKeyLink).as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "private_key_id" => {
+                if let Some(v) = attributes.get_link(LinkType::PrivateKeyLink).as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "certificate_id" => {
+                if let Some(v) = attributes.get_link(LinkType::CertificateLink).as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "pkcs12_certificate_id" => {
+                if let Some(v) = attributes
+                    .get_link(LinkType::PKCS12CertificateLink)
+                    .as_ref()
+                {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "pkcs12_password_certificate" => {
+                if let Some(v) = attributes
+                    .get_link(LinkType::PKCS12PasswordLink)
+                    .as_ref()
+                {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "parent_id" => {
+                if let Some(v) = attributes.get_link(LinkType::ParentLink).as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            "child_id" => {
+                if let Some(v) = attributes.get_link(LinkType::ChildLink).as_ref() {
+                    results.insert(
+                        selected_attribute_name.to_owned(),
+                        serde_json::to_value(v).unwrap_or_default(),
+                    );
+                }
+            }
+            _x => {}
+        }
+    }
+    Ok(results)
+}
+
 pub fn build_selected_attribute(
     attribute_name: &str,
     attribute_value: String,

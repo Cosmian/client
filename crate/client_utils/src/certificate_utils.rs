@@ -25,11 +25,7 @@ pub enum Algorithm {
     NistP384,
     NistP521,
     #[cfg(not(feature = "fips"))]
-    X25519,
-    #[cfg(not(feature = "fips"))]
     Ed25519,
-    #[cfg(not(feature = "fips"))]
-    X448,
     #[cfg(not(feature = "fips"))]
     Ed448,
     #[cfg(not(feature = "fips"))]
@@ -49,11 +45,7 @@ impl Display for Algorithm {
             Self::NistP384 => write!(f, "nist-p384"),
             Self::NistP521 => write!(f, "nist-p521"),
             #[cfg(not(feature = "fips"))]
-            Self::X25519 => write!(f, "x25519"),
-            #[cfg(not(feature = "fips"))]
             Self::Ed25519 => write!(f, "ed25519"),
-            #[cfg(not(feature = "fips"))]
-            Self::X448 => write!(f, "x448"),
             #[cfg(not(feature = "fips"))]
             Self::Ed448 => write!(f, "ed448"),
             #[cfg(not(feature = "fips"))]
@@ -194,27 +186,11 @@ pub fn build_certify_request(
                 );
             }
             #[cfg(not(feature = "fips"))]
-            Algorithm::X25519 => {
-                ec_algorithm(
-                    &mut attributes,
-                    CryptographicAlgorithm::EC,
-                    RecommendedCurve::CURVE25519,
-                );
-            }
-            #[cfg(not(feature = "fips"))]
             Algorithm::Ed25519 => {
                 ec_algorithm(
                     &mut attributes,
                     CryptographicAlgorithm::Ed25519,
                     RecommendedCurve::CURVEED25519,
-                );
-            }
-            #[cfg(not(feature = "fips"))]
-            Algorithm::X448 => {
-                ec_algorithm(
-                    &mut attributes,
-                    CryptographicAlgorithm::EC,
-                    RecommendedCurve::CURVE448,
                 );
             }
             #[cfg(not(feature = "fips"))]

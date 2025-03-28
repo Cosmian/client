@@ -3,84 +3,74 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import HashMapDisplay from "./HashMapDisplay";
 import { sendKmipRequest } from "./utils";
-import { get_attributes_ttlv_request, parse_get_attributes_ttlv_response } from "./wasm/pkg/cosmian_kms_ui_utils";
+import { get_attributes_ttlv_request, parse_get_attributes_ttlv_response } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 const { Title } = Typography;
 const { Option } = Select;
 
-// Define link types based on the CLAP documentation
-const LINK_TYPES = [
+const ATTRIBUTE_NAMES = [
     {
-        value: "certificate",
-        label: "Certificate",
-        description:
-            "For Certificate objects: the parent certificate for a certificate in a certificate chain. For Public Key objects: the corresponding certificate(s), containing the same public key.",
+        value: "activation_date",
+        label: "Activation Date",
     },
     {
-        value: "public-key",
-        label: "Public Key",
-        description:
-            "For a Private Key object: the public key corresponding to the private key. For a Certificate object: the public key contained in the certificate.",
+        value: "cryptographic_algorithm",
+        label: "Cryptographic Algorithm",
     },
     {
-        value: "private-key",
-        label: "Private Key",
-        description: "For a Public Key object: the private key corresponding to the public key.",
+        value: "cryptographic_length",
+        label: "Cryptographic Length",
     },
     {
-        value: "derivation-base-object",
-        label: "Derivation Base Object",
-        description: "For a derived Symmetric Key or Secret Data object: the object(s) from which the current symmetric key was derived.",
+        value: "key_usage",
+        label: "Key Usage",
     },
     {
-        value: "derived-key",
-        label: "Derived Key",
-        description: "The symmetric key(s) or Secret Data object(s) that were derived from the current object.",
+        value: "key_format_type",
+        label: "Key Format Type",
     },
     {
-        value: "replacement-object",
-        label: "Replacement Object",
-        description:
-            "For a Symmetric Key, an Asymmetric Private Key, or an Asymmetric Public Key object: the key that resulted from the re-key of the current key.",
+        value: "object_type",
+        label: "Object Type",
     },
     {
-        value: "replaced-object",
-        label: "Replaced Object",
-        description:
-            "For a Symmetric Key, an Asymmetric Private Key, or an Asymmetric Public Key object: the key that was re-keyed to obtain the current key.",
+        value: "vendor_attributes",
+        label: "Vendor Attributes",
     },
     {
-        value: "parent",
-        label: "Parent",
-        description: "For all object types: the container or other parent object corresponding to the object.",
+        value: "public_key_id",
+        label: "Public key ID",
     },
     {
-        value: "child",
-        label: "Child",
-        description: "For all object types: the subordinate, derived or other child object corresponding to the object.",
+        value: "private_key_id",
+        label: "Private key ID",
     },
-    { value: "previous", label: "Previous", description: "For all object types: the previous object to this object." },
-    { value: "next", label: "Next", description: "For all object types: the next object to this object." },
-    { value: "pkcs12-certificate", label: "PKCS12 Certificate" },
-    { value: "pkcs12-password", label: "PKCS12 Password" },
-    { value: "wrapping-key", label: "Wrapping Key", description: "For wrapped objects: the object that was used to wrap this object." },
-];
-
-// Sample KMIP tags - in a real application, these would come from your backend
-const KMIP_TAGS = [
-    { value: "ActivationDate", label: "Activation Date" },
-    { value: "CryptographicAlgorithm", label: "Cryptographic Algorithm" },
-    { value: "CryptographicLength", label: "Cryptographic Length" },
-    { value: "CryptographicUsageMask", label: "Cryptographic Usage Mask (Key usage)" },
-    { value: "ObjectType", label: "Object Type" },
-    { value: "KeyFormatType", label: "Key Format Type" },
+    {
+        value: "certificate_id",
+        label: "Certificate ID",
+    },
+    {
+        value: "pkcs12_certificate_id",
+        label: "Pkcs12 Certificate ID",
+    },
+    {
+        value: "pkcs12_password_certificate",
+        label: "Pkcs12 Password Certificate",
+    },
+    {
+        value: "parent_id",
+        label: "Parent ID",
+    },
+    {
+        value: "child_id",
+        label: "Child ID",
+    },
 ];
 
 interface AttributeGetFormData {
     id?: string;
     tags?: string[];
-    attribute_tags: string[];
-    attribute_link_types: string[];
+    selected_attributes: string[];
 }
 
 const AttributeGetForm: React.FC = () => {
@@ -97,7 +87,6 @@ const AttributeGetForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: AttributeGetFormData) => {
-        console.log("Get attributes values:", values);
         setIsLoading(true);
 
         const id = values.id ? values.id : values.tags ? JSON.stringify(values.tags) : undefined;
@@ -106,11 +95,11 @@ const AttributeGetForm: React.FC = () => {
                 setRes("Missing object identifier.");
                 throw Error("Missing object identifier");
             }
-            const request = get_attributes_ttlv_request(id, values.attribute_tags);
+            const request = get_attributes_ttlv_request(id);
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
-                const response = parse_get_attributes_ttlv_response(result_str, values.attribute_tags, values.attribute_link_types);
-                setRes(response);
+                const response = parse_get_attributes_ttlv_response(result_str, values.selected_attributes);
+                response.size ? setRes(response) : setRes("Empty result");
             }
         } catch (e) {
             setRes(`Error getting attributes: ${e}`);
@@ -119,13 +108,11 @@ const AttributeGetForm: React.FC = () => {
             setIsLoading(false);
         }
     };
-    console.log(typeof res);
-
     return (
         <div className="p-6">
-            <Title level={2}>Get KMIP Object Attributes and Tags</Title>
+            <Title level={2}>Get KMIP Object Attributes</Title>
             <div className="mb-8 space-y-2">
-                <div>Retrieve attributes and tags for a KMIP object by specifying either the object ID or tags.</div>
+                <div>Retrieve attributes for a KMIP object by specifying either the object ID or tags.</div>
                 <div className="text-sm text-yellow-600">
                     When using tags to retrieve the object, rather than the object id, an error is returned if multiple objects matching the
                     tags are found.
@@ -137,8 +124,7 @@ const AttributeGetForm: React.FC = () => {
                 onFinish={onFinish}
                 layout="vertical"
                 initialValues={{
-                    attribute_tags: [],
-                    attribute_link_types: [],
+                    selected_attributes: [],
                 }}
             >
                 <Space direction="vertical" size="middle" style={{ display: "flex" }}>
@@ -156,31 +142,14 @@ const AttributeGetForm: React.FC = () => {
 
                     <Card title="Attribute Selection">
                         <Form.Item
-                            name="attribute_tags"
-                            label="Attribute Tags"
+                            name="selected_attributes"
+                            label="Attribute Names"
                             help="The attributes or KMIP-tags to retrieve (all attributes will be returned if none specified)"
                         >
-                            <Select mode="multiple" style={{ width: "100%" }} placeholder="Select attribute tags">
-                                {KMIP_TAGS.map((tag) => (
-                                    <Option key={tag.value} value={tag.value}>
-                                        {tag.label}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-
-                        <Form.Item
-                            name="attribute_link_types"
-                            label="Link Types"
-                            help="Filter on retrieved links (only if LinkType is used in attribute tags)"
-                        >
-                            <Select mode="multiple" style={{ width: "100%" }} placeholder="Select link types" optionLabelProp="label">
-                                {LINK_TYPES.map((type) => (
-                                    <Option key={type.value} value={type.value} label={type.label}>
-                                        <div>
-                                            <div>{type.label}</div>
-                                            {type.description && <div className="text-xs text-gray-500">{type.description}</div>}
-                                        </div>
+                            <Select mode="multiple" style={{ width: "100%" }} placeholder="Select attribute">
+                                {ATTRIBUTE_NAMES.map((attribute) => (
+                                    <Option key={attribute.value} value={attribute.value}>
+                                        {attribute.label}
                                     </Option>
                                 ))}
                             </Select>

@@ -99,7 +99,7 @@ pub struct ExportKeyAction {
     /// Wrapping algorithm to use when exporting the key
     /// By default, the algorithm used is
     /// - `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-    /// - `RsaPkcsOaep` for RSA keys
+    /// - `RsaOaep` for RSA keys
     #[clap(
         long = "wrapping-algorithm",
         short = 'm',

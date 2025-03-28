@@ -9,8 +9,7 @@ interface SymmetricEncryptFormData {
     fileName: string;
     keyId?: string;
     tags?: string[];
-    dataEncryptionAlgorithm: "AesGcm" | "AesGcmSiv" | "Chacha20Poly1305" | "AesXts";
-    // keyEncryptionAlgorithm?: 'rsa-oaep' | 'rsa-oaep-256' | 'rsa-oaep-384' | 'rsa-oaep-512';
+    dataEncryptionAlgorithm: "AesGcm" | "AesGcmSiv" | "Chacha20Poly1305" | "AesXts" | "AesCbc";
     outputFile?: string;
     nonce?: Uint8Array;
     authenticationData?: Uint8Array;
@@ -22,13 +21,13 @@ const SymmetricEncryptForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
+    const selectedEncryptionAlgorithm = Form.useWatch("dataEncryptionAlgorithm", form);
 
     useEffect(() => {
         if (res && responseRef.current) {
             responseRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [res]);
-    // const [isClientSide, setIsClientSide] = useState(false);
 
     const onFinish = async (values: SymmetricEncryptFormData) => {
         console.log("Encrypt values:", values);
@@ -44,7 +43,6 @@ const SymmetricEncryptForm: React.FC = () => {
                 id,
                 undefined,
                 values.inputFile,
-                undefined,
                 values.nonce,
                 values.authenticationData,
                 values.dataEncryptionAlgorithm
@@ -140,43 +138,31 @@ const SymmetricEncryptForm: React.FC = () => {
                             <Select>
                                 <Select.Option value="AesGcm">AES-GCM</Select.Option>
                                 <Select.Option value="AesGcmSiv">AES-GCM-SIV</Select.Option>
+                                <Select.Option value="AesCbc">AES-CBC</Select.Option>
                                 <Select.Option value="Chacha20Poly1305">ChaCha20-Poly1305</Select.Option>
                                 <Select.Option value="AesXts">AES-XTS</Select.Option>
                             </Select>
                         </Form.Item>
 
-                        {/* <Form.Item
-                            name="keyEncryptionAlgorithm"
-                            label="Key Encryption Algorithm"
-                            help="Optional. If specified, encryption will be performed client-side"
-                        >
-                            <Select
-                                onChange={(value) => setIsClientSide(!!value)}
-                                allowClear
-                                placeholder="Select for client-side encryption"
-                            >
-                                <Select.Option value="rsa-oaep">RSA-OAEP</Select.Option>
-                                <Select.Option value="rsa-oaep-256">RSA-OAEP-256</Select.Option>
-                                <Select.Option value="rsa-oaep-384">RSA-OAEP-384</Select.Option>
-                                <Select.Option value="rsa-oaep-512">RSA-OAEP-512</Select.Option>
-                            </Select>
-                        </Form.Item> */}
+                        {selectedEncryptionAlgorithm !== "AesXts" && selectedEncryptionAlgorithm !== "AesCbc" && (
+                            <>
+                                <Form.Item
+                                    name="nonce"
+                                    label="Nonce/IV"
+                                    help="Optional: random value will be generated if not provided (hex string)"
+                                >
+                                    <Input placeholder="Enter nonce in hex format" />
+                                </Form.Item>
 
-                        <Form.Item
-                            name="nonce"
-                            label="Nonce/IV"
-                            help="Optional: random value will be generated if not provided (hex string)"
-                        >
-                            <Input placeholder="Enter nonce in hex format" />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="authenticationData"
-                            label="Authentication Data"
-                            help="Optional: additional authentication data (hex string)"
-                        >
-                            <Input placeholder="Enter authentication data in hex format" />
-                        </Form.Item>
+                                <Form.Item
+                                    name="authenticationData"
+                                    label="Authentication Data"
+                                    help="Optional: additional authentication data (hex string)"
+                                >
+                                    <Input placeholder="Enter authentication data in hex format" />
+                                </Form.Item>
+                            </>
+                        )}
                     </Card>
 
                     <Form.Item>

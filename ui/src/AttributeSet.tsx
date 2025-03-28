@@ -3,7 +3,7 @@ import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendKmipRequest } from "./utils";
-import { parse_set_attribute_ttlv_response, set_attribute_ttlv_request } from "./wasm/pkg/cosmian_kms_ui_utils";
+import { parse_set_attribute_ttlv_response, set_attribute_ttlv_request } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 const { Title } = Typography;
 const { Option } = Select;

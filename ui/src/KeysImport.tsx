@@ -1,11 +1,11 @@
-import { UploadOutlined } from "@ant-design/icons";
-import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd";
-import React, { useEffect, useRef, useState } from "react";
-import { useAuth } from "./AuthContext";
-import { sendKmipRequest } from "./utils";
-import { import_ttlv_request, parse_import_ttlv_response } from "./wasm/pkg";
+import { UploadOutlined } from "@ant-design/icons"
+import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd"
+import React, { useEffect, useRef, useState } from "react"
+import { useAuth } from "./AuthContext"
+import { sendKmipRequest } from "./utils"
+import { import_ttlv_request, parse_import_ttlv_response } from "./wasm/pkg"
 
-type ImportKeyFormat = "json-ttlv" | "pem" | "sec1" | "pkcs1-priv" | "pkcs1-pub" | "pkcs8" | "spki" | "aes" | "chacha20";
+type ImportKeyFormat = "json-ttlv" | "pem" | "sec1" | "pkcs1-priv" | "pkcs1-pub" | "pkcs8-pub" | "pkcs8-priv" | "aes" | "chacha20";
 
 type KeyUsage = "sign" | "verify" | "encrypt" | "decrypt" | "wrap" | "unwrap";
 
@@ -89,7 +89,6 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
             { label: "PKCS#1 DER (RSA public)", value: "pkcs1-pub" },
             { label: "PKCS#8 DER (RSA private)", value: "pkcs8-priv" },
             { label: "PKCS#8 DER (RSA public)", value: "pkcs8-pub" },
-            // { label: "SPKI DER (RSA public)", value: "spki" },
         ];
         key_usages = [
             { label: "Sign", value: "sign" },
@@ -120,9 +119,8 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
         key_type_string = "a symmetric";
         key_formats = [
             { label: "JSON TTLV (default)", value: "json-ttlv" },
-            { label: "PEM (auto-detect format)", value: "pem" },
-            { label: "AES (symmetric)", value: "aes" },
-            { label: "ChaCha20 (symmetric)", value: "chacha20" },
+            { label: "AES", value: "aes" },
+            { label: "ChaCha20", value: "chacha20" },
         ];
         key_usages = [
             { label: "Encrypt", value: "encrypt" },
@@ -170,16 +168,41 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
                             <Upload
                                 beforeUpload={(file) => {
                                     const reader = new FileReader();
+
                                     reader.onload = (e) => {
-                                        const arrayBuffer = e.target?.result;
-                                        if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
-                                            const bytes = new Uint8Array(arrayBuffer);
+                                    const content = e.target?.result;
+
+                                    if (typeof content === "string") {
+                                        try {
+                                        // Check if content is Base64 encoded (basic check: valid Base64 characters)
+                                        if (/^[A-Za-z0-9+/=]+$/.test(content.trim())) {
+                                            const decoded = atob(content.trim()); // Decode Base64
+                                            const bytes = new Uint8Array([...decoded].map((char) => char.charCodeAt(0)));
+                                            console.log("Decoded Base64 bytes:", bytes);
                                             form.setFieldsValue({ keyFile: bytes });
+                                        } else {
+                                            throw new Error("Invalid Base64 format");
                                         }
+                                        } catch {
+                                        // If Base64 decoding fails, re-read the file as ArrayBuffer
+                                        const binaryReader = new FileReader();
+                                        binaryReader.onload = (event) => {
+                                            const rawContent = event.target?.result;
+                                            if (rawContent instanceof ArrayBuffer) {
+                                            const bytes = new Uint8Array(rawContent);
+                                            console.log("Raw binary bytes:", bytes);
+                                            form.setFieldsValue({ keyFile: bytes });
+                                            }
+                                        };
+                                        binaryReader.readAsArrayBuffer(file);
+                                        }
+                                    }
                                     };
-                                    reader.readAsArrayBuffer(file);
+
+                                    reader.readAsText(file); // First attempt reading as text for Base64
+
                                     return false;
-                                }}
+  }}
                                 maxCount={1}
                             >
                                 <Button icon={<UploadOutlined />}>Upload Key File</Button>

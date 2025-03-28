@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use base64::Engine as _;
+use cosmian_cover_crypt::AccessPolicy;
 // use cloudproof::reexport::cover_crypt::{
 //     self,
 //     abe_policy::{AccessPolicy, Policy},
@@ -19,45 +20,42 @@ use cosmian_kmip::kmip_2_1::{
         KeyFormatType, LinkType, LinkedObjectIdentifier, RecommendedCurve, Tag, UniqueIdentifier,
     },
     requests::{
-        build_revoke_key_request, create_ec_key_pair_request, create_rsa_key_pair_request,
-        create_symmetric_key_kmip_object, decrypt_request, encrypt_request,
-        get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
-        get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
+        access_structure_from_str, build_create_covercrypt_master_keypair_request,
+        build_create_covercrypt_usk_request, build_revoke_key_request, create_ec_key_pair_request,
+        create_rsa_key_pair_request, create_symmetric_key_kmip_object, decrypt_request,
+        encrypt_request, get_ec_private_key_request, get_ec_public_key_request,
+        get_rsa_private_key_request, get_rsa_public_key_request, import_object_request,
+        symmetric_key_create_request,
     },
-    ttlv::{deserializer::from_ttlv, serializer::to_ttlv, TTLV},
+    ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
 };
-use js_sys::Uint8Array;
-use serde::{de::DeserializeOwned, Serialize};
-use wasm_bindgen::prelude::*;
-use x509_cert::{
-    der::{Decode, DecodePem, Encode},
-    Certificate,
-};
-use zeroize::Zeroizing;
-
-use crate::{
-    attributes_utils::{build_selected_attribute, parse_selected_attributes, CLinkType},
-    certificate_utils::{build_certify_request, Algorithm},
-    // cover_crypt_utils::{
-    //     build_create_covercrypt_master_keypair_request,
-    //     build_create_covercrypt_user_decryption_key_request,
-    // },
-    create_utils::{prepare_sym_key_elements, Curve, SymmetricAlgorithm},
+use cosmian_kms_client_utils::{
+    attributes_utils::{build_selected_attribute, parse_selected_attributes_flatten},
+    certificate_utils::{Algorithm, build_certify_request},
+    create_utils::{Curve, SymmetricAlgorithm, prepare_sym_key_elements},
     error::UtilsError,
     export_utils::{
-        der_to_pem, export_request, get_export_key_format_type,
-        prepare_certificate_export_elements, prepare_key_export_elements, tag_from_object,
-        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm,
+        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm, der_to_pem, export_request,
+        get_export_key_format_type, prepare_certificate_export_elements,
+        prepare_key_export_elements, tag_from_object,
     },
     import_utils::{
-        build_private_key_from_der_bytes, build_usage_mask_from_key_usage,
-        prepare_certificate_attributes, prepare_key_import_elements,
-        read_object_from_json_ttlv_bytes, CertificateInputFormat, ImportKeyFormat, KeyUsage,
+        CertificateInputFormat, ImportKeyFormat, KeyUsage, build_private_key_from_der_bytes,
+        build_usage_mask_from_key_usage, prepare_certificate_attributes,
+        prepare_key_import_elements, read_object_from_json_ttlv_bytes,
     },
     locate_utils::build_locate_request,
     rsa_utils::{HashFn, RsaEncryptionAlgorithm},
-    symmetric_utils::{parse_decrypt_elements, DataEncryptionAlgorithm},
+    symmetric_utils::{DataEncryptionAlgorithm, parse_decrypt_elements},
 };
+use js_sys::Uint8Array;
+use serde::{Serialize, de::DeserializeOwned};
+use wasm_bindgen::prelude::*;
+use x509_cert::{
+    Certificate,
+    der::{Decode, DecodePem, Encode},
+};
+use zeroize::Zeroizing;
 
 fn parse_ttlv_response<T>(response: &str) -> Result<JsValue, JsValue>
 where
@@ -287,14 +285,13 @@ pub fn decrypt_rsa_ttlv_request(
 pub fn decrypt_ec_ttlv_request(
     key_unique_identifier: &str,
     ciphertext: Vec<u8>,
-    authentication_data: Option<Vec<u8>>,
 ) -> Result<JsValue, JsValue> {
     let request = decrypt_request(
         key_unique_identifier,
         None,
         ciphertext,
         None,
-        authentication_data,
+        None,
         None,
     );
     to_ttlv(&request)
@@ -335,7 +332,6 @@ pub fn encrypt_sym_ttlv_request(
     key_unique_identifier: &str,
     encryption_policy: Option<String>,
     plaintext: Vec<u8>,
-    header_metadata: Option<Vec<u8>>,
     nonce: Option<Vec<u8>>,
     authentication_data: Option<Vec<u8>>,
     data_encryption_algorithm: JsValue,
@@ -355,7 +351,6 @@ pub fn encrypt_sym_ttlv_request(
         key_unique_identifier,
         encryption_policy,
         plaintext,
-        header_metadata,
         nonce,
         authentication_data,
         cryptographic_parameters,
@@ -384,7 +379,6 @@ pub fn encrypt_rsa_ttlv_request(
         plaintext,
         None,
         None,
-        None,
         Some(encryption_algorithm.to_cryptographic_parameters(hash_fn)),
     )
     .map_err(|e| JsValue::from_str(&format!("Encryption failed: {e}")))?;
@@ -399,7 +393,6 @@ pub fn encrypt_rsa_ttlv_request(
 pub fn encrypt_ec_ttlv_request(
     key_unique_identifier: &str,
     plaintext: Vec<u8>,
-    authentication_data: Option<Vec<u8>>,
 ) -> Result<JsValue, JsValue> {
     let request = encrypt_request(
         key_unique_identifier,
@@ -407,7 +400,6 @@ pub fn encrypt_ec_ttlv_request(
         plaintext,
         None,
         None,
-        authentication_data,
         None,
     )
     .map_err(|e| JsValue::from_str(&format!("Encryption failed: {e}")))?;
@@ -477,8 +469,8 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
             JsValue::from(Uint8Array::from(bytes.as_slice()))
         }
         ExportKeyFormat::Base64 => {
-            let key_block = response
-                .object
+            let kmip_object = Object::post_fix(response.object_type, response.object);
+            let key_block = kmip_object
                 .key_block()
                 .map_err(|e| JsValue::from_str(&format!("{e}")))?;
             let string = base64::engine::general_purpose::STANDARD
@@ -491,11 +483,11 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
             JsValue::from(string)
         }
         _ => {
-            let key_block = response
-                .object
+            let kmip_object = Object::post_fix(response.object_type, response.object);
+            let key_block = kmip_object
                 .key_block()
                 .map_err(|e| JsValue::from_str(&format!("{e}")))?;
-            let object_type = response.object.object_type();
+            let object_type = kmip_object.object_type();
             let bytes = {
                 let mut bytes = key_block
                     .key_bytes()
@@ -640,105 +632,95 @@ pub fn parse_revoke_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
     parse_ttlv_response::<RevokeResponse>(response)
 }
 
-// use std::collections::HashMap;
-
 // Covercrypt requests
-// #[wasm_bindgen]
-// pub fn create_cc_master_keypair_ttlv_request(
-//     policy: &[u8],
-//     tags: Vec<String>,
-//     sensitive: bool,
-// ) -> Result<JsValue, JsValue> {
-//     let policy_specs: HashMap<String, Vec<String>> =
-//         serde_json::from_slice(policy).map_err(|e| JsValue::from(e.to_string()))?;
-//     let policy: Policy = policy_specs
-//         .try_into()
-//         .map_err(|e: cover_crypt::Error| JsValue::from(e.to_string()))?;
-//     // let policy = Policy::parse_and_convert(policy.as_slice()).map_err(|e| JsValue::from(e.to_string()))?; // for bianary
-//     let request = build_create_covercrypt_master_keypair_request(&policy, tags, sensitive)
-//         .map_err(|e| {
-//             JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}"))
-//         })?;
-//     to_ttlv(&request)
-//         .map_err(|e| JsValue::from(e.to_string()))
-//         .and_then(|objects| {
-//             serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
-//         })
-// }
+#[wasm_bindgen]
+pub fn create_cc_master_keypair_ttlv_request(
+    specification: &str,
+    tags: Vec<String>,
+    sensitive: bool,
+) -> Result<JsValue, JsValue> {
+    let access_structure = access_structure_from_str(specification)
+        .map_err(|e| JsValue::from_str(&format!("Access structure parsing failed: {e}")))?;
 
-// #[wasm_bindgen]
-// pub fn create_cc_user_key_ttlv_request(
-//     master_private_key_id: &str,
-//     access_policy: &str,
-//     tags: Vec<String>,
-//     sensitive: bool,
-// ) -> Result<JsValue, JsValue> {
-//     AccessPolicy::from_boolean_expression(access_policy)
-//         .map_err(|e| JsValue::from(e.to_string()))?;
-//     let request = build_create_covercrypt_user_decryption_key_request(
-//         access_policy,
-//         master_private_key_id,
-//         tags,
-//         sensitive,
-//     )
-//     .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
-//     to_ttlv(&request)
-//         .map_err(|e| JsValue::from(e.to_string()))
-//         .and_then(|objects| {
-//             serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
-//         })
-// }
+    let request =
+        build_create_covercrypt_master_keypair_request(&access_structure, tags, sensitive)
+            .map_err(|e| {
+                JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}"))
+            })?;
+    to_ttlv(&request)
+        .map_err(|e| JsValue::from(e.to_string()))
+        .and_then(|objects| {
+            serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
+        })
+}
 
-// #[wasm_bindgen]
-// pub fn encrypt_cc_ttlv_request(
-//     key_unique_identifier: &str,
-//     encryption_policy: String,
-//     plaintext: Vec<u8>,
-//     authentication_data: Option<Vec<u8>>,
-// ) -> Result<JsValue, JsValue> {
-//     let request = encrypt_request(
-//         key_unique_identifier,
-//         Some(encryption_policy),
-//         plaintext,
-//         None,
-//         None,
-//         authentication_data,
-//         Some(CryptographicParameters {
-//             cryptographic_algorithm: Some(CryptographicAlgorithm::CoverCrypt),
-//             ..Default::default()
-//         }),
-//     )
-//     .map_err(|e| JsValue::from_str(&format!("Encryption failed: {e}")))?;
-//     to_ttlv(&request)
-//         .map_err(|e| JsValue::from(e.to_string()))
-//         .and_then(|objects| {
-//             serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
-//         })
-// }
+#[wasm_bindgen]
+pub fn create_cc_user_key_ttlv_request(
+    master_secret_key_id: &str,
+    access_policy: &str,
+    tags: Vec<String>,
+    sensitive: bool,
+) -> Result<JsValue, JsValue> {
+    AccessPolicy::parse(access_policy).map_err(|e| JsValue::from(e.to_string()))?;
+    let request =
+        build_create_covercrypt_usk_request(access_policy, master_secret_key_id, tags, sensitive)
+            .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
+    to_ttlv(&request)
+        .map_err(|e| JsValue::from(e.to_string()))
+        .and_then(|objects| {
+            serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
+        })
+}
 
-// #[wasm_bindgen]
-// pub fn decrypt_cc_ttlv_request(
-//     key_unique_identifier: &str,
-//     ciphertext: Vec<u8>,
-//     authentication_data: Option<Vec<u8>>,
-// ) -> Result<JsValue, JsValue> {
-//     let request = decrypt_request(
-//         key_unique_identifier,
-//         None,
-//         ciphertext,
-//         None,
-//         authentication_data,
-//         Some(CryptographicParameters {
-//             cryptographic_algorithm: Some(CryptographicAlgorithm::CoverCrypt),
-//             ..Default::default()
-//         }),
-//     );
-//     to_ttlv(&request)
-//         .map_err(|e| JsValue::from(e.to_string()))
-//         .and_then(|objects| {
-//             serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
-//         })
-// }
+#[wasm_bindgen]
+pub fn encrypt_cc_ttlv_request(
+    key_unique_identifier: &str,
+    encryption_policy: String,
+    plaintext: Vec<u8>,
+    authentication_data: Option<Vec<u8>>,
+) -> Result<JsValue, JsValue> {
+    let request = encrypt_request(
+        key_unique_identifier,
+        Some(encryption_policy),
+        plaintext,
+        None,
+        authentication_data,
+        Some(CryptographicParameters {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::CoverCrypt),
+            ..Default::default()
+        }),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Encryption failed: {e}")))?;
+    to_ttlv(&request)
+        .map_err(|e| JsValue::from(e.to_string()))
+        .and_then(|objects| {
+            serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
+        })
+}
+
+#[wasm_bindgen]
+pub fn decrypt_cc_ttlv_request(
+    key_unique_identifier: &str,
+    ciphertext: Vec<u8>,
+    authentication_data: Option<Vec<u8>>,
+) -> Result<JsValue, JsValue> {
+    let request = decrypt_request(
+        key_unique_identifier,
+        None,
+        ciphertext,
+        None,
+        authentication_data,
+        Some(CryptographicParameters {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::CoverCrypt),
+            ..Default::default()
+        }),
+    );
+    to_ttlv(&request)
+        .map_err(|e| JsValue::from(e.to_string()))
+        .and_then(|objects| {
+            serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
+        })
+}
 
 // Certificate requests
 #[allow(clippy::needless_pass_by_value)]
@@ -989,7 +971,6 @@ pub fn encrypt_certificate_ttlv_request(
         None,
         plaintext,
         None,
-        None,
         authentication_data,
         Some(cryptographic_parameters),
     )
@@ -1078,24 +1059,11 @@ pub fn parse_certify_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
 
 // Attributes request
 #[wasm_bindgen]
-pub fn get_attributes_ttlv_request(
-    unique_identifier: String,
-    attribute_tags: Vec<String>,
-) -> Result<JsValue, JsValue> {
+pub fn get_attributes_ttlv_request(unique_identifier: String) -> Result<JsValue, JsValue> {
     let unique_identifier = UniqueIdentifier::TextString(unique_identifier);
-    let attribute_tags: Result<Vec<Tag>, JsValue> = attribute_tags
-        .into_iter()
-        .map(|tag| Tag::from_str(&tag).map_err(|e| JsValue::from(e.to_string())))
-        .collect();
-
-    let attribute_tags = attribute_tags?;
-    let mut references: Vec<AttributeReference> = Vec::with_capacity(attribute_tags.len());
-    for tag in &attribute_tags {
-        references.push(AttributeReference::Standard(*tag));
-    }
     let request = GetAttributes {
         unique_identifier: Some(unique_identifier),
-        attribute_references: Some(references),
+        attribute_references: None,
     };
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
@@ -1104,28 +1072,22 @@ pub fn get_attributes_ttlv_request(
         })
 }
 
+#[allow(clippy::needless_pass_by_value)]
 #[wasm_bindgen]
 pub fn parse_get_attributes_ttlv_response(
     response: &str,
-    attribute_tags: Vec<String>,
-    attribute_link_types: Vec<String>,
+    selected_attributes: Vec<String>,
 ) -> Result<JsValue, JsValue> {
-    let attribute_tags: Result<Vec<Tag>, JsValue> = attribute_tags
-        .into_iter()
-        .map(|tag| Tag::from_str(&tag).map_err(|e| JsValue::from(e.to_string())))
+    let selected_attributes: Vec<&str> = selected_attributes
+        .iter()
+        .map(std::string::String::as_str)
         .collect();
-    let attribute_tags = attribute_tags?;
-    let attribute_link_types: Result<Vec<CLinkType>, JsValue> = attribute_link_types
-        .into_iter()
-        .map(|tag| CLinkType::from_str(&tag).map_err(|e| JsValue::from(e.to_string())))
-        .collect();
-    let attribute_link_types = attribute_link_types?;
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
     let GetAttributesResponse {
         unique_identifier: _,
         attributes,
     } = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
-    let results = parse_selected_attributes(&attributes, &attribute_tags, &attribute_link_types)
+    let results = parse_selected_attributes_flatten(&attributes, &selected_attributes)
         .map_err(|e| JsValue::from(e.to_string()))?;
     Ok(serde_wasm_bindgen::to_value(&results)?)
 }
