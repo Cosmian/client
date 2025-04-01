@@ -36,6 +36,14 @@ impl PartialEq for dyn PublicKey {
     }
 }
 
+impl std::fmt::Debug for dyn PublicKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PublicKey")
+            .field("remote id", &self.remote_id())
+            .finish_non_exhaustive()
+    }
+}
+
 impl Eq for dyn PublicKey {}
 
 impl Hash for dyn PublicKey {

@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
-    sync,
-    sync::{Arc, Weak},
+    fmt::Display,
+    sync::{self, Arc, Weak},
 };
 
 use once_cell::sync::Lazy;
@@ -17,7 +17,7 @@ use crate::{
 /// These objects are visible across all the sessions and are not session-specific.
 pub(crate) static OBJECTS_STORE: Lazy<sync::RwLock<ObjectsStore>> = Lazy::new(Default::default);
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct ObjectsStore {
     /// The PKCS#11 objects manipulated by this store; the key is the remote id.
     pub objects: HashMap<String, (Arc<Object>, CK_OBJECT_HANDLE)>,
@@ -66,5 +66,11 @@ impl ObjectsStore {
     #[allow(dead_code)]
     pub(crate) fn len(&self) -> usize {
         self.objects.len()
+    }
+}
+
+impl Display for ObjectsStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ObjectsStore {{ objects: {:?} }}", self.objects)
     }
 }

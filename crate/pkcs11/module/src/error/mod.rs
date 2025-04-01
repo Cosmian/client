@@ -30,100 +30,74 @@ use thiserror::Error;
 
 use crate::core::attribute::AttributeType;
 
-pub type MResult<T> = Result<T, MError>;
+pub(crate) mod result;
+pub use result::MResult;
 
 #[derive(Error, Debug)]
 pub enum MError {
+    #[error("pkcs11 error: {0}")]
+    Default(String),
     // Cryptoki errors.
-    #[error("arguments bad")]
-    ArgumentsBad,
-
+    #[error("bad arguments: {0}")]
+    ArgumentsBad(String),
     #[error("{0} is not a valid attribute type")]
     AttributeTypeInvalid(CK_ATTRIBUTE_TYPE),
-
     #[error("the value for attribute {0} is invalid")]
     AttributeValueInvalid(AttributeType),
-
     #[error("buffer too small")]
     BufferTooSmall,
-
     #[error("cryptoki module has already been initialized")]
     CryptokiAlreadyInitialized,
-
     #[error("cryptoki module has not been initialized")]
     CryptokiNotInitialized,
-
     #[error("function not parallel")]
     FunctionNotParallel,
-
     #[error("function not supported")]
     FunctionNotSupported,
-
     #[error("key handle {0} is invalid")]
     KeyHandleInvalid(CK_OBJECT_HANDLE),
-
     #[error("module cannot function without being able to spawn threads")]
     NeedToCreateThreads,
-
     #[error("{0} is not a valid mechanism")]
     MechanismInvalid(CK_MECHANISM_TYPE),
-
     #[error("object {0} is invalid")]
     ObjectHandleInvalid(CK_OBJECT_HANDLE),
-
     #[error("operation has not been initialized, session: {0}")]
     OperationNotInitialized(CK_SESSION_HANDLE),
-
     #[error("no random number generator")]
     RandomNoRng,
-
     #[error("session handle {0} is invalid")]
     SessionHandleInvalid(CK_SESSION_HANDLE),
-
     #[error("token does not support parallel sessions")]
     SessionParallelNotSupported,
-
     #[error("slot id {0} is invalid")]
     SlotIdInvalid(CK_SLOT_ID),
-
     #[error("token is write protected")]
     TokenWriteProtected,
-
     // Other errors.
-    #[error("{0}")]
+    #[error(transparent)]
     FromUtf8(#[from] std::string::FromUtf8Error),
-
-    #[error("{0}")]
+    #[error(transparent)]
     FromVecWithNul(#[from] std::ffi::FromVecWithNulError),
-
     #[error("null pointer error")]
     NullPtr,
-
-    #[error("{0}")]
+    #[error(transparent)]
     TryFromInt(#[from] std::num::TryFromIntError),
-
-    #[error("{0}")]
+    #[error(transparent)]
     TryFromSlice(#[from] std::array::TryFromSliceError),
-
     // Catch-all for backend-related errors.
-    #[error("{0}")]
+    #[error(transparent)]
     Backend(#[from] Box<dyn std::error::Error>),
-
-    #[error("{0}")]
+    #[error(transparent)]
     Bincode(#[from] Box<bincode::ErrorKind>),
-
-    #[error("{0}")]
-    Pkcs1(String),
-
-    #[error("{0}")]
-    Encoding(String),
-
+    #[error(transparent)]
+    Pkcs1DerError(#[from] pkcs1::der::Error),
+    #[error(transparent)]
+    ConstOidError(#[from] const_oid::Error),
     #[error("Oid: {0}")]
     Oid(String),
-
     #[error("{0}")]
     Todo(String),
-
     #[error("cryptographic error: {0}")]
     Cryptography(String),
 }
@@ -131,7 +105,7 @@ pub enum MError {
 impl From<MError> for CK_RV {
     fn from(e: MError) -> Self {
         match e {
-            MError::ArgumentsBad => CKR_ARGUMENTS_BAD,
+            MError::ArgumentsBad(_) => CKR_ARGUMENTS_BAD,
             MError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
             MError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
             MError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
@@ -151,35 +125,18 @@ impl From<MError> for CK_RV {
             MError::TokenWriteProtected => CKR_TOKEN_WRITE_PROTECTED,
 
             MError::Backend(_)
+            | MError::Default(_)
             | MError::Bincode(_)
+            | MError::ConstOidError(_)
             | MError::FromUtf8(_)
             | MError::FromVecWithNul(_)
             | MError::NullPtr
             | MError::Todo(_)
             | MError::Cryptography(_)
             | MError::TryFromInt(_)
-            | MError::Pkcs1(_)
-            | MError::Encoding(_)
+            | MError::Pkcs1DerError(_)
             | MError::Oid(_)
             | MError::TryFromSlice(_) => CKR_GENERAL_ERROR,
         }
-    }
-}
-
-impl From<pkcs1::Error> for MError {
-    fn from(value: pkcs1::Error) -> Self {
-        MError::Pkcs1(value.to_string())
-    }
-}
-
-impl From<pkcs1::der::Error> for MError {
-    fn from(value: pkcs1::der::Error) -> Self {
-        MError::Pkcs1(value.to_string())
-    }
-}
-
-impl From<const_oid::Error> for MError {
-    fn from(value: const_oid::Error) -> Self {
-        MError::Oid(value.to_string())
     }
 }

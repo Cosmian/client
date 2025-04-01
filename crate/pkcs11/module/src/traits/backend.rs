@@ -3,8 +3,10 @@ use std::sync::{Arc, RwLock};
 use once_cell::sync::Lazy;
 use zeroize::Zeroizing;
 
+use super::SymmetricKey;
 use crate::{
     MResult,
+    core::object::Object,
     traits::{
         Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
         SearchOptions, Version,
@@ -48,18 +50,32 @@ pub trait Backend: Send + Sync {
     fn find_public_key(&self, query: SearchOptions) -> MResult<Arc<dyn PublicKey>>;
     fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>>;
     fn find_all_public_keys(&self) -> MResult<Vec<Arc<dyn PublicKey>>>;
+    fn find_all_symmetric_keys(&self) -> MResult<Vec<Arc<dyn SymmetricKey>>>;
     fn find_data_object(&self, query: SearchOptions) -> MResult<Option<Arc<dyn DataObject>>>;
     fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>>;
+    fn find_all_keys(&self) -> MResult<Vec<Arc<Object>>>;
+
     fn generate_key(
         &self,
         algorithm: KeyAlgorithm,
+        key_length: usize,
+        sensitive: bool,
         label: Option<&str>,
-    ) -> MResult<Arc<dyn PrivateKey>>;
+    ) -> MResult<Arc<dyn SymmetricKey>>;
+
+    fn encrypt(
+        &self,
+        remote_object_id: String,
+        algorithm: EncryptionAlgorithm,
+        cleartext: Vec<u8>,
+        iv: Option<Vec<u8>>,
+    ) -> MResult<Vec<u8>>;
 
     fn decrypt(
         &self,
         remote_object_id: String,
         algorithm: EncryptionAlgorithm,
         ciphertext: Vec<u8>,
+        iv: Option<Vec<u8>>,
     ) -> MResult<Zeroizing<Vec<u8>>>;
 }

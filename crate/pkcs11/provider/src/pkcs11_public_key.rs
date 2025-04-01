@@ -9,11 +9,12 @@ use pkcs1::{RsaPublicKey, der::Decode};
 use sha3::Digest;
 use tracing::error;
 use x509_cert::{der::Encode, spki::SubjectPublicKeyInfoOwned};
+use zeroize::Zeroizing;
 
 pub(crate) struct Pkcs11PublicKey {
     remote_id: String,
     /// DER bytes of the public key
-    der_bytes: Vec<u8>,
+    der_bytes: Zeroizing<Vec<u8>>,
     /// SHA 256 fingerprint of the public key
     fingerprint: Vec<u8>,
     /// DER bytes of the algorithm OID
@@ -23,9 +24,9 @@ pub(crate) struct Pkcs11PublicKey {
 impl Pkcs11PublicKey {
     pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> MResult<Self> {
         let algorithm = &spki.algorithm;
-        let algorithm =
-            KeyAlgorithm::from_oid(&algorithm.oid).ok_or_else(|| MError::ArgumentsBad)?;
-        let der_bytes = spki.to_der()?;
+        let algorithm = KeyAlgorithm::from_oid(&algorithm.oid)
+            .ok_or_else(|| MError::ArgumentsBad(format!("OID not found: {}", algorithm.oid)))?;
+        let der_bytes = Zeroizing::new(spki.to_der()?);
         let fingerprint = sha3::Sha3_256::digest(&der_bytes).to_vec();
         Ok(Self {
             remote_id: "".to_string(),
