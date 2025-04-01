@@ -16,12 +16,11 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # after this step `cosmian` and `cosmian_gui` are built with custom features flags (fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
+  cargo build --target "$TARGET" --release
   if [ -f /etc/redhat-release ]; then
-    cargo build --target "$TARGET" --release
     cargo install --version 0.16.0 cargo-generate-rpm --force
     cargo generate-rpm --target "$TARGET" -p crate/cli
   elif [ -f /etc/lsb-release ]; then
-    cargo build --target "$TARGET" --release
     cargo install --version 2.4.0 cargo-deb --force
     cargo deb --target "$TARGET" -p cosmian_cli
   fi

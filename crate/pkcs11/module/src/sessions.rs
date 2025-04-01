@@ -25,23 +25,22 @@ use std::{
 use log::trace;
 use once_cell::sync::Lazy;
 use pkcs11_sys::{
-    CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG, CK_ULONG_PTR,
+    CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
+    CK_ULONG_PTR,
 };
-use tracing::{debug, error};
+use tracing::debug;
 
 use crate::{
-    MError,
-    MResult,
-    // object_store::ObjectStore,
-    traits::{PrivateKey, SignatureAlgorithm},
-};
-use crate::{
+    MError, MResult,
     core::{
         attribute::Attributes,
+        mechanism::Mechanism,
         object::{Object, ObjectType},
     },
     objects_store::OBJECTS_STORE,
-    traits::{EncryptionAlgorithm, SearchOptions, backend},
+    traits::{
+        EncryptionAlgorithm, KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend,
+    },
 };
 
 // "Valid session handles in Cryptoki always have nonzero values."
@@ -69,6 +68,17 @@ pub(crate) struct DecryptContext {
     pub algorithm: EncryptionAlgorithm,
     /// Ciphertext stored for multipart `C_DecryptUpdate` operations.
     pub ciphertext: Option<Vec<u8>>,
+    pub iv: Option<Vec<u8>>,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub(crate) struct EncryptContext {
+    pub remote_object_id: String,
+    pub algorithm: EncryptionAlgorithm,
+    /// Plaintext stored for multipart `C_EncryptUpdate` operations.
+    pub plaintext: Option<Vec<u8>>,
+    pub iv: Option<Vec<u8>>,
 }
 
 #[derive(Default)]
@@ -79,6 +89,7 @@ pub(crate) struct Session {
     pub find_objects_ctx: Vec<CK_OBJECT_HANDLE>,
     pub sign_ctx: Option<SignContext>,
     pub decrypt_ctx: Option<DecryptContext>,
+    pub encrypt_ctx: Option<EncryptContext>,
 }
 
 impl Session {
@@ -87,8 +98,9 @@ impl Session {
         object: Arc<Object>,
     ) -> MResult<CK_OBJECT_HANDLE> {
         let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            error!("insert_in_find_context: failed to lock objects store: {e}");
-            MError::ArgumentsBad
+            MError::ArgumentsBad(format!(
+                "insert_in_find_context: failed to lock objects store: {e}"
+            ))
         })?;
         let handle = objects_store.upsert(object)?;
         trace!("inserted object with id");
@@ -96,23 +108,77 @@ impl Session {
         Ok(handle)
     }
 
-    pub(crate) fn load_find_context(&mut self, template: Attributes) -> MResult<()> {
-        if template.is_empty() {
-            error!("load_find_context: empty template");
-            return Err(MError::ArgumentsBad);
+    pub(crate) fn load_find_context(&mut self, attributes: Attributes) -> MResult<()> {
+        if attributes.is_empty() {
+            return Err(MError::ArgumentsBad(
+                "load_find_context: empty attributes".to_string(),
+            ));
         }
-        let search_class = template.get_class()?;
-        let search_options = SearchOptions::try_from(&template)?;
+        let search_class = attributes.get_class();
+
+        match search_class {
+            Ok(search_class) => self.load_find_context_by_class(attributes, search_class),
+            Err(_) => {
+                // Refresh store
+                let res = backend()
+                    .find_all_keys()?
+                    .into_iter()
+                    .map(|o| self.update_find_objects_context(o))
+                    .collect::<MResult<Vec<_>>>()?;
+
+                let label = attributes.get_label()?;
+                let find_ctx = OBJECTS_STORE.read().map_err(|e| {
+                    MError::ArgumentsBad(format!(
+                        "load_find_context: failed to lock find context: {e}"
+                    ))
+                })?;
+                debug!(
+                    "load_find_context: loading for label: {label:?} and attributes: \
+                     {attributes:?}"
+                );
+                debug!("load_find_context: display current store: {find_ctx}");
+                let (object, handle) = find_ctx.get_using_id(&label).ok_or_else(|| {
+                    MError::ArgumentsBad(format!(
+                        "load_find_context: failed to get id from label: {label}"
+                    ))
+                })?;
+                debug!(
+                    "load_find_context: search by id: {} -> handle: {} -> object: {}:{}",
+                    label,
+                    handle,
+                    object.name(),
+                    object.remote_id()
+                );
+                self.clear_find_objects_ctx();
+                self.add_to_find_objects_ctx(handle);
+                Ok(())
+            }
+        }?;
+
+        Ok(())
+    }
+
+    pub(crate) fn load_find_context_by_class(
+        &mut self,
+        attributes: Attributes,
+        search_class: CK_OBJECT_CLASS,
+    ) -> MResult<()> {
+        if attributes.is_empty() {
+            return Err(MError::ArgumentsBad(
+                "load_find_context_by_class: empty attributes".to_string(),
+            ));
+        }
+        let search_options = SearchOptions::try_from(&attributes)?;
         debug!(
-            "load_find_context: loading for class: {:?} and options: {:?}, from template {:?}",
-            search_class, search_options, template
+            "load_find_context_by_class: loading for class: {search_class:?} and options: \
+             {search_options:?}, attributes: {attributes:?}",
         );
         match search_options {
             SearchOptions::All => {
                 self.clear_find_objects_ctx();
                 match search_class {
                     pkcs11_sys::CKO_CERTIFICATE => {
-                        template.ensure_X509_or_none()?;
+                        attributes.ensure_X509_or_none()?;
                         let res = backend()
                             .find_all_certificates()?
                             .into_iter()
@@ -121,7 +187,7 @@ impl Session {
                             })
                             .collect::<MResult<Vec<_>>>()?;
                         debug!(
-                            "load_find_context: added {} certificates with handles: {:?}",
+                            "load_find_context_by_class: added {} certificates with handles: {:?}",
                             res.len(),
                             res
                         );
@@ -135,7 +201,7 @@ impl Session {
                             })
                             .collect::<MResult<Vec<_>>>()?;
                         debug!(
-                            "load_find_context: added {} public keys with handles: {:?}",
+                            "load_find_context_by_class: added {} public keys with handles: {:?}",
                             res.len(),
                             res
                         );
@@ -149,7 +215,7 @@ impl Session {
                             })
                             .collect::<MResult<Vec<_>>>()?;
                         debug!(
-                            "load_find_context: added {} private keys with handles: {:?}",
+                            "load_find_context_by_class: added {} private keys with handles: {:?}",
                             res.len(),
                             res
                         );
@@ -163,7 +229,7 @@ impl Session {
                             })
                             .collect::<MResult<Vec<_>>>()?;
                         debug!(
-                            "load_find_context: added {} data objects with handles: {:?}",
+                            "load_find_context_by_class: added {} data objects with handles: {:?}",
                             res.len(),
                             res
                         );
@@ -173,20 +239,22 @@ impl Session {
             }
             SearchOptions::Id(cka_id) => match search_class {
                 pkcs11_sys::CKO_CERTIFICATE => {
+                    let id = String::from_utf8(cka_id)?;
                     // Find certificates which have this CKA_ID as private key ID
                     let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        error!("load_find_context: failed to lock find context: {e}");
-                        MError::ArgumentsBad
+                        MError::ArgumentsBad(format!(
+                            "load_find_context_by_class: failed to lock find context: {e}"
+                        ))
                     })?;
                     let certificates = find_ctx.get_using_type(ObjectType::Certificate);
                     for (object, handle) in certificates {
                         match &*object {
                             Object::Certificate(c) => {
-                                if c.private_key_id() == cka_id {
+                                if c.private_key_id() == id {
                                     debug!(
-                                        "load_find_context: search by id: {} -> handle: {} -> \
-                                         certificate: {}:{}",
-                                        cka_id,
+                                        "load_find_context_by_class: search by id: {} -> handle: \
+                                         {} -> certificate: {}:{}",
+                                        id,
                                         handle,
                                         object.name(),
                                         object.remote_id()
@@ -206,16 +274,22 @@ impl Session {
                     }
                 }
                 _ => {
+                    let id = String::from_utf8(cka_id)?;
+
                     let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        error!("load_find_context: failed to lock find context: {e}");
-                        MError::ArgumentsBad
+                        MError::ArgumentsBad(format!(
+                            "load_find_context_by_class: failed to lock find context: {e}",
+                        ))
                     })?;
-                    let (object, handle) = find_ctx
-                        .get_using_id(&cka_id)
-                        .ok_or_else(|| MError::ArgumentsBad)?;
+                    let (object, handle) = find_ctx.get_using_id(&id).ok_or_else(|| {
+                        MError::ArgumentsBad(format!(
+                            "load_find_context_by_class: id {id} not found in store"
+                        ))
+                    })?;
                     debug!(
-                        "load_find_context: search by id: {} -> handle: {} -> object: {}:{}",
-                        cka_id,
+                        "load_find_context_by_class: search by id: {} -> handle: {} -> object: \
+                         {}:{}",
+                        id,
                         handle,
                         object.name(),
                         object.remote_id()
@@ -255,8 +329,7 @@ impl Session {
         let signature = match sign_ctx.private_key.sign(&sign_ctx.algorithm, data) {
             Ok(sig) => sig,
             Err(e) => {
-                error!("signature failed: {e:?}");
-                return Err(MError::ArgumentsBad);
+                return Err(MError::ArgumentsBad(format!("signature failed: {e:?}")));
             }
         };
         if !pSignature.is_null() {
@@ -289,6 +362,7 @@ impl Session {
             decrypt_ctx.remote_object_id.clone(),
             decrypt_ctx.algorithm,
             ciphertext,
+            decrypt_ctx.iv.clone(),
         )?;
         if !pData.is_null() {
             if (unsafe { *pulDataLen } as usize) < cleartext.len() {
@@ -298,8 +372,72 @@ impl Session {
                 .copy_from_slice(&cleartext);
             unsafe { *pulDataLen = cleartext.len() as CK_ULONG };
             self.decrypt_ctx = None;
+        } else {
+            unsafe { *pulDataLen = cleartext.len() as CK_ULONG };
         }
         Ok(())
+    }
+
+    pub(crate) unsafe fn encrypt(
+        &mut self,
+        cleartext: Vec<u8>,
+        pEncryptedData: CK_BYTE_PTR,
+        pulEncryptedDataLen: CK_ULONG_PTR,
+    ) -> MResult<()> {
+        let encrypt_ctx = match self.encrypt_ctx.as_mut() {
+            Some(encrypt_ctx) => encrypt_ctx,
+            None => return Err(MError::OperationNotInitialized(0)),
+        };
+        let ciphertext = backend().encrypt(
+            encrypt_ctx.remote_object_id.clone(),
+            encrypt_ctx.algorithm,
+            cleartext,
+            encrypt_ctx.iv.clone(),
+        )?;
+        unsafe { *pulEncryptedDataLen = ciphertext.len() as CK_ULONG };
+        if !pEncryptedData.is_null() {
+            if (unsafe { *pulEncryptedDataLen } as usize) < ciphertext.len() {
+                return Err(MError::BufferTooSmall);
+            }
+            unsafe { std::slice::from_raw_parts_mut(pEncryptedData, ciphertext.len()) }
+                .copy_from_slice(&ciphertext);
+            self.encrypt_ctx = None;
+        }
+        Ok(())
+    }
+
+    pub(crate) unsafe fn generate_key(
+        &mut self,
+        mechanism: Mechanism,
+        attributes: Attributes,
+    ) -> MResult<CK_OBJECT_HANDLE> {
+        if attributes.is_empty() {
+            return Err(MError::ArgumentsBad(
+                "generate_key: empty attributes".to_string(),
+            ));
+        }
+
+        debug!(
+            "generate_key: generating key with mechanism: {:?} and attributes: {:?}",
+            mechanism, attributes
+        );
+
+        let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
+            MError::ArgumentsBad(format!("generate_key: failed to lock objects store: {e}"))
+        })?;
+
+        let algorithm = KeyAlgorithm::from(mechanism);
+        let key_length = attributes.get_value_len()?;
+        let sensitive = attributes.get_sensitive()?;
+        let label = attributes.get_label()?;
+
+        let object =
+            backend().generate_key(algorithm, key_length.try_into()?, sensitive, Some(&label))?;
+        let handle = objects_store.upsert(Arc::new(Object::SymmetricKey(object)))?;
+
+        // let handle = objects_store.generate_key()?;
+        debug!("generate_key: generated key with handle: {handle}");
+        Ok(handle)
     }
 }
 

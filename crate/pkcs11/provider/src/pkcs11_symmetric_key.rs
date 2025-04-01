@@ -2,9 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
     MError, MResult,
-    traits::{KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend},
+    traits::{KeyAlgorithm, SearchOptions, SymmetricKey, backend},
 };
-use pkcs1::{RsaPrivateKey, der::Decode};
 use tracing::error;
 use zeroize::Zeroizing;
 
@@ -13,7 +12,7 @@ use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 /// A PKCS11 Private Key implementation that may only hold remote
 /// references to the actual private key
 #[derive(Debug)]
-pub(crate) struct Pkcs11PrivateKey {
+pub(crate) struct Pkcs11SymmetricKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
     key_size: usize,
@@ -22,7 +21,7 @@ pub(crate) struct Pkcs11PrivateKey {
     der_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
-impl Pkcs11PrivateKey {
+impl Pkcs11SymmetricKey {
     pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: usize) -> Self {
         Self {
             remote_id,
@@ -55,20 +54,9 @@ impl Pkcs11PrivateKey {
     }
 }
 
-impl PrivateKey for Pkcs11PrivateKey {
+impl SymmetricKey for Pkcs11SymmetricKey {
     fn remote_id(&self) -> String {
         self.remote_id.clone()
-    }
-
-    fn sign(&self, _algorithm: &SignatureAlgorithm, _data: &[u8]) -> MResult<Vec<u8>> {
-        error!(
-            "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
-            self.remote_id
-        );
-        todo!(
-            "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
-            self.remote_id
-        )
     }
 
     fn algorithm(&self) -> KeyAlgorithm {
@@ -103,43 +91,4 @@ impl PrivateKey for Pkcs11PrivateKey {
         })?;
         Ok(der_bytes.clone())
     }
-
-    fn rsa_public_exponent(&self) -> MResult<Vec<u8>> {
-        let pkcs8_der_bytes = self.der_bytes.read().map_err(|e| {
-            error!("Failed to read DER bytes: {:?}", e);
-            MError::Cryptography("Failed to read DER bytes".to_string())
-        })?;
-        Ok(if !pkcs8_der_bytes.is_empty() {
-            let rsa_key = RsaPrivateKey::from_der(pkcs8_der_bytes.as_ref()).map_err(|e| {
-                error!("Failed to parse RSA public key: {:?}", e);
-                MError::Cryptography("Failed to parse RSA public key".to_string())
-            })?;
-            rsa_key.public_exponent.as_bytes().to_vec()
-        } else {
-            //TODO: not great but very little chance that 1/ it is different and 2/ it has any effect
-            // we do not want to fetch the key bytes just for this
-            65537_u32.to_be_bytes().to_vec()
-        })
-    }
-
-    // fn ec_p256_private_key(&self) -> MResult<p256::SecretKey> {
-    //     match self.algorithm {
-    //         KeyAlgorithm::EccP256 => {
-    //             let ec_p256 = p256::SecretKey::from_pkcs8_der(self.pkcs8_der_bytes()?.as_ref())
-    //                 .map_err(|e| {
-    //                     MError::Cryptography(format!(
-    //                         "Failed to parse EC P256 private key: {:?}",
-    //                         e
-    //                     ))
-    //                 })?;
-    //             Ok(ec_p256)
-    //         }
-    //         _ => {
-    //             error!("Public key is not an EC P256 key");
-    //             Err(MError::Cryptography(
-    //                 "Public key is not an EC P256 key".to_string(),
-    //             ))
-    //         }
-    //     }
-    // }
 }

@@ -17,16 +17,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::slice;
+
 use pkcs11_sys::{
     CK_MECHANISM, CK_MECHANISM_TYPE, CK_RSA_PKCS_PSS_PARAMS, CKG_MGF1_SHA1, CKG_MGF1_SHA224,
-    CKG_MGF1_SHA256, CKG_MGF1_SHA384, CKG_MGF1_SHA512, CKM_ECDSA, CKM_RSA_PKCS, CKM_RSA_PKCS_PSS,
-    CKM_SHA_1, CKM_SHA1_RSA_PKCS, CKM_SHA224, CKM_SHA256, CKM_SHA256_RSA_PKCS, CKM_SHA384,
-    CKM_SHA384_RSA_PKCS, CKM_SHA512, CKM_SHA512_RSA_PKCS,
+    CKG_MGF1_SHA256, CKG_MGF1_SHA384, CKG_MGF1_SHA512, CKM_AES_CBC_PAD, CKM_AES_KEY_GEN, CKM_ECDSA,
+    CKM_RSA_PKCS, CKM_RSA_PKCS_PSS, CKM_SHA_1, CKM_SHA1_RSA_PKCS, CKM_SHA224, CKM_SHA256,
+    CKM_SHA256_RSA_PKCS, CKM_SHA384, CKM_SHA384_RSA_PKCS, CKM_SHA512, CKM_SHA512_RSA_PKCS,
 };
+use tracing::{debug, error};
 
 use crate::{
     MError,
-    traits::{DigestType, EncryptionAlgorithm, SignatureAlgorithm},
+    traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
 pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
@@ -41,6 +44,10 @@ pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
 
 #[derive(Debug)]
 pub enum Mechanism {
+    AesKeyGen,
+    AesCbcPad {
+        iv: Vec<u8>,
+    },
     Ecdsa,
     RsaPkcs,
     RsaPkcsSha1,
@@ -56,7 +63,19 @@ pub enum Mechanism {
 
 #[allow(clippy::missing_safety_doc)]
 pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MError> {
+    debug!("parse_mechanism: {mechanism:?}");
     match mechanism.mechanism {
+        CKM_AES_KEY_GEN => Ok(Mechanism::AesKeyGen),
+        CKM_AES_CBC_PAD => {
+            let iv = unsafe {
+                slice::from_raw_parts(
+                    mechanism.pParameter.cast::<u8>(),
+                    mechanism.ulParameterLen as usize,
+                )
+            };
+            debug!("parse_mechanism: iv: {iv:?}");
+            Ok(Mechanism::AesCbcPad { iv: iv.to_vec() })
+        }
         CKM_ECDSA => Ok(Mechanism::Ecdsa),
         CKM_RSA_PKCS => Ok(Mechanism::RsaPkcs),
         CKM_SHA1_RSA_PKCS => Ok(Mechanism::RsaPkcsSha1),
@@ -69,11 +88,11 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
             let parameter_ptr = mechanism.pParameter;
             let parameter_len = mechanism.ulParameterLen;
             if parameter_ptr.is_null() {
-                tracing::error!("pParameter null");
+                error!("pParameter null");
                 return Err(MError::MechanismInvalid(mechanism_type));
             }
             if (parameter_len as usize) != std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>() {
-                tracing::error!(
+                error!(
                     "pParameter incorrect: {} != {}",
                     parameter_len,
                     std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>()
@@ -94,7 +113,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 CKG_MGF1_SHA384 => DigestType::Sha384,
                 CKG_MGF1_SHA512 => DigestType::Sha512,
                 _ => {
-                    tracing::error!("Unsupported mgf: {}", mgf);
+                    error!("Unsupported mgf: {}", mgf);
                     return Err(MError::MechanismInvalid(mechanism_type));
                 }
             };
@@ -106,7 +125,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 CKM_SHA384 => DigestType::Sha384,
                 CKM_SHA512 => DigestType::Sha512,
                 _ => {
-                    tracing::error!("Unsupported hashAlg: {}", hash_alg);
+                    error!("Unsupported hashAlg: {}", hash_alg);
                     return Err(MError::MechanismInvalid(mechanism_type));
                 }
             };
@@ -126,6 +145,8 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
 impl From<Mechanism> for CK_MECHANISM_TYPE {
     fn from(mechanism: Mechanism) -> Self {
         match mechanism {
+            Mechanism::AesKeyGen => CKM_AES_KEY_GEN,
+            Mechanism::AesCbcPad { .. } => CKM_AES_CBC_PAD,
             Mechanism::Ecdsa => CKM_ECDSA,
             Mechanism::RsaPkcs => CKM_RSA_PKCS,
             Mechanism::RsaPkcsSha1 => CKM_SHA1_RSA_PKCS,
@@ -155,6 +176,7 @@ impl From<Mechanism> for SignatureAlgorithm {
                 mask_generation_function,
                 salt_length,
             },
+            x => panic!("Unsupported signature algorithm: {x:?}"),
         }
     }
 }
@@ -163,7 +185,17 @@ impl From<Mechanism> for EncryptionAlgorithm {
     fn from(mechanism: Mechanism) -> Self {
         match mechanism {
             Mechanism::RsaPkcs => Self::RsaPkcs1v15,
+            Mechanism::AesCbcPad { .. } => Self::AesCbcPad,
             x => panic!("Unsupported encryption algorithm: {x:?}"),
+        }
+    }
+}
+
+impl From<Mechanism> for KeyAlgorithm {
+    fn from(mechanism: Mechanism) -> Self {
+        match mechanism {
+            Mechanism::AesKeyGen => Self::Aes256,
+            x => panic!("Unsupported key gen algorithm: {x:?}"),
         }
     }
 }

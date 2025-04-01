@@ -1,9 +1,7 @@
 use std::{array::TryFromSliceError, str::Utf8Error};
 
-use cosmian_kms_client::{
-    KmsClientError,
-    reexport::cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason},
-};
+use cosmian_cli::reexport::cosmian_kms_client::KmsClientError;
+use cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason};
 use thiserror::Error;
 
 pub(crate) mod result;
@@ -38,6 +36,11 @@ pub enum Pkcs11Error {
     // Other errors
     #[error("{0}")]
     Default(String),
+
+    #[error(transparent)]
+    CosmianError(#[from] cosmian_cli::error::CosmianError),
+    #[error(transparent)]
+    FromHexError(#[from] hex::FromHexError),
 }
 
 impl Pkcs11Error {}

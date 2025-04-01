@@ -12,6 +12,8 @@ mod logging;
 mod pkcs11_certificate;
 mod pkcs11_data_object;
 mod pkcs11_private_key;
+mod pkcs11_public_key;
+mod pkcs11_symmetric_key;
 
 /// # Safety
 /// This function is the first one called by the PKCS#11 library client
@@ -31,8 +33,6 @@ pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PT
     unsafe { *pp_function_list = addr_of_mut!(FUNC_LIST) };
     CKR_OK
 }
-
-mod pkcs11_public_key;
 
 #[cfg(test)]
 mod tests;

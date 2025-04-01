@@ -26,6 +26,7 @@ pub use once_cell;
 pub use private_key::PrivateKey;
 pub use public_key::PublicKey;
 pub use signature_algorithm::SignatureAlgorithm;
+pub use symmetric_key::SymmetricKey;
 
 use crate::{
     MError,
@@ -40,6 +41,7 @@ mod key_algorithm;
 mod private_key;
 mod public_key;
 mod signature_algorithm;
+mod symmetric_key;
 
 pub type Digest = [u8; 20];
 
@@ -68,7 +70,7 @@ impl DigestType {
 #[derive(Debug)]
 pub enum SearchOptions {
     All,
-    Id(String),
+    Id(Vec<u8>),
 }
 
 impl TryFrom<&Attributes> for SearchOptions {
@@ -79,7 +81,7 @@ impl TryFrom<&Attributes> for SearchOptions {
             return Ok(SearchOptions::All);
         }
         if let Some(Attribute::Id(id)) = attributes.get(AttributeType::Id) {
-            Ok(SearchOptions::Id(id.to_owned()))
+            Ok(SearchOptions::Id(id.clone()))
         } else {
             Ok(SearchOptions::All)
         }

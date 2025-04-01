@@ -32,17 +32,18 @@ use tracing::debug;
 use crate::{
     MError, MResult,
     core::attribute::{Attribute, AttributeType},
-    traits::{Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey},
+    traits::{Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SymmetricKey},
 };
 
 #[allow(clippy::derived_hash_with_manual_eq)]
-#[derive(Hash, Eq, Clone)]
+#[derive(Hash, Eq, Clone, Debug)]
 pub enum Object {
     Certificate(Arc<dyn Certificate>),
     PrivateKey(Arc<dyn PrivateKey>),
     Profile(CK_PROFILE_ID),
     PublicKey(Arc<dyn PublicKey>),
     DataObject(Arc<dyn DataObject>),
+    SymmetricKey(Arc<dyn SymmetricKey>),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -65,12 +66,14 @@ impl PartialEq for Object {
             (Self::Profile(l0), Self::Profile(r0)) => l0 == r0,
             (Self::PublicKey(l0), Self::PublicKey(r0)) => l0 == r0,
             (Self::DataObject(l0), Self::DataObject(r0)) => l0 == r0,
+            (Self::SymmetricKey(l0), Self::SymmetricKey(r0)) => l0 == r0,
             (
                 Self::Certificate(_)
                 | Self::PrivateKey(_)
                 | Self::Profile(_)
                 | Self::PublicKey(_)
-                | Self::DataObject(_),
+                | Self::DataObject(_)
+                | Self::SymmetricKey(_),
                 _,
             ) => false,
         }
@@ -85,6 +88,7 @@ impl Object {
             Object::Profile(_) => ObjectType::Profile,
             Object::PublicKey(_) => ObjectType::PublicKey,
             Object::DataObject(_) => ObjectType::DataObject,
+            Object::SymmetricKey(_) => ObjectType::DataObject,
         }
     }
 
@@ -92,6 +96,7 @@ impl Object {
         match self {
             Object::Certificate(cert) => cert.remote_id(),
             Object::PrivateKey(private_key) => private_key.remote_id(),
+            Object::SymmetricKey(symmetric_key) => symmetric_key.remote_id(),
             Object::Profile(id) => id.to_string(),
             Object::PublicKey(public_key) => public_key.remote_id(),
             Object::DataObject(data) => data.remote_id(),
@@ -102,6 +107,7 @@ impl Object {
         match self {
             Object::Certificate(_) => "Certificate",
             Object::PrivateKey(_) => "Private Key",
+            Object::SymmetricKey(_) => "Symmetric Key",
             Object::Profile(_) => "Profile",
             Object::PublicKey(_) => "Public Key",
             Object::DataObject(_) => "Data Object",
@@ -118,7 +124,7 @@ impl Object {
                 )),
                 AttributeType::CertificateType => Some(Attribute::CertificateType(CKC_X_509)),
                 AttributeType::Class => Some(Attribute::Class(CKO_CERTIFICATE)),
-                AttributeType::Id => Some(Attribute::Id(cert.private_key_id())),
+                AttributeType::Id => Some(Attribute::Id(cert.private_key_id().into_bytes())),
                 AttributeType::Issuer => cert.issuer().map(Attribute::Issuer).ok(),
                 AttributeType::Label => Some(Attribute::Label("Certificate".to_string())),
                 AttributeType::Token => Some(Attribute::Token(true)),
@@ -137,6 +143,20 @@ impl Object {
                 )),
                 _ => {
                     error!("certificate: type_ unimplemented: {:?}", type_);
+                    None
+                }
+            },
+            Object::SymmetricKey(sym_key) => match type_ {
+                AttributeType::Class => Some(Attribute::Class(CKO_DATA)),
+                AttributeType::Id => Some(Attribute::Id(sym_key.remote_id().into_bytes())),
+                AttributeType::KeyType => {
+                    Some(Attribute::KeyType(sym_key.algorithm().to_ck_key_type()))
+                }
+                AttributeType::Label => Some(Attribute::Label("Symmetric Key".to_string())),
+                AttributeType::Token => Some(Attribute::Token(true)),
+                AttributeType::Value => Some(Attribute::Value(sym_key.pkcs8_der_bytes()?.to_vec())),
+                _ => {
+                    error!("symmetric_key: type_ unimplemented: {:?}", type_);
                     None
                 }
             },
@@ -161,7 +181,7 @@ impl Object {
                     }
                 }
                 AttributeType::Extractable => Some(Attribute::Extractable(false)),
-                AttributeType::Id => Some(Attribute::Id(private_key.remote_id().clone())),
+                AttributeType::Id => Some(Attribute::Id(private_key.remote_id().into_bytes())),
                 AttributeType::KeyType => {
                     Some(Attribute::KeyType(private_key.algorithm().to_ck_key_type()))
                 }
@@ -205,6 +225,7 @@ impl Object {
                         // Some(Attribute::Value(der_bytes.to_vec()))
                     }
                     KeyAlgorithm::EccP256
+                    | KeyAlgorithm::Aes256
                     | KeyAlgorithm::EccP384
                     | KeyAlgorithm::EccP521
                     | KeyAlgorithm::Ed25519
@@ -237,7 +258,7 @@ impl Object {
                     Some(Attribute::PublicExponent(pk.rsa_public_exponent()?))
                 }
                 AttributeType::KeyType => Some(Attribute::KeyType(pk.algorithm().to_ck_key_type())),
-                AttributeType::Id => Some(Attribute::Id(pk.remote_id().clone())),
+                AttributeType::Id => Some(Attribute::Id(pk.remote_id().into_bytes())),
                 AttributeType::EcPoint => {
                     if !pk.algorithm().is_ecc() {
                         return Ok(None);
@@ -262,7 +283,7 @@ impl Object {
             },
             Object::DataObject(data) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_DATA)),
-                AttributeType::Id => Some(Attribute::Id(data.remote_id().clone())),
+                AttributeType::Id => Some(Attribute::Id(data.remote_id().into_bytes())),
                 // TODO(BGR) should we hold zeroizable values here ?
                 AttributeType::Value => Some(Attribute::Value(data.value().to_vec())),
                 AttributeType::Application => Some(Attribute::Application(data.application())),
