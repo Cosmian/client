@@ -25,7 +25,7 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
 
   build:
-    uses: ./.github/workflows/build_all.yml
+    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@add-workflows
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
