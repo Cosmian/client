@@ -4,17 +4,20 @@ use clap::{Parser, Subcommand};
 use cosmian_cover_crypt::{EncryptionHint, MasterPublicKey, QualifiedAttribute};
 use cosmian_crypto_core::bytes_ser_de::Serializable;
 use cosmian_kms_client::{
-    ExportObjectParams, KmsClient,
     cosmian_kmip::KmipResultHelper,
     export_object,
     kmip_2_1::{
         kmip_objects::Object,
-        requests::cover_crypt::{RekeyEditAction, build_rekey_keypair_request},
-        ttlv::{TTLV, deserializer::from_ttlv},
+        ttlv::{deserializer::from_ttlv, TTLV},
     },
-    read_from_json_file,
+    read_from_json_file, ExportObjectParams, KmsClient,
 };
-use cosmian_kms_crypto::CryptoError;
+use cosmian_kms_crypto::{
+    crypto::cover_crypt::{
+        attributes::RekeyEditAction, kmip_requests::build_rekey_keypair_request,
+    },
+    CryptoError,
+};
 
 use crate::{
     actions::{
@@ -65,10 +68,14 @@ pub struct ViewAction {
 impl ViewAction {
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         let object: Object = if let Some(id) = &self.key_id {
-            export_object(kms_rest_client, id, ExportObjectParams {
-                unwrap: true,
-                ..ExportObjectParams::default()
-            })
+            export_object(
+                kms_rest_client,
+                id,
+                ExportObjectParams {
+                    unwrap: true,
+                    ..ExportObjectParams::default()
+                },
+            )
             .await?
             .1
         } else if let Some(key_file) = &self.key_file {

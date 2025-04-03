@@ -1,8 +1,8 @@
 use std::{array::TryFromSliceError, str::Utf8Error};
 
 use cosmian_kms_client::{
+    reexport::cosmian_kmip::{kmip_2_1::kmip_operations::ErrorReason, KmipError},
     KmsClientError,
-    reexport::cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason},
 };
 use thiserror::Error;
 
@@ -66,7 +66,6 @@ impl From<KmipError> for Pkcs11Error {
                 ErrorReason::Codec_Error,
                 format!("Expected size: {}, Actual size: {}", expected, actual),
             ),
-            KmipError::Covercrypt(e) => Self::Default(format!("Covercrypt error: {e}")),
         }
     }
 }

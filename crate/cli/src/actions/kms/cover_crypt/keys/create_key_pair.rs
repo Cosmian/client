@@ -2,10 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use cosmian_kms_client::{
+    reexport::cosmian_kms_client_utils::cover_crypt_utils::build_create_covercrypt_master_keypair_request,
     KmsClient,
-    kmip_2_1::requests::cover_crypt::{
-        access_structure_from_json_file, build_create_covercrypt_master_keypair_request,
-    },
 };
 use tracing::debug;
 
@@ -65,7 +63,7 @@ pub struct CreateMasterKeyPairAction {
 
 impl CreateMasterKeyPairAction {
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
-        let access_structure = access_structure_from_json_file(&self.specification)?;
+        let access_structure = std::fs::read_to_string(&self.specification)?;
 
         debug!("client: access_structure: {access_structure:?}");
 

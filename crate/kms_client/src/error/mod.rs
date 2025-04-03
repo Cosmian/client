@@ -2,8 +2,8 @@ use std::io;
 
 use cosmian_http_client::HttpClientError;
 use cosmian_kmip::{
-    KmipError,
     kmip_2_1::{kmip_operations::ErrorReason, ttlv::error::TtlvError},
+    KmipError,
 };
 use thiserror::Error;
 
@@ -117,7 +117,6 @@ impl From<KmipError> for KmsClientError {
                 ErrorReason::Codec_Error,
                 format!("Deserialization: invalid size: {actual}, expected: {expected}"),
             ),
-            KmipError::Covercrypt(e) => Self::Default(format!("Covercrypt error: {e}")),
         }
     }
 }
