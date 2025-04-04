@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use cosmian_kms_client::{
-    reexport::cosmian_kms_client_utils::cover_crypt_utils::build_create_covercrypt_master_keypair_request,
     KmsClient,
+    reexport::cosmian_kms_client_utils::cover_crypt_utils::build_create_covercrypt_master_keypair_request,
 };
 use tracing::debug;
 

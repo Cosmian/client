@@ -1,8 +1,8 @@
 use std::num::TryFromIntError;
 
 use cosmian_kmip::{
-    kmip_2_1::{kmip_operations::ErrorReason, ttlv::error::TtlvError},
     KmipError,
+    kmip_2_1::{kmip_operations::ErrorReason, ttlv::error::TtlvError},
 };
 use thiserror::Error;
 

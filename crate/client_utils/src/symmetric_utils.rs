@@ -175,44 +175,44 @@ pub fn parse_decrypt_elements(
     // let tag = ciphertext
     //     .drain(ciphertext.len() - tag_size..)
     //     .collect::<Vec<_>>();
-            let (nonce_size, tag_size) = match &cryptographic_parameters
-            .cryptographic_algorithm
-            .unwrap_or(CryptographicAlgorithm::AES)
+    let (nonce_size, tag_size) = match &cryptographic_parameters
+        .cryptographic_algorithm
+        .unwrap_or(CryptographicAlgorithm::AES)
+    {
+        CryptographicAlgorithm::AES => match cryptographic_parameters
+            .block_cipher_mode
+            .unwrap_or(BlockCipherMode::GCM)
         {
-            CryptographicAlgorithm::AES => match cryptographic_parameters
-                .block_cipher_mode
-                .unwrap_or(BlockCipherMode::GCM)
-            {
-                BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
-                    (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
-                }
-                BlockCipherMode::CBC => (AES_128_CBC_IV_LENGTH, AES_128_CBC_MAC_LENGTH),
-                BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
-                BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
-                _ => {
-                    return Err(UtilsError::Default(
-                        "Unsupported block cipher mode".to_owned(),
-                    ))
-                }
-            },
-            #[cfg(not(feature = "fips"))]
-            CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
-                (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
+            BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
+                (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
             }
-            a => {
+            BlockCipherMode::CBC => (AES_128_CBC_IV_LENGTH, AES_128_CBC_MAC_LENGTH),
+            BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
+            BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
+            _ => {
                 return Err(UtilsError::Default(
-                    format!("Unsupported cryptographic algorithm: {a}"),
+                    "Unsupported block cipher mode".to_owned(),
                 ))
             }
-        };
-        if nonce_size + tag_size > ciphertext.len() {
-            return Err(UtilsError::Default(
-                "The ciphertext is too short to contain the nonce/tweak and the tag".to_owned(),
-            ))
+        },
+        #[cfg(not(feature = "fips"))]
+        CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
+            (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
         }
-        let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
-        let tag = ciphertext
-            .drain(ciphertext.len() - tag_size..)
-            .collect::<Vec<_>>();
+        a => {
+            return Err(UtilsError::Default(format!(
+                "Unsupported cryptographic algorithm: {a}"
+            )))
+        }
+    };
+    if nonce_size + tag_size > ciphertext.len() {
+        return Err(UtilsError::Default(
+            "The ciphertext is too short to contain the nonce/tweak and the tag".to_owned(),
+        ))
+    }
+    let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
+    let tag = ciphertext
+        .drain(ciphertext.len() - tag_size..)
+        .collect::<Vec<_>>();
     Ok((ciphertext, nonce, tag))
 }

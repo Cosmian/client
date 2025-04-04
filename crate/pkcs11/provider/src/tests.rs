@@ -1,11 +1,11 @@
 use cosmian_kms_client::{
+    KmsClient,
     reexport::cosmian_kmip::kmip_2_1::{
         kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
         kmip_objects::Object,
         kmip_types::{CryptographicAlgorithm, KeyFormatType},
         requests::{create_symmetric_key_kmip_object, import_object_request},
     },
-    KmsClient,
 };
 use cosmian_logger::log_init;
 use cosmian_pkcs11_module::traits::Backend;
@@ -13,7 +13,7 @@ use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
 use crate::{
-    backend::{CliBackend, COSMIAN_PKCS11_DISK_ENCRYPTION_TAG},
+    backend::{COSMIAN_PKCS11_DISK_ENCRYPTION_TAG, CliBackend},
     error::Pkcs11Error,
     kms_object::get_kms_objects_async,
 };
@@ -46,14 +46,11 @@ async fn create_keys(
 ) -> Result<(), Pkcs11Error> {
     let vol1 = create_symmetric_key_kmip_object(&[1, 2, 3, 4], CryptographicAlgorithm::AES, false)?;
     debug!("vol1: {}", vol1);
-    let import_object_request = import_object_request(
-        Some("vol1".to_owned()),
-        vol1,
-        None,
-        false,
-        true,
-        [disk_encryption_tag, "vol1"],
-    );
+    let import_object_request =
+        import_object_request(Some("vol1".to_owned()), vol1, None, false, true, [
+            disk_encryption_tag,
+            "vol1",
+        ]);
     let _vol1_id = kms_rest_client
         .import(import_object_request)
         .await?
@@ -101,14 +98,11 @@ async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
         },
     };
 
-    let import_object_request = import_object_request(
-        Some("test.p12".to_owned()),
-        p12_sk,
-        None,
-        false,
-        true,
-        [disk_encryption_tag, "luks_volume"],
-    );
+    let import_object_request =
+        import_object_request(Some("test.p12".to_owned()), p12_sk, None, false, true, [
+            disk_encryption_tag,
+            "luks_volume",
+        ]);
     let p12_id = kms_rest_client
         .import(import_object_request)
         .await?

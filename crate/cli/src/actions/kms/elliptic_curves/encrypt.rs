@@ -45,14 +45,7 @@ impl EncryptAction {
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         // Create the kmip query
-        let encrypt_request = encrypt_request(
-            &id,
-            None,
-            data,
-            None,
-            None,
-            None,
-        )?;
+        let encrypt_request = encrypt_request(&id, None, data, None, None, None)?;
 
         // Query the KMS with your kmip data and get the key pair ids
         let encrypt_response = kms_rest_client

@@ -342,12 +342,13 @@ pub fn parse_selected_attributes_flatten(
 ) -> Result<HashMap<String, Value>, UtilsError> {
     let mut results: HashMap<String, Value> = HashMap::new();
     if selected_attributes.is_empty() {
-    let values = serde_json::to_value(attributes)?;
+        let values = serde_json::to_value(attributes)?;
 
-    if let Value::Object(map) = values {
-        results = map.into_iter()
-            .map(|(key, val)| (key, serde_json::to_value(val).unwrap_or(Value::Null)))
-            .collect();
+        if let Value::Object(map) = values {
+            results = map
+                .into_iter()
+                .map(|(key, val)| (key, serde_json::to_value(val).unwrap_or(Value::Null)))
+                .collect();
         }
         return Ok(results)
     }
@@ -445,10 +446,7 @@ pub fn parse_selected_attributes_flatten(
                 }
             }
             "pkcs12_password_certificate" => {
-                if let Some(v) = attributes
-                    .get_link(LinkType::PKCS12PasswordLink)
-                    .as_ref()
-                {
+                if let Some(v) = attributes.get_link(LinkType::PKCS12PasswordLink).as_ref() {
                     results.insert(
                         selected_attribute_name.to_owned(),
                         serde_json::to_value(v).unwrap_or_default(),

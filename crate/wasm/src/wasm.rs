@@ -20,36 +20,36 @@ use cosmian_kmip::kmip_2_1::{
         get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
         get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
     },
-    ttlv::{deserializer::from_ttlv, serializer::to_ttlv, TTLV},
+    ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
 };
 use cosmian_kms_client_utils::{
     attributes_utils::{build_selected_attribute, parse_selected_attributes_flatten},
-    certificate_utils::{build_certify_request, Algorithm},
+    certificate_utils::{Algorithm, build_certify_request},
     cover_crypt_utils::{
         build_create_covercrypt_master_keypair_request, build_create_covercrypt_usk_request,
     },
-    create_utils::{prepare_sym_key_elements, Curve, SymmetricAlgorithm},
+    create_utils::{Curve, SymmetricAlgorithm, prepare_sym_key_elements},
     error::UtilsError,
     export_utils::{
-        der_to_pem, export_request, get_export_key_format_type,
-        prepare_certificate_export_elements, prepare_key_export_elements, tag_from_object,
-        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm,
+        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm, der_to_pem, export_request,
+        get_export_key_format_type, prepare_certificate_export_elements,
+        prepare_key_export_elements, tag_from_object,
     },
     import_utils::{
-        build_private_key_from_der_bytes, build_usage_mask_from_key_usage,
-        prepare_certificate_attributes, prepare_key_import_elements,
-        read_object_from_json_ttlv_bytes, CertificateInputFormat, ImportKeyFormat, KeyUsage,
+        CertificateInputFormat, ImportKeyFormat, KeyUsage, build_private_key_from_der_bytes,
+        build_usage_mask_from_key_usage, prepare_certificate_attributes,
+        prepare_key_import_elements, read_object_from_json_ttlv_bytes,
     },
     locate_utils::build_locate_request,
     rsa_utils::{HashFn, RsaEncryptionAlgorithm},
-    symmetric_utils::{parse_decrypt_elements, DataEncryptionAlgorithm},
+    symmetric_utils::{DataEncryptionAlgorithm, parse_decrypt_elements},
 };
 use js_sys::Uint8Array;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use wasm_bindgen::prelude::*;
 use x509_cert::{
-    der::{Decode, DecodePem, Encode},
     Certificate,
+    der::{Decode, DecodePem, Encode},
 };
 use zeroize::Zeroizing;
 

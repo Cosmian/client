@@ -45,14 +45,7 @@ impl DecryptAction {
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         // Create the kmip query
-        let decrypt_request = decrypt_request(
-            &id,
-            None,
-            data,
-            None,
-            None,
-            None,
-        );
+        let decrypt_request = decrypt_request(&id, None, data, None, None, None);
 
         // Query the KMS with your kmip data and get the key pair ids
         let decrypt_response = kms_rest_client

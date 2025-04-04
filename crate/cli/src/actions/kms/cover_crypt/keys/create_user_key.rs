@@ -1,8 +1,8 @@
 use clap::Parser;
 use cosmian_cover_crypt::AccessPolicy;
 use cosmian_kms_client::{
-    reexport::cosmian_kms_client_utils::cover_crypt_utils::build_create_covercrypt_usk_request,
     KmsClient,
+    reexport::cosmian_kms_client_utils::cover_crypt_utils::build_create_covercrypt_usk_request,
 };
 
 use crate::{
