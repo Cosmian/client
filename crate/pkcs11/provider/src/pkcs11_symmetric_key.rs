@@ -15,14 +15,14 @@ use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 pub(crate) struct Pkcs11SymmetricKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
-    key_size: usize,
+    key_size: i32,
     /// DER bytes of the private key - those are lazy loaded
     /// when the private key is used
     der_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
 impl Pkcs11SymmetricKey {
-    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: usize) -> Self {
+    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: i32) -> Self {
         Self {
             remote_id,
             der_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
@@ -41,8 +41,8 @@ impl Pkcs11SymmetricKey {
                 .map_err(|e| MError::Cryptography(e.to_string()))?,
         ));
         let key_size = kms_object.attributes.cryptographic_length.ok_or_else(|| {
-            MError::Cryptography("try_from_kms_object: missing key size".to_string())
-        })? as usize;
+            MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+        })?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
         Ok(Self {
@@ -63,7 +63,7 @@ impl SymmetricKey for Pkcs11SymmetricKey {
         self.algorithm
     }
 
-    fn key_size(&self) -> usize {
+    fn key_size(&self) -> i32 {
         self.key_size
     }
 
@@ -73,7 +73,7 @@ impl SymmetricKey for Pkcs11SymmetricKey {
             .read()
             .map_err(|e| {
                 error!("Failed to read DER bytes: {:?}", e);
-                MError::Cryptography("Failed to read DER bytes".to_string())
+                MError::Cryptography("Failed to read DER bytes".to_owned())
             })?
             .clone();
         if !der_bytes.is_empty() {
@@ -83,11 +83,11 @@ impl SymmetricKey for Pkcs11SymmetricKey {
             backend().find_private_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
         let mut der_bytes = self.der_bytes.write().map_err(|e| {
             error!("Failed to write DER bytes: {:?}", e);
-            MError::Cryptography("Failed to write DER bytes".to_string())
+            MError::Cryptography("Failed to write DER bytes".to_owned())
         })?;
         *der_bytes = sk.pkcs8_der_bytes().map_err(|e| {
             error!("Failed to fetch the PKCS8 DER bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_string())
+            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
         })?;
         Ok(der_bytes.clone())
     }

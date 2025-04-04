@@ -33,8 +33,8 @@ pub(crate) struct CliBackend {
 
 impl CliBackend {
     /// Instantiate a new `CliBackend` using the
-    pub(crate) fn instantiate(kms_rest_client: KmsClient) -> Self {
-        CliBackend { kms_rest_client }
+    pub(crate) const fn instantiate(kms_rest_client: KmsClient) -> Self {
+        Self { kms_rest_client }
     }
 }
 
@@ -79,7 +79,7 @@ impl Backend for CliBackend {
     fn find_all_certificates(&self) -> MResult<Vec<Arc<dyn Certificate>>> {
         trace!("find_all_certificates");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
-            .unwrap_or(COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_string());
+            .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let kms_objects = get_kms_objects(
             &self.kms_rest_client,
             &[disk_encryption_tag, "_cert".to_owned()],
@@ -97,11 +97,9 @@ impl Backend for CliBackend {
         trace!("find_private_key: {:?}", query);
         let id = match query {
             SearchOptions::Id(id) => id,
-            _ => {
-                return Err(MError::Backend(Box::new(pkcs11_error!(
-                    "find_private_key: find must be made using an ID"
-                ))))
-            }
+            SearchOptions::All => Err(MError::Backend(Box::new(pkcs11_error!(
+                "find_private_key: find must be made using an ID"
+            ))))?,
         };
         let id = String::from_utf8(id)?;
         let kms_object = get_kms_object(&self.kms_rest_client, &id, KeyFormatType::PKCS8)?;
@@ -118,19 +116,22 @@ impl Backend for CliBackend {
     fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>> {
         trace!("find_all_private_keys");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
-            .unwrap_or(COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_string());
+            .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let mut private_keys = vec![];
         for id in locate_kms_objects(&self.kms_rest_client, &[
             disk_encryption_tag,
-            "_sk".to_string(),
+            "_sk".to_owned(),
         ])? {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or_else(|| {
-                MError::Cryptography("find_all_private_keys: missing key size".to_string())
-            })? as usize;
-            let sk =
-                Pkcs11PrivateKey::new(id, key_algorithm_from_attributes(&attributes)?, key_size);
-            private_keys.push(Arc::new(sk) as Arc<dyn PrivateKey>);
+            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
+                "find_all_private_keys: missing key size".to_owned(),
+            ))?;
+            let sk: Arc<dyn PrivateKey> = Arc::new(Pkcs11PrivateKey::new(
+                id,
+                key_algorithm_from_attributes(&attributes)?,
+                key_size,
+            ));
+            private_keys.push(sk);
         }
 
         Ok(private_keys)
@@ -149,7 +150,7 @@ impl Backend for CliBackend {
     fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>> {
         trace!("find_all_data_objects");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
-            .unwrap_or(COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_string());
+            .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let kms_objects = get_kms_objects(
             &self.kms_rest_client,
             &[disk_encryption_tag, "_kk".to_owned()],
@@ -168,12 +169,15 @@ impl Backend for CliBackend {
         let mut symmetric_keys = vec![];
         for id in locate_kms_objects(&self.kms_rest_client, &[])? {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or_else(|| {
-                MError::Cryptography("find_all_symmetric_keys: missing key size".to_string())
-            })? as usize;
-            let sk =
-                Pkcs11SymmetricKey::new(id, key_algorithm_from_attributes(&attributes)?, key_size);
-            symmetric_keys.push(Arc::new(sk) as Arc<dyn SymmetricKey>);
+            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
+                "find_all_symmetric_keys: missing key size".to_owned(),
+            ))?;
+            let sk: Arc<dyn SymmetricKey> = Arc::new(Pkcs11SymmetricKey::new(
+                id,
+                key_algorithm_from_attributes(&attributes)?,
+                key_size,
+            ));
+            symmetric_keys.push(sk);
         }
 
         Ok(symmetric_keys)
@@ -185,9 +189,9 @@ impl Backend for CliBackend {
         let mut objects = Vec::with_capacity(kms_ids.len());
         for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or_else(|| {
-                MError::Cryptography("find_all_keys: missing key size".to_string())
-            })? as usize;
+            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
+                "find_all_keys: missing key size".to_owned(),
+            ))?;
             let key_algorithm = key_algorithm_from_attributes(&attributes)?;
             let o = match attributes.object_type {
                 Some(object_type) => match object_type {
@@ -205,19 +209,14 @@ impl Backend for CliBackend {
                             key_size,
                         )))
                     }
-                    _ => {
-                        return Err(MError::Backend(Box::new(pkcs11_error!(
-                            "find_all_keys: unsupported object type"
-                        ))))
-                    }
+                    _ => Err(MError::Backend(Box::new(pkcs11_error!(
+                        "find_all_keys: unsupported object type"
+                    ))))?,
                 },
-                None => {
-                    return Err(MError::Backend(Box::new(pkcs11_error!(
-                        "find_all_symmetric_keys: missing object type"
-                    ))))
-                }
+                None => Err(MError::Backend(Box::new(pkcs11_error!(
+                    "find_all_symmetric_keys: missing object type"
+                ))))?,
             };
-            // let data_object: Arc< Object> = Arc::new(Pkcs11DataObject::try_from(dao)?);
             objects.push(Arc::new(o));
         }
 

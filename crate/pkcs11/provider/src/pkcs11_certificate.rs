@@ -18,7 +18,7 @@ pub(crate) struct Pkcs11Certificate {
     /// The certificate
     pub certificate: X509Certificate,
     /// The private key ID
-    /// This is the CKA_ID of the private key associated with the certificate
+    /// This is the `CKA_ID` of the private key associated with the certificate
     pub private_key_id: String,
 }
 
@@ -73,9 +73,12 @@ impl Certificate for Pkcs11Certificate {
     }
 
     fn public_key(&self) -> cosmian_pkcs11_module::MResult<Box<dyn PublicKey>> {
-        Pkcs11PublicKey::try_from_spki(&self.certificate.tbs_certificate.subject_public_key_info)
-            .map_err(|e| Pkcs11Error::from(e).into())
-            .map(|pk| Box::new(pk) as Box<dyn PublicKey>)
+        let res: Box<dyn PublicKey> = Pkcs11PublicKey::try_from_spki(
+            &self.certificate.tbs_certificate.subject_public_key_info,
+        )
+        .map_err(Pkcs11Error::from)
+        .map(Box::new)?;
+        Ok(res)
     }
 
     fn issuer(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {

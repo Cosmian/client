@@ -16,7 +16,7 @@ pub trait SymmetricKey: Send + Sync {
     fn algorithm(&self) -> KeyAlgorithm;
 
     /// Return the key size in bits
-    fn key_size(&self) -> usize;
+    fn key_size(&self) -> i32;
 
     /// Return the DER bytes of the private key
     /// This is a lazy loaded value

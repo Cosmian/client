@@ -18,7 +18,10 @@ mod pkcs11_symmetric_key;
 /// # Safety
 /// This function is the first one called by the PKCS#11 library client
 /// to get the PKCS#11 functions list.
+/// # Panics
+/// When KMS client cannot be instantiated.
 #[unsafe(no_mangle)]
+#[allow(clippy::expect_used)]
 pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PTR_PTR) -> CK_RV {
     let debug_level =
         std::env::var("COSMIAN_PKCS11_LOGGING_LEVEL").unwrap_or_else(|_| "info".to_owned());
@@ -35,4 +38,5 @@ pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PT
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::panic_in_result_fn)]
 mod tests;

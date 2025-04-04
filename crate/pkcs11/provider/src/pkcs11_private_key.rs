@@ -16,14 +16,14 @@ use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 pub(crate) struct Pkcs11PrivateKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
-    key_size: usize,
+    key_size: i32,
     /// DER bytes of the private key - those are lazy loaded
     /// when the private key is used
     der_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
 impl Pkcs11PrivateKey {
-    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: usize) -> Self {
+    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: i32) -> Self {
         Self {
             remote_id,
             der_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
@@ -42,8 +42,8 @@ impl Pkcs11PrivateKey {
                 .map_err(|e| MError::Cryptography(e.to_string()))?,
         ));
         let key_size = kms_object.attributes.cryptographic_length.ok_or_else(|| {
-            MError::Cryptography("try_from_kms_object: missing key size".to_string())
-        })? as usize;
+            MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+        })?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
         Ok(Self {
@@ -75,7 +75,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.algorithm
     }
 
-    fn key_size(&self) -> usize {
+    fn key_size(&self) -> i32 {
         self.key_size
     }
 
@@ -85,7 +85,7 @@ impl PrivateKey for Pkcs11PrivateKey {
             .read()
             .map_err(|e| {
                 error!("Failed to read DER bytes: {:?}", e);
-                MError::Cryptography("Failed to read DER bytes".to_string())
+                MError::Cryptography("Failed to read DER bytes".to_owned())
             })?
             .clone();
         if !der_bytes.is_empty() {
@@ -95,11 +95,11 @@ impl PrivateKey for Pkcs11PrivateKey {
             backend().find_private_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
         let mut der_bytes = self.der_bytes.write().map_err(|e| {
             error!("Failed to write DER bytes: {:?}", e);
-            MError::Cryptography("Failed to write DER bytes".to_string())
+            MError::Cryptography("Failed to write DER bytes".to_owned())
         })?;
         *der_bytes = sk.pkcs8_der_bytes().map_err(|e| {
             error!("Failed to fetch the PKCS8 DER bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_string())
+            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
         })?;
         Ok(der_bytes.clone())
     }
@@ -107,19 +107,21 @@ impl PrivateKey for Pkcs11PrivateKey {
     fn rsa_public_exponent(&self) -> MResult<Vec<u8>> {
         let pkcs8_der_bytes = self.der_bytes.read().map_err(|e| {
             error!("Failed to read DER bytes: {:?}", e);
-            MError::Cryptography("Failed to read DER bytes".to_string())
+            MError::Cryptography("Failed to read DER bytes".to_owned())
         })?;
-        Ok(if !pkcs8_der_bytes.is_empty() {
-            let rsa_key = RsaPrivateKey::from_der(pkcs8_der_bytes.as_ref()).map_err(|e| {
-                error!("Failed to parse RSA public key: {:?}", e);
-                MError::Cryptography("Failed to parse RSA public key".to_string())
-            })?;
-            rsa_key.public_exponent.as_bytes().to_vec()
-        } else {
+        let res = if pkcs8_der_bytes.is_empty() {
             //TODO: not great but very little chance that 1/ it is different and 2/ it has any effect
             // we do not want to fetch the key bytes just for this
             65537_u32.to_be_bytes().to_vec()
-        })
+        } else {
+            let rsa_key = RsaPrivateKey::from_der(pkcs8_der_bytes.as_ref()).map_err(|e| {
+                error!("Failed to parse RSA public key: {:?}", e);
+                MError::Cryptography("Failed to parse RSA public key".to_owned())
+            })?;
+            rsa_key.public_exponent.as_bytes().to_vec()
+        };
+        drop(pkcs8_der_bytes);
+        Ok(res)
     }
 
     // fn ec_p256_private_key(&self) -> MResult<p256::SecretKey> {

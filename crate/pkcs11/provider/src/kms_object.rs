@@ -182,25 +182,25 @@ pub(crate) async fn kms_create_async(
     sensitive: bool,
     label: Option<&str>,
 ) -> Pkcs11Result<KmsObject> {
-    let cryptographic_algorithm = match algorithm {
-        KeyAlgorithm::Aes256 => CryptographicAlgorithm::AES,
-        _ => {
-            error!("Unsupported key algorithm: {:?}", algorithm);
-            return Err(Pkcs11Error::Default(format!(
-                "unsupported key algorithm: {:?}",
-                algorithm
-            )));
-        }
+    let cryptographic_algorithm = if algorithm == KeyAlgorithm::Aes256 {
+        CryptographicAlgorithm::AES
+    } else {
+        error!("Unsupported key algorithm: {:?}", algorithm);
+        return Err(Pkcs11Error::Default(format!(
+            "unsupported key algorithm: {algorithm:?}"
+        )));
     };
-    let tags = label.map(|l| vec![l.to_string()]).unwrap_or_default();
+    let tags = label.map(|l| vec![l.to_owned()]).unwrap_or_default();
 
     let mut rng = CsRng::from_entropy();
-    let mut key = vec![0u8; key_length];
+    let mut key = vec![0_u8; key_length];
     rng.fill_bytes(&mut key);
+
+    let cryptographic_length = Some(i32::try_from(key_length * 8)?);
 
     let mut attributes = Attributes {
         cryptographic_algorithm: Some(cryptographic_algorithm),
-        cryptographic_length: Some((key_length * 8) as i32),
+        cryptographic_length,
         cryptographic_parameters: None,
         cryptographic_usage_mask: Some(
             CryptographicUsageMask::Encrypt
@@ -211,7 +211,7 @@ pub(crate) async fn kms_create_async(
         ),
         key_format_type: Some(KeyFormatType::TransparentSymmetricKey),
         object_type: Some(ObjectType::SymmetricKey),
-        unique_identifier: label.map(|l| UniqueIdentifier::TextString(l.to_string())),
+        unique_identifier: label.map(|l| UniqueIdentifier::TextString(l.to_owned())),
         sensitive,
         ..Attributes::default()
     };
@@ -227,14 +227,14 @@ pub(crate) async fn kms_create_async(
                 },
                 attributes: Some(attributes.clone()),
             },
-            cryptographic_length: Some((key_length * 8) as i32),
+            cryptographic_length,
             key_wrapping_data: None,
         },
     };
     let response = kms_rest_client
         .import(Import {
             unique_identifier: label
-                .map(|l| UniqueIdentifier::TextString(l.to_string()))
+                .map(|l| UniqueIdentifier::TextString(l.to_owned()))
                 .unwrap_or_default(),
             object_type: cosmian_kmip::kmip_2_1::kmip_objects::ObjectType::SymmetricKey,
             replace_existing: Some(true),
@@ -300,7 +300,7 @@ pub(crate) async fn kms_encrypt_async(
     };
     let response = kms_rest_client.encrypt(encryption_request).await?;
     let ciphertext = response.data.ok_or_else(|| {
-        Pkcs11Error::ServerError("Decryption response does not contain data".to_string())
+        Pkcs11Error::ServerError("Decryption response does not contain data".to_owned())
     })?;
 
     debug!(
@@ -355,7 +355,7 @@ pub(crate) async fn kms_decrypt_async(
     };
     let response = kms_rest_client.decrypt(decryption_request).await?;
     response.data.ok_or_else(|| {
-        Pkcs11Error::ServerError("Decryption response does not contain data".to_string())
+        Pkcs11Error::ServerError("Decryption response does not contain data".to_owned())
     })
 }
 
@@ -372,7 +372,7 @@ pub(crate) async fn get_kms_object_attributes_async(
 ) -> Pkcs11Result<Attributes> {
     let response = kms_client
         .get_attributes(GetAttributes {
-            unique_identifier: Some(UniqueIdentifier::TextString(object_id.to_string())),
+            unique_identifier: Some(UniqueIdentifier::TextString(object_id.to_owned())),
             attribute_references: None,
         })
         .await?;
@@ -381,7 +381,7 @@ pub(crate) async fn get_kms_object_attributes_async(
 
 pub(crate) fn key_algorithm_from_attributes(attributes: &Attributes) -> Pkcs11Result<KeyAlgorithm> {
     let algorithm = match attributes.cryptographic_algorithm.ok_or_else(|| {
-        Pkcs11Error::Default("missing cryptographic algorithm in attributes".to_string())
+        Pkcs11Error::Default("missing cryptographic algorithm in attributes".to_owned())
     })? {
         CryptographicAlgorithm::AES => KeyAlgorithm::Aes256,
         CryptographicAlgorithm::RSA => KeyAlgorithm::Rsa,
@@ -390,12 +390,12 @@ pub(crate) fn key_algorithm_from_attributes(attributes: &Attributes) -> Pkcs11Re
                 .cryptographic_domain_parameters
                 .ok_or_else(|| {
                     Pkcs11Error::Default(
-                        "missing cryptographic domain parameters in attributes".to_string(),
+                        "missing cryptographic domain parameters in attributes".to_owned(),
                     )
                 })?
                 .recommended_curve
                 .ok_or_else(|| {
-                    Pkcs11Error::Default("missing recommended curve in attributes".to_string())
+                    Pkcs11Error::Default("missing recommended curve in attributes".to_owned())
                 })?;
             match curve {
                 RecommendedCurve::P256 => KeyAlgorithm::EccP256,
@@ -408,7 +408,7 @@ pub(crate) fn key_algorithm_from_attributes(attributes: &Attributes) -> Pkcs11Re
                 _ => {
                     error!("Unsupported curve for EC key");
                     return Err(Pkcs11Error::Default(
-                        "unsupported curve for EC key".to_string(),
+                        "unsupported curve for EC key".to_owned(),
                     ));
                 }
             }
@@ -416,8 +416,7 @@ pub(crate) fn key_algorithm_from_attributes(attributes: &Attributes) -> Pkcs11Re
         x => {
             error!("Unsupported cryptographic algorithm: {:?}", x);
             return Err(Pkcs11Error::Default(format!(
-                "unsupported cryptographic algorithm: {:?}",
-                x
+                "unsupported cryptographic algorithm: {x:?}"
             )));
         }
     };
