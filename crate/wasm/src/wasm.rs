@@ -20,36 +20,36 @@ use cosmian_kmip::kmip_2_1::{
         get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
         get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
     },
-    ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
+    ttlv::{deserializer::from_ttlv, serializer::to_ttlv, TTLV},
 };
 use cosmian_kms_client_utils::{
     attributes_utils::{build_selected_attribute, parse_selected_attributes_flatten},
-    certificate_utils::{Algorithm, build_certify_request},
+    certificate_utils::{build_certify_request, Algorithm},
     cover_crypt_utils::{
         build_create_covercrypt_master_keypair_request, build_create_covercrypt_usk_request,
     },
-    create_utils::{Curve, SymmetricAlgorithm, prepare_sym_key_elements},
+    create_utils::{prepare_sym_key_elements, Curve, SymmetricAlgorithm},
     error::UtilsError,
     export_utils::{
-        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm, der_to_pem, export_request,
-        get_export_key_format_type, prepare_certificate_export_elements,
-        prepare_key_export_elements, tag_from_object,
+        der_to_pem, export_request, get_export_key_format_type,
+        prepare_certificate_export_elements, prepare_key_export_elements, tag_from_object,
+        CertificateExportFormat, ExportKeyFormat, WrappingAlgorithm,
     },
     import_utils::{
-        CertificateInputFormat, ImportKeyFormat, KeyUsage, build_private_key_from_der_bytes,
-        build_usage_mask_from_key_usage, prepare_certificate_attributes,
-        prepare_key_import_elements, read_object_from_json_ttlv_bytes,
+        build_private_key_from_der_bytes, build_usage_mask_from_key_usage,
+        prepare_certificate_attributes, prepare_key_import_elements,
+        read_object_from_json_ttlv_bytes, CertificateInputFormat, ImportKeyFormat, KeyUsage,
     },
     locate_utils::build_locate_request,
     rsa_utils::{HashFn, RsaEncryptionAlgorithm},
-    symmetric_utils::{DataEncryptionAlgorithm, parse_decrypt_elements},
+    symmetric_utils::{parse_decrypt_elements, DataEncryptionAlgorithm},
 };
 use js_sys::Uint8Array;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use wasm_bindgen::prelude::*;
 use x509_cert::{
-    Certificate,
     der::{Decode, DecodePem, Encode},
+    Certificate,
 };
 use zeroize::Zeroizing;
 
@@ -909,14 +909,12 @@ pub fn parse_export_certificate_ttlv_response(
 // Validate request
 #[wasm_bindgen]
 pub fn validate_certificate_ttlv_request(
-    certificate: Option<Vec<u8>>,
     unique_identifier: Option<String>,
     validity_time: Option<String>,
 ) -> Result<JsValue, JsValue> {
-    let certificate: Option<Vec<Vec<u8>>> = certificate.map(|bytes| vec![bytes]);
     let unique_identifier = unique_identifier.map(|id| vec![UniqueIdentifier::TextString(id)]);
     let request = Validate {
-        certificate,
+        certificate: None,
         unique_identifier,
         validity_time,
     };

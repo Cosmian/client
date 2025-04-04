@@ -110,7 +110,7 @@ const CCEncryptForm: React.FC = () => {
 
                     <Card>
                         <h3 className="text-m font-bold mb-4">Key Identification (required)</h3>
-                        <Form.Item name="keyId" label="Key ID" help="The unique identifier of the public key">
+                        <Form.Item name="keyId" label="Key ID" help="The unique identifier of the master public key">
                             <Input placeholder="Enter key ID" />
                         </Form.Item>
 

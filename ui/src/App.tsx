@@ -1,44 +1,44 @@
-import { ConfigProvider, theme } from "antd"
-import { useEffect, useState } from "react"
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
-import AccessGrantForm from "./AccessGrant"
-import AccessListForm from "./AccessList"
-import AccessObtainedList from "./AccessObtained"
-import AccessRevokeForm from "./AccessRevoke"
-import AttributeDeleteForm from "./AttributeDelete"
-import AttributeGetForm from "./AttributeGet"
-import AttributeSetForm from "./AttributeSet"
-import { AuthProvider, useAuth } from "./AuthContext"
-import CertificateCertifyForm from "./CertificateCertify"
-import CertificateDecryptForm from "./CertificateDecrypt"
-import CertificateEncryptForm from "./CertificateEncrypt"
-import CertificateExportForm from "./CertificateExport"
-import CertificateImportForm from "./CertificateImport"
-import CertificateValidateForm from "./CertificateValidate"
-import CCDecryptForm from "./CovercryptDecrypt"
-import CCEncryptForm from "./CovercryptEncrypt"
-import CovercryptMasterKeyForm from "./CovercryptMasterKey"
-import CovercryptUserKeyForm from "./CovercryptUserKey"
-import ECDecryptForm from "./ECDecrypt"
-import ECEncryptForm from "./ECEncrypt"
-import ECKeyCreateForm from "./ECKeysCreate"
-import KeyExportForm from "./KeysExport"
-import KeyImportForm from "./KeysImport"
-import LocateForm from "./Locate"
-import LoginPage from "./LoginPage"
-import MainLayout from "./MainLayout"
-import NotFoundPage from "./NotFoundPage"
-import DestroyForm from "./ObjectsDestroy"
-import ObjectsOwnedList from "./ObjectsOwned"
-import RevokeForm from "./ObjectsRevoke"
-import RsaDecryptForm from "./RsaDecrypt"
-import RsaEncryptForm from "./RsaEncrypt"
-import RsaKeyCreateForm from "./RsaKeysCreate"
-import SymKeyCreateForm from "./SymKeysCreate"
-import SymmetricDecryptForm from "./SymmetricDecrypt"
-import SymmetricEncryptForm from "./SymmetricEncrypt"
-import { AuthMethod, fetchAuthMethod, fetchIdToken } from "./utils"
-import init from "./wasm/pkg"
+import { ConfigProvider, theme } from "antd";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import AccessGrantForm from "./AccessGrant";
+import AccessListForm from "./AccessList";
+import AccessObtainedList from "./AccessObtained";
+import AccessRevokeForm from "./AccessRevoke";
+import AttributeDeleteForm from "./AttributeDelete";
+import AttributeGetForm from "./AttributeGet";
+import AttributeSetForm from "./AttributeSet";
+import { AuthProvider, useAuth } from "./AuthContext";
+import CertificateCertifyForm from "./CertificateCertify";
+import CertificateDecryptForm from "./CertificateDecrypt";
+import CertificateEncryptForm from "./CertificateEncrypt";
+import CertificateExportForm from "./CertificateExport";
+import CertificateImportForm from "./CertificateImport";
+import CertificateValidateForm from "./CertificateValidate";
+import CCDecryptForm from "./CovercryptDecrypt";
+import CCEncryptForm from "./CovercryptEncrypt";
+import CovercryptMasterKeyForm from "./CovercryptMasterKey";
+import CovercryptUserKeyForm from "./CovercryptUserKey";
+import ECDecryptForm from "./ECDecrypt";
+import ECEncryptForm from "./ECEncrypt";
+import ECKeyCreateForm from "./ECKeysCreate";
+import KeyExportForm from "./KeysExport";
+import KeyImportForm from "./KeysImport";
+import LocateForm from "./Locate";
+import LoginPage from "./LoginPage";
+import MainLayout from "./MainLayout";
+import NotFoundPage from "./NotFoundPage";
+import DestroyForm from "./ObjectsDestroy";
+import ObjectsOwnedList from "./ObjectsOwned";
+import RevokeForm from "./ObjectsRevoke";
+import RsaDecryptForm from "./RsaDecrypt";
+import RsaEncryptForm from "./RsaEncrypt";
+import RsaKeyCreateForm from "./RsaKeysCreate";
+import SymKeyCreateForm from "./SymKeysCreate";
+import SymmetricDecryptForm from "./SymmetricDecrypt";
+import SymmetricEncryptForm from "./SymmetricEncrypt";
+import { AuthMethod, fetchAuthMethod, fetchIdToken } from "./utils";
+import init from "./wasm/pkg";
 
 type AppContentProps = {
     isDarkMode: boolean;
@@ -132,14 +132,14 @@ const AppContent: React.FC<AppContentProps> = ({ isDarkMode, setIsDarkMode }) =>
                             <Route path="obtained" element={<AccessObtainedList />} />
                         </Route>
                         <Route path="certificates">
-                            <Route path="import" element={<CertificateImportForm />} />
-                            <Route path="export" element={<CertificateExportForm />} />
-                            <Route path="revoke" element={<RevokeForm objectType="certificate" />} />
-                            <Route path="destroy" element={<DestroyForm objectType="certificate" />} />
-                            <Route path="validate" element={<CertificateValidateForm />} />
+                            <Route path="certs/import" element={<CertificateImportForm />} />
+                            <Route path="certs/export" element={<CertificateExportForm />} />
+                            <Route path="certs/revoke" element={<RevokeForm objectType="certificate" />} />
+                            <Route path="certs/destroy" element={<DestroyForm objectType="certificate" />} />
+                            <Route path="certs/validate" element={<CertificateValidateForm />} />
                             <Route path="encrypt" element={<CertificateEncryptForm />} />
                             <Route path="decrypt" element={<CertificateDecryptForm />} />
-                            <Route path="certify" element={<CertificateCertifyForm />} />
+                            <Route path="certs/certify" element={<CertificateCertifyForm />} />
                         </Route>
                         <Route path="attributes">
                             <Route path="get" element={<AttributeGetForm />} />

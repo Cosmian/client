@@ -82,24 +82,8 @@ export const menuItems: MenuItem[] = [
                     { key: "cc/keys/import", label: "Import" },
                     { key: "cc/keys/revoke", label: "Revoke" },
                     { key: "cc/keys/destroy", label: "Destroy" },
-                    // { key: 'cc/keys/rekey', label: 'Rekey' },
-                    // { key: 'cc/keys/prune', label: 'Prune' }
                 ],
             },
-            // {
-            //     key: 'cc/policy',
-            //     label: 'Policy',
-            //     children: [
-            //         { key: 'cc/policy/view', label: 'View' },
-            //         { key: 'cc/policy/specs', label: 'Specs' },
-            //         { key: 'cc/policy/binary', label: 'Binary' },
-            //         { key: 'cc/policy/create', label: 'Create' },
-            //         { key: 'cc/policy/add-attribute', label: 'Add Attribute' },
-            //         { key: 'cc/policy/remove-attribute', label: 'Remove Attribute' },
-            //         { key: 'cc/policy/disable-attribute', label: 'Disable Attribute' },
-            //         { key: 'cc/policy/rename-attribute', label: 'Rename Attribute' }
-            //     ]
-            // },
             { key: "cc/encrypt", label: "Encrypt" },
             { key: "cc/decrypt", label: "Decrypt" },
         ],
@@ -109,14 +93,20 @@ export const menuItems: MenuItem[] = [
         label: "Certificates",
         icon: <SafetyCertificateOutlined />,
         children: [
-            { key: "certificates/certify", label: "Certify" },
-            { key: "certificates/decrypt", label: "Decrypt" },
+            {
+                key: "certificates/certs",
+                label: "Certs",
+                children: [
+                    { key: "certificates/certs/certify", label: "Certify" },
+                    { key: "certificates/certs/export", label: "Export" },
+                    { key: "certificates/certs/import", label: "Import" },
+                    { key: "certificates/certs/revoke", label: "Revoke" },
+                    { key: "certificates/certs/destroy", label: "Destroy" },
+                    { key: "certificates/certs/validate", label: "Validate" },
+                ],
+            },
             { key: "certificates/encrypt", label: "Encrypt" },
-            { key: "certificates/export", label: "Export" },
-            { key: "certificates/import", label: "Import" },
-            { key: "certificates/revoke", label: "Revoke" },
-            { key: "certificates/destroy", label: "Destroy" },
-            { key: "certificates/validate", label: "Validate" },
+            { key: "certificates/decrypt", label: "Decrypt" },
         ],
     },
     {

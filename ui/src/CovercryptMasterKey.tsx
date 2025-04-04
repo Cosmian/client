@@ -1,8 +1,8 @@
-import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd"
-import React, { useEffect, useRef, useState } from "react"
-import { useAuth } from "./AuthContext"
-import { sendKmipRequest } from "./utils"
-import { create_cc_master_keypair_ttlv_request, parse_create_keypair_ttlv_response } from "./wasm/pkg"
+import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { sendKmipRequest } from "./utils";
+import { create_cc_master_keypair_ttlv_request, parse_create_keypair_ttlv_response } from "./wasm/pkg";
 
 interface CovercryptMasterKeyFormData {
     specification: string;
@@ -120,17 +120,8 @@ const CovercryptMasterKeyForm: React.FC = () => {
                                 />
                             </Form.Item>
 
-                            <div className="p-4 rounded mb-4">
-                                <p className="text-sm mb-2">Example Specification Format:</p>
-                                <pre className="p-2 rounded text-xs overflow-auto">{SPECIFICATION_EXAMPLE}</pre>
-                                <SpecificationExplanation />
-                            </div>
-
                             {specificationType === "json-file" && (
-                                <Form.Item
-                                    name="specificationFile"
-                                    rules={[{ required: true, message: "Please provide specifications" }]}
-                                >
+                                <Form.Item name="specificationFile" rules={[{ required: true, message: "Please provide specifications" }]}>
                                     <Upload.Dragger
                                         accept=".json"
                                         beforeUpload={(file) => {
@@ -177,6 +168,12 @@ const CovercryptMasterKeyForm: React.FC = () => {
                                     />
                                 </Form.Item>
                             )}
+                        </div>
+
+                        <div className="p-4 rounded mb-4">
+                            <p className="text-sm mb-2">Example Specification Format:</p>
+                            <pre className="p-2 rounded text-xs overflow-auto">{SPECIFICATION_EXAMPLE}</pre>
+                            <SpecificationExplanation />
                         </div>
 
                         <Form.Item name="tags" label="Tags" help="Optional tags to help retrieve the keys later">
