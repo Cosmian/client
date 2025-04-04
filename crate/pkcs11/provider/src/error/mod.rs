@@ -12,35 +12,30 @@ pub enum Pkcs11Error {
     // Conversion errors
     #[error("Conversion error: {0}")]
     Conversion(String),
-
     // PKCS11 Module errors
     #[error("PKCS#11 error: {0}")]
     Pkcs11(String),
-
     // Any errors on KMIP format due to mistake of the user
     #[error("{0}: {1}")]
     KmipError(ErrorReason, String),
-
     // When the KMS client returns an error
     #[error("{0}")]
     KmsClientError(String),
-
     // When a user requests something not supported by the server
     #[error("Not Supported: {0}")]
     NotSupported(String),
-
     // Any errors related to a bad behavior of the server but not related to the user input
     #[error("Server error: {0}")]
     ServerError(String),
-
     // Other errors
     #[error("{0}")]
     Default(String),
-
     #[error(transparent)]
     CosmianError(#[from] cosmian_cli::error::CosmianError),
     #[error(transparent)]
     FromHexError(#[from] hex::FromHexError),
+    #[error(transparent)]
+    TryFromInt(#[from] std::num::TryFromIntError),
 }
 
 impl Pkcs11Error {}
@@ -67,7 +62,7 @@ impl From<KmipError> for Pkcs11Error {
             }
             KmipError::DeserializationSize(expected, actual) => Self::KmipError(
                 ErrorReason::Codec_Error,
-                format!("Expected size: {}, Actual size: {}", expected, actual),
+                format!("Expected size: {expected}, Actual size: {actual}"),
             ),
         }
     }

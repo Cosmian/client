@@ -32,7 +32,7 @@ where
 
 impl<T> Pkcs11ResultHelper<T> for Option<T> {
     fn context(self, context: &str) -> Pkcs11Result<T> {
-        self.ok_or_else(|| Pkcs11Error::Default(context.to_string()))
+        self.ok_or_else(|| Pkcs11Error::Default(context.to_owned()))
     }
 
     fn with_context<D, O>(self, op: O) -> Pkcs11Result<T>

@@ -33,6 +33,7 @@ fn init(
 }
 
 #[cfg(target_os = "linux")]
+#[allow(clippy::print_stdout)]
 /// For Linux, log to /var/log
 fn init(
     log_name: &str,
@@ -63,7 +64,7 @@ fn log_to_file(
     let env_filter = EnvFilter::new(
         format!("info,cosmian_pkcs11={level},cosmian_pkcs11_module={level}").as_str(),
     );
-    _ = Registry::default()
+    Registry::default()
         .with(
             tracing_subscriber::fmt::layer()
                 .with_writer(std::sync::Mutex::new(file))
@@ -71,6 +72,6 @@ fn log_to_file(
         )
         .with(env_filter)
         .with(ErrorLayer::default())
-        .try_init();
+        .try_init()?;
     Ok(())
 }
