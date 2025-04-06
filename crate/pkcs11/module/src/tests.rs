@@ -149,7 +149,11 @@ pub(crate) fn test_init() {
         };
         // Update the function list with this PKCS#11 entry function
         func_list.C_GetFunctionList = Some(C_GetFunctionList);
-        unsafe { C_GetFunctionList(std::ptr::addr_of_mut!(func_list) as *mut _) };
+        unsafe {
+            C_GetFunctionList(
+                std::ptr::addr_of_mut!(func_list) as *mut *mut pkcs11_sys::CK_FUNCTION_LIST
+            );
+        }
     }
 }
 

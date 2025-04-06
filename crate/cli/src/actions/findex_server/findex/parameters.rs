@@ -51,7 +51,6 @@ pub struct FindexParameters {
 }
 
 impl FindexParameters {
-    #[allow(clippy::as_conversions)]
     /// Instantiates the Findex parameters.
     ///
     /// # Errors

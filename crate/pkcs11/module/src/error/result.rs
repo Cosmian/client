@@ -4,7 +4,7 @@ use super::MError;
 
 pub type MResult<R> = Result<R, MError>;
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub(crate) trait MResultHelper<T> {
     fn context(self, context: &str) -> MResult<T>;
     fn with_context<D, O>(self, op: O) -> MResult<T>
@@ -32,7 +32,7 @@ where
 
 impl<T> MResultHelper<T> for Option<T> {
     fn context(self, context: &str) -> MResult<T> {
-        self.ok_or_else(|| MError::Default(context.to_string()))
+        self.ok_or_else(|| MError::Default(context.to_owned()))
     }
 
     fn with_context<D, O>(self, op: O) -> MResult<T>

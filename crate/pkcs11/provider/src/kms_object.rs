@@ -152,10 +152,7 @@ async fn locate_objects(kms_rest_client: &KmsClient, tags: &[String]) -> Pkcs11R
         .map(std::string::ToString::to_string)
         .filter(|id| !id.is_empty())
         .collect();
-    debug!(
-        "Located objects: tags: {:?} => {:?}",
-        tags, uniques_identifiers
-    );
+    debug!("Located objects: tags: {tags:?} => {uniques_identifiers:?}");
     Ok(uniques_identifiers)
 }
 

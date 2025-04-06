@@ -368,7 +368,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
 fn try_u8_into_bool(slice: &[u8]) -> MResult<bool> {
     let as_array: [u8; std::mem::size_of::<CK_BBOOL>()] = slice.try_into()?;
     let as_byte = CK_BBOOL::from_ne_bytes(as_array);
-    Ok(!matches!(as_byte, 0u8))
+    Ok(!matches!(as_byte, 0_u8))
 }
 
 #[derive(Debug, Clone)]

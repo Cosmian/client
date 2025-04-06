@@ -56,14 +56,10 @@ async fn create_keys(
 
     let vol2 = create_symmetric_key_kmip_object(&[4, 5, 6, 7], CryptographicAlgorithm::AES, false)?;
     let import_object_request_2 =
-        requests::import_object_request(
-            Some("vol2".to_owned()),
-            vol2,
-            None,
-            false,
-            true,
-            [disk_encryption_tag, "vol2"],
-        );
+        requests::import_object_request(Some("vol2".to_owned()), vol2, None, false, true, [
+            disk_encryption_tag,
+            "vol2",
+        ]);
     let _vol2_id = kms_rest_client
         .import(import_object_request_2)
         .await?

@@ -113,7 +113,7 @@ impl Object {
             Object::DataObject(_) => "Data Object",
             // Object::RemoteObjectId(_) => "Remote Object ID",
         }
-        .to_string()
+        .to_owned()
     }
 
     pub fn attribute(&self, type_: AttributeType) -> MResult<Option<Attribute>> {
@@ -126,7 +126,7 @@ impl Object {
                 AttributeType::Class => Some(Attribute::Class(CKO_CERTIFICATE)),
                 AttributeType::Id => Some(Attribute::Id(cert.private_key_id().into_bytes())),
                 AttributeType::Issuer => cert.issuer().map(Attribute::Issuer).ok(),
-                AttributeType::Label => Some(Attribute::Label("Certificate".to_string())),
+                AttributeType::Label => Some(Attribute::Label("Certificate".to_owned())),
                 AttributeType::Token => Some(Attribute::Token(true)),
                 AttributeType::Trusted => Some(Attribute::Trusted(true)),
                 AttributeType::SerialNumber => {
@@ -152,7 +152,7 @@ impl Object {
                 AttributeType::KeyType => {
                     Some(Attribute::KeyType(sym_key.algorithm().to_ck_key_type()))
                 }
-                AttributeType::Label => Some(Attribute::Label("Symmetric Key".to_string())),
+                AttributeType::Label => Some(Attribute::Label("Symmetric Key".to_owned())),
                 AttributeType::Token => Some(Attribute::Token(true)),
                 AttributeType::Value => Some(Attribute::Value(sym_key.pkcs8_der_bytes()?.to_vec())),
                 _ => {
@@ -185,12 +185,12 @@ impl Object {
                 AttributeType::KeyType => {
                     Some(Attribute::KeyType(private_key.algorithm().to_ck_key_type()))
                 }
-                AttributeType::Label => Some(Attribute::Label("Private Key".to_string())),
+                AttributeType::Label => Some(Attribute::Label("Private Key".to_owned())),
                 AttributeType::Modulus => {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
                         error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
-                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_string())
+                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::Modulus(sk.n().to_bytes_be()))
                 }
@@ -200,7 +200,7 @@ impl Object {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
                         error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
-                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_string())
+                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::PublicExponent(sk.e().to_bytes_be()))
                 }
@@ -217,7 +217,7 @@ impl Object {
                             .map_err(|e| {
                                 error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
                                 MError::Cryptography(
-                                    "Failed to fetch the PKCS1 DER bytes".to_string(),
+                                    "Failed to fetch the PKCS1 DER bytes".to_owned(),
                                 )
                             })?
                             .map(|sd| Attribute::Value(sd.to_bytes().to_vec()))
@@ -252,7 +252,7 @@ impl Object {
             },
             Object::PublicKey(pk) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_PUBLIC_KEY)),
-                AttributeType::Label => Some(Attribute::Label("Public Key".to_string())),
+                AttributeType::Label => Some(Attribute::Label("Public Key".to_owned())),
                 AttributeType::Modulus => Some(Attribute::Modulus(pk.rsa_modulus()?)),
                 AttributeType::PublicExponent => {
                     Some(Attribute::PublicExponent(pk.rsa_public_exponent()?))
@@ -288,7 +288,7 @@ impl Object {
                 AttributeType::Value => Some(Attribute::Value(data.value().to_vec())),
                 AttributeType::Application => Some(Attribute::Application(data.application())),
                 AttributeType::Private => Some(Attribute::Private(true)),
-                AttributeType::Label => Some(Attribute::Label("Data Object".to_string())),
+                AttributeType::Label => Some(Attribute::Label("Data Object".to_owned())),
                 _ => {
                     error!("Data object: type_ unimplemented: {:?}", type_);
                     None

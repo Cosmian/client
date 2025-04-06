@@ -22,7 +22,6 @@ use std::{
     sync::{self, Arc, atomic::Ordering},
 };
 
-use log::trace;
 use once_cell::sync::Lazy;
 use pkcs11_sys::{
     CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
@@ -61,7 +60,7 @@ pub(crate) struct SignContext {
     pub payload: Option<Vec<u8>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 #[derive(Debug)]
 pub(crate) struct DecryptContext {
     pub remote_object_id: String,
@@ -71,7 +70,7 @@ pub(crate) struct DecryptContext {
     pub iv: Option<Vec<u8>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 #[derive(Debug)]
 pub(crate) struct EncryptContext {
     pub remote_object_id: String,
@@ -103,7 +102,6 @@ impl Session {
             ))
         })?;
         let handle = objects_store.upsert(object)?;
-        trace!("inserted object with id");
         self.find_objects_ctx.push(handle);
         Ok(handle)
     }
@@ -111,21 +109,21 @@ impl Session {
     pub(crate) fn load_find_context(&mut self, attributes: Attributes) -> MResult<()> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
-                "load_find_context: empty attributes".to_string(),
+                "load_find_context: empty attributes".to_owned(),
             ));
         }
+        // Refresh store
+        let res = backend()
+            .find_all_keys()?
+            .into_iter()
+            .map(|o| self.update_find_objects_context(o))
+            .collect::<MResult<Vec<_>>>()?;
+
         let search_class = attributes.get_class();
 
         match search_class {
             Ok(search_class) => self.load_find_context_by_class(attributes, search_class),
             Err(_) => {
-                // Refresh store
-                let res = backend()
-                    .find_all_keys()?
-                    .into_iter()
-                    .map(|o| self.update_find_objects_context(o))
-                    .collect::<MResult<Vec<_>>>()?;
-
                 let label = attributes.get_label()?;
                 let find_ctx = OBJECTS_STORE.read().map_err(|e| {
                     MError::ArgumentsBad(format!(
@@ -143,8 +141,7 @@ impl Session {
                     ))
                 })?;
                 debug!(
-                    "load_find_context: search by id: {} -> handle: {} -> object: {}:{}",
-                    label,
+                    "load_find_context: search by id: {label} -> handle: {} -> object: {}: {}",
                     handle,
                     object.name(),
                     object.remote_id()
@@ -165,7 +162,7 @@ impl Session {
     ) -> MResult<()> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
-                "load_find_context_by_class: empty attributes".to_string(),
+                "load_find_context_by_class: empty attributes".to_owned(),
             ));
         }
         let search_options = SearchOptions::try_from(&attributes)?;
@@ -344,7 +341,9 @@ impl Session {
                 .copy_from_slice(&signature);
             self.sign_ctx = None;
         }
-        unsafe { *pulSignatureLen = signature.len().try_into().unwrap() };
+        unsafe {
+            *pulSignatureLen = signature.len().try_into().unwrap();
+        }
         Ok(())
     }
 
@@ -364,16 +363,17 @@ impl Session {
             ciphertext,
             decrypt_ctx.iv.clone(),
         )?;
-        if !pData.is_null() {
-            if (unsafe { *pulDataLen } as usize) < cleartext.len() {
-                return Err(MError::BufferTooSmall);
+        unsafe {
+            if !pData.is_null() {
+                if (*pulDataLen as usize) < cleartext.len() {
+                    return Err(MError::BufferTooSmall);
+                }
+                std::slice::from_raw_parts_mut(pData, cleartext.len()).copy_from_slice(&cleartext);
+                *pulDataLen = cleartext.len() as CK_ULONG;
+                self.decrypt_ctx = None;
+            } else {
+                *pulDataLen = cleartext.len() as CK_ULONG;
             }
-            unsafe { std::slice::from_raw_parts_mut(pData, cleartext.len()) }
-                .copy_from_slice(&cleartext);
-            unsafe { *pulDataLen = cleartext.len() as CK_ULONG };
-            self.decrypt_ctx = None;
-        } else {
-            unsafe { *pulDataLen = cleartext.len() as CK_ULONG };
         }
         Ok(())
     }
@@ -394,14 +394,16 @@ impl Session {
             cleartext,
             encrypt_ctx.iv.clone(),
         )?;
-        unsafe { *pulEncryptedDataLen = ciphertext.len() as CK_ULONG };
-        if !pEncryptedData.is_null() {
-            if (unsafe { *pulEncryptedDataLen } as usize) < ciphertext.len() {
-                return Err(MError::BufferTooSmall);
+        unsafe {
+            *pulEncryptedDataLen = ciphertext.len() as CK_ULONG;
+            if !pEncryptedData.is_null() {
+                if (*pulEncryptedDataLen as usize) < ciphertext.len() {
+                    return Err(MError::BufferTooSmall);
+                }
+                std::slice::from_raw_parts_mut(pEncryptedData, ciphertext.len())
+                    .copy_from_slice(&ciphertext);
+                self.encrypt_ctx = None;
             }
-            unsafe { std::slice::from_raw_parts_mut(pEncryptedData, ciphertext.len()) }
-                .copy_from_slice(&ciphertext);
-            self.encrypt_ctx = None;
         }
         Ok(())
     }
@@ -413,7 +415,7 @@ impl Session {
     ) -> MResult<CK_OBJECT_HANDLE> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
-                "generate_key: empty attributes".to_string(),
+                "generate_key: empty attributes".to_owned(),
             ));
         }
 
@@ -443,7 +445,7 @@ impl Session {
 
 fn ignore_sessions() -> bool {
     std::env::var("COSMIAN_PKCS11_IGNORE_SESSIONS")
-        .unwrap_or("false".to_string())
+        .unwrap_or("false".to_owned())
         .to_lowercase()
         == "true"
 }

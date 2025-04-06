@@ -1,13 +1,13 @@
 use std::{
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::mpsc,
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use actix_server::ServerHandle;
-use base64::{Engine as _, engine::general_purpose::STANDARD as b64};
+use base64::{Engine, engine::general_purpose::STANDARD as b64};
 use cosmian_cli::{
     config::ClientConfig,
     reexport::{
@@ -53,7 +53,7 @@ fn sqlite_db_config() -> MainDBConfig {
         std::fs::remove_file(&file_path).unwrap();
     }
     MainDBConfig {
-        database_type: Some("sqlite".to_string()),
+        database_type: Some("sqlite".to_owned()),
         clear_database: true,
         sqlite_path: file_path,
         ..MainDBConfig::default()
@@ -70,7 +70,7 @@ fn sqlite_enc_db_config() -> MainDBConfig {
     }
     std::fs::create_dir_all(&dir_path).unwrap();
     MainDBConfig {
-        database_type: Some("sqlite-enc".to_string()),
+        database_type: Some("sqlite-enc".to_owned()),
         clear_database: true,
         sqlite_path: dir_path,
         ..MainDBConfig::default()
@@ -81,9 +81,9 @@ fn mysql_db_config() -> MainDBConfig {
     trace!("TESTS: using mysql");
     let mysql_url = option_env!("KMS_MYSQL_URL")
         .unwrap_or("mysql://kms:kms@localhost:3306/kms")
-        .to_string();
+        .to_owned();
     MainDBConfig {
-        database_type: Some("mysql".to_string()),
+        database_type: Some("mysql".to_owned()),
         clear_database: true,
         database_url: Some(mysql_url),
         ..MainDBConfig::default()
@@ -94,9 +94,9 @@ fn postgres_db_config() -> MainDBConfig {
     trace!("TESTS: using postgres");
     let postgresql_url = option_env!("KMS_POSTGRES_URL")
         .unwrap_or("postgresql://kms:kms@127.0.0.1:5432/kms")
-        .to_string();
+        .to_owned();
     MainDBConfig {
-        database_type: Some("postgresql".to_string()),
+        database_type: Some("postgresql".to_owned()),
         clear_database: true,
         database_url: Some(postgresql_url),
         ..MainDBConfig::default()
@@ -111,12 +111,12 @@ fn redis_findex_db_config() -> MainDBConfig {
         "redis://localhost:6379".to_owned()
     };
     MainDBConfig {
-        database_type: Some("redis-findex".to_string()),
+        database_type: Some("redis-findex".to_owned()),
         clear_database: true,
         database_url: Some(url),
         sqlite_path: Default::default(),
-        redis_master_password: Some("password".to_string()),
-        redis_findex_label: Some("label".to_string()),
+        redis_master_password: Some("password".to_owned()),
+        redis_findex_label: Some("label".to_owned()),
     }
 }
 
@@ -216,10 +216,10 @@ pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsC
                 },
                 None,
                 Some(HsmOptions {
-                    hsm_model: "utimaco".to_string(),
-                    hsm_admin: "admin".to_string(),
+                    hsm_model: "utimaco".to_owned(),
+                    hsm_admin: "admin".to_owned(),
                     hsm_slot: vec![0],
-                    hsm_password: vec!["12345678".to_string()],
+                    hsm_password: vec!["12345678".to_owned()],
                 }),
             )
         })
@@ -473,13 +473,24 @@ fn generate_server_params(
 fn set_access_token(server_params: &ServerParams, api_token: Option<String>) -> Option<String> {
     if server_params.identity_provider_configurations.is_some() {
         trace!("Setting access token for JWT: {AUTH0_TOKEN:?}");
-        Some(AUTH0_TOKEN.to_string())
+        Some(AUTH0_TOKEN.to_owned())
     } else if api_token.is_some() {
         trace!("Setting access token for API: {api_token:?}");
         api_token
     } else {
         None
     }
+}
+
+fn get_owner_certificate(root_dir: &Path, server_params: &ServerParams) -> Option<String> {
+    server_params.authority_cert_file.is_some().then(|| {
+        let path = if cfg!(target_os = "macos") {
+            "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.format.p12"
+        } else {
+            "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12"
+        };
+        root_dir.join(path).to_str().unwrap().to_owned()
+    })
 }
 
 fn generate_owner_conf(
@@ -499,39 +510,22 @@ fn generate_owner_conf(
     let owner_client_conf = ClientConfig {
         kms_config: KmsClientConfig {
             http_config: HttpClientConfig {
-                server_url: if matches!(server_params.http_params, HttpParams::Https(_)) {
-                    format!("https://0.0.0.0:{}", server_params.port)
-                } else {
-                    format!("http://0.0.0.0:{}", server_params.port)
-                },
+                server_url: format!(
+                    "{}://0.0.0.0:{}",
+                    if matches!(server_params.http_params, HttpParams::Https(_)) {
+                        "https"
+                    } else {
+                        "http"
+                    },
+                    server_params.port
+                ),
                 accept_invalid_certs: true,
                 access_token: set_access_token(server_params, api_token),
-                ssl_client_pkcs12_path: if server_params.authority_cert_file.is_some() {
-                    #[cfg(not(target_os = "macos"))]
-                    let p = root_dir.join(
-                        "../../test_data/certificates/client_server/owner/owner.client.acme.com.\
-                         p12",
-                    );
-                    #[cfg(target_os = "macos")]
-                    let p = root_dir.join(
-                        "../../test_data/certificates/client_server/owner/owner.client.acme.com.\
-                         old.format.p12",
-                    );
-                    Some(
-                        p.to_str()
-                            .ok_or_else(|| {
-                                KmsClientError::Default("Can't convert path to string".to_owned())
-                            })?
-                            .to_string(),
-                    )
-                } else {
-                    None
-                },
-                ssl_client_pkcs12_password: if server_params.authority_cert_file.is_some() {
-                    Some("password".to_owned())
-                } else {
-                    None
-                },
+                ssl_client_pkcs12_path: get_owner_certificate(&root_dir, server_params),
+                ssl_client_pkcs12_password: server_params
+                    .authority_cert_file
+                    .is_some()
+                    .then(|| "password".to_owned()),
                 ..HttpClientConfig::default()
             },
             gmail_api_conf,
@@ -567,7 +561,7 @@ fn generate_user_conf(
         Some(
             p.to_str()
                 .ok_or_else(|| KmsClientError::Default("Can't convert path to string".to_owned()))?
-                .to_string(),
+                .to_owned(),
         )
     };
     user_conf.kms_config.http_config.ssl_client_pkcs12_password = Some("password".to_owned());
