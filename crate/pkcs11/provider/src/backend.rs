@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use cosmian_cli::reexport::cosmian_kms_client::KmsClient;
-use cosmian_kmip::kmip_2_1::kmip_types::KeyFormatType;
+use cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType};
 use cosmian_pkcs11_module::{
     MError, MResult,
     core::object::Object,
@@ -22,6 +22,7 @@ use crate::{
     pkcs11_data_object::Pkcs11DataObject,
     pkcs11_error,
     pkcs11_private_key::Pkcs11PrivateKey,
+    pkcs11_public_key::Pkcs11PublicKey,
     pkcs11_symmetric_key::Pkcs11SymmetricKey,
 };
 
@@ -97,9 +98,11 @@ impl Backend for CliBackend {
         trace!("find_private_key: {:?}", query);
         let id = match query {
             SearchOptions::Id(id) => id,
-            SearchOptions::All => Err(MError::Backend(Box::new(pkcs11_error!(
-                "find_private_key: find must be made using an ID"
-            ))))?,
+            SearchOptions::All => {
+                return Err(MError::Backend(Box::new(pkcs11_error!(
+                    "find_private_key: find must be made using an ID"
+                ))))
+            }
         };
         let id = String::from_utf8(id)?;
         let kms_object = get_kms_object(&self.kms_rest_client, &id, KeyFormatType::PKCS8)?;
@@ -189,37 +192,40 @@ impl Backend for CliBackend {
         let mut objects = Vec::with_capacity(kms_ids.len());
         for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
-                "find_all_keys: missing key size".to_owned(),
-            ))?;
-            let key_algorithm = key_algorithm_from_attributes(&attributes)?;
-            let o = match attributes.object_type {
-                Some(object_type) => match object_type {
-                    cosmian_kmip::kmip_2_1::kmip_objects::ObjectType::SymmetricKey => {
-                        Object::SymmetricKey(Arc::new(Pkcs11SymmetricKey::new(
-                            id.clone(),
-                            key_algorithm,
-                            key_size,
-                        )))
-                    }
-                    cosmian_kmip::kmip_2_1::kmip_objects::ObjectType::PrivateKey => {
-                        Object::PrivateKey(Arc::new(Pkcs11PrivateKey::new(
-                            id,
-                            key_algorithm,
-                            key_size,
-                        )))
-                    }
-                    _ => Err(MError::Backend(Box::new(pkcs11_error!(
-                        "find_all_keys: unsupported object type"
-                    ))))?,
-                },
-                None => Err(MError::Backend(Box::new(pkcs11_error!(
-                    "find_all_symmetric_keys: missing object type"
-                ))))?,
+            let key_size = if let Some(key_size) = attributes.cryptographic_length {
+                key_size
+            } else {
+                warn!("find_all_keys: missing key size, skipping {id}");
+                continue;
             };
-            objects.push(Arc::new(o));
+
+            let key_algorithm = key_algorithm_from_attributes(&attributes)?;
+            let object =
+                match attributes.object_type {
+                    Some(object_type) => match object_type {
+                        ObjectType::SymmetricKey => Object::SymmetricKey(Arc::new(
+                            Pkcs11SymmetricKey::new(id, key_algorithm, key_size),
+                        )),
+                        ObjectType::PrivateKey => Object::PrivateKey(Arc::new(
+                            Pkcs11PrivateKey::new(id, key_algorithm, key_size),
+                        )),
+                        ObjectType::PublicKey => {
+                            Object::PublicKey(Arc::new(Pkcs11PublicKey::new(id, key_algorithm)))
+                        }
+                        other => {
+                            warn!("find_all_keys: unsupported object type: {other}, skipping {id}");
+                            continue;
+                        }
+                    },
+                    None => {
+                        warn!("find_all_keys: missing object type: skipping {id}");
+                        continue;
+                    }
+                };
+            objects.push(Arc::new(object));
         }
 
+        trace!("find_all_keys: found {} keys", objects.len());
         Ok(objects)
     }
 
@@ -230,7 +236,7 @@ impl Backend for CliBackend {
         sensitive: bool,
         label: Option<&str>,
     ) -> MResult<Arc<dyn SymmetricKey>> {
-        trace!("generate_key: {:?}, {:?}", algorithm, label);
+        trace!("generate_key: {algorithm:?}, {label:?}");
 
         let kms_object = kms_create(
             &self.kms_rest_client,
@@ -252,8 +258,7 @@ impl Backend for CliBackend {
         iv: Option<Vec<u8>>,
     ) -> MResult<Vec<u8>> {
         debug!(
-            "encrypt: {:?}, cleartext length: {}, iv: {iv:?}",
-            remote_object_id,
+            "encrypt: {remote_object_id}, cleartext length: {}, iv: {iv:?}",
             cleartext.len()
         );
         kms_encrypt(

@@ -22,6 +22,15 @@ pub(crate) struct Pkcs11PublicKey {
 }
 
 impl Pkcs11PublicKey {
+    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm) -> Self {
+        Self {
+            remote_id,
+            der_bytes: Zeroizing::new(vec![]),
+            algorithm,
+            fingerprint: vec![],
+        }
+    }
+
     pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> MResult<Self> {
         let algorithm = &spki.algorithm;
         let algorithm = KeyAlgorithm::from_oid(&algorithm.oid)

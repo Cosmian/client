@@ -226,7 +226,7 @@ cryptoki_fn!(
             let args = unsafe { *(pInitArgs as CK_C_INITIALIZE_ARGS_PTR) };
             if !args.pReserved.is_null() {
                 return Err(MError::ArgumentsBad(
-                    "C_Initialize: pReserved is null".to_string(),
+                    "C_Initialize: pReserved is null".to_owned(),
                 ));
             }
         }
@@ -242,7 +242,7 @@ cryptoki_fn!(
         initialized!();
         if !pReserved.is_null() {
             return Err(MError::ArgumentsBad(
-                "C_Finalize: pReserved is null".to_string(),
+                "C_Finalize: pReserved is null".to_owned(),
             ));
         }
         INITIALIZED.store(false, Ordering::SeqCst);
@@ -268,7 +268,9 @@ cryptoki_fn!(
                 minor: backend.library_version().minor,
             },
         };
-        unsafe { *pInfo = info };
+        unsafe {
+            *pInfo = info;
+        }
         Ok(())
     }
 );
@@ -286,9 +288,13 @@ cryptoki_fn!(
                 return Err(MError::BufferTooSmall);
             }
             // TODO: this should be an array.
-            unsafe { *pSlotList = SLOT_ID };
+            unsafe {
+                *pSlotList = SLOT_ID;
+            }
         }
-        unsafe { *pulCount = 1 };
+        unsafe {
+            *pulCount = 1;
+        }
         Ok(())
     }
 );
@@ -312,7 +318,9 @@ cryptoki_fn!(
                 minor: backend.library_version().minor,
             },
         };
-        unsafe { *pInfo = info };
+        unsafe {
+            *pInfo = info;
+        }
         Ok(())
     }
 );
@@ -348,7 +356,9 @@ cryptoki_fn!(
             // TODO: populate all fields.
             ..Default::default()
         };
-        unsafe { *pInfo = info };
+        unsafe {
+            *pInfo = info;
+        }
         Ok(())
     }
 );
@@ -364,7 +374,9 @@ cryptoki_fn!(
         valid_slot!(slotID);
         if !pMechanismList.is_null() {
             if (unsafe { *pulCount } as usize) < SUPPORTED_SIGNATURE_MECHANISMS.len() {
-                unsafe { *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG };
+                unsafe {
+                    *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG;
+                }
                 return Err(MError::BufferTooSmall);
             }
             unsafe {
@@ -372,7 +384,9 @@ cryptoki_fn!(
             }
             .copy_from_slice(SUPPORTED_SIGNATURE_MECHANISMS);
         }
-        unsafe { *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG };
+        unsafe {
+            *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG;
+        }
         Ok(())
     }
 );
@@ -393,7 +407,9 @@ cryptoki_fn!(
             flags: CKF_SIGN,
             ..Default::default()
         };
-        unsafe { *pInfo = info };
+        unsafe {
+            *pInfo = info;
+        }
         Ok(())
     }
 );
@@ -447,7 +463,9 @@ cryptoki_fn!(
         if flags & CKF_SERIAL_SESSION == 0 {
             return Err(MError::SessionParallelNotSupported);
         }
-        unsafe { *phSession = sessions::create(flags) };
+        unsafe {
+            *phSession = sessions::create(flags);
+        }
         info!(
             "C_OpenSession: slot: {:?}, flags: {:?}, session: {}",
             slotID,
@@ -496,7 +514,9 @@ cryptoki_fn!(
             flags,
             ulDeviceError: 0,
         };
-        unsafe { *pInfo = info };
+        unsafe {
+            *pInfo = info;
+        }
         trace!(
             "C_GetSessionInfo: session: {:?}, slot: {:?}, state: {:?}, flags: {:?}",
             hSession, SLOT_ID, state, flags
@@ -600,7 +620,7 @@ cryptoki_fn!(
             let template = if ulCount > 0 {
                 if pTemplate.is_null() {
                     return Err(MError::ArgumentsBad(
-                        "C_GetAttributeValue: pTemplate is null".to_string(),
+                        "C_GetAttributeValue: pTemplate is null".to_owned(),
                     ));
                 }
                 unsafe { slice::from_raw_parts_mut(pTemplate, ulCount as usize) }
@@ -662,8 +682,8 @@ cryptoki_fn!(
             .context("C_FindObjectsInit: attributes conversion failed")?;
         sessions::session(hSession, |session| -> MResult<()> {
             info!(
-                "C_FindObjectsInit: session: {:?}, load Objects Store context",
-                hSession
+                "C_FindObjectsInit: session: {hSession:?}, load Objects Store context for \
+                 attributes: {attributes:?}"
             );
             session.load_find_context(attributes)
         })
@@ -691,7 +711,9 @@ cryptoki_fn!(
                     "C_FindObjects: session: {:?}, no more objects to return",
                     hSession
                 );
-                unsafe { *pulObjectCount = 0 };
+                unsafe {
+                    *pulObjectCount = 0;
+                }
                 return Ok(());
             }
             let max_objects = cmp::min(session.find_objects_ctx.len(), ulMaxObjectCount as usize);
@@ -707,7 +729,9 @@ cryptoki_fn!(
             );
             let output = unsafe { slice::from_raw_parts_mut(phObject, max_objects) };
             output.copy_from_slice(handles.as_slice());
-            unsafe { *pulObjectCount = max_objects as CK_ULONG };
+            unsafe {
+                *pulObjectCount = max_objects as CK_ULONG;
+            }
             Ok(())
         })
     }
@@ -792,9 +816,7 @@ cryptoki_fn!(
              {pEncryptedData:?}, pulEncryptedDataLen: {pulEncryptedDataLen:?}"
         );
         if ulDataLen == 0 {
-            return Err(MError::ArgumentsBad(
-                "C_Encrypt: ulDataLen is 0".to_string(),
-            ));
+            return Err(MError::ArgumentsBad("C_Encrypt: ulDataLen is 0".to_owned()));
         }
         not_null!(pData);
         // not_null!(pEncryptedData);
@@ -909,7 +931,7 @@ cryptoki_fn!(
 
         if ulEncryptedDataLen == 0 {
             return Err(MError::ArgumentsBad(
-                "C_Decrypt: ulEncryptedDataLen is 0".to_string(),
+                "C_Decrypt: ulEncryptedDataLen is 0".to_owned(),
             ));
         }
         not_null!(pEncryptedData);
@@ -945,7 +967,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         if ulEncryptedPartLen == 0 {
             return Err(MError::ArgumentsBad(
-                "C_DecryptUpdate: ulEncryptedPartLen is 0".to_string(),
+                "C_DecryptUpdate: ulEncryptedPartLen is 0".to_owned(),
             ));
         }
         not_null!(pEncryptedPart);
@@ -1212,8 +1234,8 @@ cryptoki_fn!(
 
             unsafe {
                 let h_key = session.generate_key(mechanism, attributes)?;
-                *phKey = h_key;
-            }
+                *phKey = h_key
+            };
 
             Ok(())
         })

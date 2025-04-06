@@ -43,7 +43,8 @@ impl ObjectsStore {
     }
 
     pub(crate) fn get_using_handle(&self, handle: CK_OBJECT_HANDLE) -> Option<Arc<Object>> {
-        self.ids.get(&handle).and_then(|weak| weak.upgrade())
+        let weak = self.ids.get(&handle)?;
+        weak.upgrade()
     }
 
     pub(crate) fn get_using_id(&self, id: &str) -> Option<(Arc<Object>, CK_OBJECT_HANDLE)> {
@@ -63,7 +64,7 @@ impl ObjectsStore {
     }
 
     /// The number of objects in the store
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub(crate) fn len(&self) -> usize {
         self.objects.len()
     }

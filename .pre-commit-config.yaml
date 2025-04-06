@@ -41,7 +41,7 @@ repos:
     rev: v1.31.1
     hooks:
       - id: typos
-        exclude: documentation/docs/images
+        exclude: documentation/docs/images|crate/pkcs11/README.md
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
