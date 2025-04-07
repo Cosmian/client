@@ -2,12 +2,12 @@
 name = "cosmian_cli"
 version.workspace = true
 authors.workspace = true
+categories = ["security"]
 edition.workspace = true
+keywords = ["cosmian_cli", "kms", "findex", "findex-server", "cosmian"]
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-categories = ["security"]
-keywords = ["cosmian_cli", "kms", "findex", "findex-server", "cosmian"]
 description = """
 Command Line Interface used to manage the KMS and Findex servers.
 

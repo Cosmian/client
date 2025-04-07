@@ -61,8 +61,9 @@ pub mod import_utils;
 pub mod locate_utils;
 pub mod rsa_utils;
 pub mod symmetric_utils;
-// pub mod wasm;
 
 pub mod reexport {
+    pub use cosmian_config_utils;
     pub use cosmian_kmip;
+    pub use cosmian_kms_access;
 }

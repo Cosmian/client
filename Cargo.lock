@@ -1994,11 +1994,8 @@ dependencies = [
 name = "cosmian_kms_client"
 version = "0.2.0"
 dependencies = [
- "cosmian_config_utils",
  "cosmian_crypto_core 10.0.1",
  "cosmian_http_client",
- "cosmian_kmip",
- "cosmian_kms_access",
  "cosmian_kms_client_utils",
  "der",
  "pem",
@@ -2008,7 +2005,6 @@ dependencies = [
  "thiserror 2.0.12",
  "tracing",
  "url",
- "zeroize",
 ]
 
 [[package]]
@@ -2020,19 +2016,12 @@ dependencies = [
  "cosmian_config_utils",
  "cosmian_kmip",
  "cosmian_kms_access",
- "cosmian_logger",
- "der",
- "js-sys",
  "pem",
  "serde",
- "serde-wasm-bindgen",
  "serde_json",
  "strum",
  "thiserror 2.0.12",
  "tracing",
- "wasm-bindgen",
- "web-sys",
- "x509-cert",
  "zeroize",
 ]
 
@@ -2041,8 +2030,6 @@ name = "cosmian_kms_client_wasm"
 version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
- "cosmian_crypto_core 10.0.1",
- "cosmian_kmip",
  "cosmian_kms_client_utils",
  "getrandom 0.2.15",
  "js-sys",
@@ -2050,7 +2037,6 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "strum",
  "wasm-bindgen",
  "web-sys",
  "x509-cert",

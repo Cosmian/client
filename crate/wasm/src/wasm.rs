@@ -1,27 +1,6 @@
 use std::str::FromStr;
 
 use base64::Engine as _;
-use cosmian_kmip::kmip_2_1::{
-    kmip_objects::{Object, ObjectType},
-    kmip_operations::{
-        CertifyResponse, CreateKeyPair, CreateKeyPairResponse, CreateResponse, Decrypt,
-        DecryptResponse, DeleteAttribute, DeleteAttributeResponse, Destroy, DestroyResponse,
-        EncryptResponse, ExportResponse, GetAttributes, GetAttributesResponse, ImportResponse,
-        LocateResponse, RevokeResponse, SetAttribute, SetAttributeResponse, Validate,
-        ValidateResponse,
-    },
-    kmip_types::{
-        AttributeReference, CertificateType, CryptographicAlgorithm, CryptographicParameters,
-        KeyFormatType, LinkType, LinkedObjectIdentifier, RecommendedCurve, Tag, UniqueIdentifier,
-    },
-    requests::{
-        build_revoke_key_request, create_ec_key_pair_request, create_rsa_key_pair_request,
-        create_symmetric_key_kmip_object, decrypt_request, encrypt_request,
-        get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
-        get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
-    },
-    ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
-};
 use cosmian_kms_client_utils::{
     attributes_utils::{build_selected_attribute, parse_selected_attributes_flatten},
     certificate_utils::{Algorithm, build_certify_request},
@@ -41,6 +20,28 @@ use cosmian_kms_client_utils::{
         prepare_key_import_elements, read_object_from_json_ttlv_bytes,
     },
     locate_utils::build_locate_request,
+    reexport::cosmian_kmip::kmip_2_1::{
+        kmip_objects::{Object, ObjectType},
+        kmip_operations::{
+            CertifyResponse, CreateKeyPair, CreateKeyPairResponse, CreateResponse, Decrypt,
+            DecryptResponse, DeleteAttribute, DeleteAttributeResponse, Destroy, DestroyResponse,
+            EncryptResponse, ExportResponse, GetAttributes, GetAttributesResponse, ImportResponse,
+            LocateResponse, RevokeResponse, SetAttribute, SetAttributeResponse, Validate,
+            ValidateResponse,
+        },
+        kmip_types::{
+            AttributeReference, CertificateType, CryptographicAlgorithm, CryptographicParameters,
+            KeyFormatType, LinkType, LinkedObjectIdentifier, RecommendedCurve, Tag,
+            UniqueIdentifier,
+        },
+        requests::{
+            build_revoke_key_request, create_ec_key_pair_request, create_rsa_key_pair_request,
+            create_symmetric_key_kmip_object, decrypt_request, encrypt_request,
+            get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
+            get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
+        },
+        ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
+    },
     rsa_utils::{HashFn, RsaEncryptionAlgorithm},
     symmetric_utils::{DataEncryptionAlgorithm, parse_decrypt_elements},
 };

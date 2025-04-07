@@ -47,7 +47,7 @@
 #![feature(min_specialization)]
 
 pub use config::{GmailApiConf, KmsClientConfig};
-pub use cosmian_kmip::{self, kmip_2_1, pad_be_bytes};
+pub use cosmian_kms_client_utils::reexport::cosmian_kmip::{self, kmip_2_1, pad_be_bytes};
 pub use error::{KmsClientError, result::KmsClientResult};
 pub use export_utils::{ExportObjectParams, batch_export_objects, export_object};
 pub use file_utils::{
@@ -66,9 +66,9 @@ mod file_utils;
 mod kms_rest_client;
 
 pub mod reexport {
-    pub use cosmian_config_utils;
     pub use cosmian_http_client;
-    pub use cosmian_kmip;
-    pub use cosmian_kms_access;
-    pub use cosmian_kms_client_utils;
+    pub use cosmian_kms_client_utils::{
+        self,
+        reexport::{cosmian_config_utils, cosmian_kmip, cosmian_kms_access},
+    };
 }

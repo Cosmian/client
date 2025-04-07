@@ -1,8 +1,10 @@
-use cosmian_kmip::kmip_2_1::{
-    kmip_operations::{GetAttributes, Operation},
-    kmip_types::{AttributeReference, CryptographicParameters},
+use cosmian_kms_client_utils::{
+    export_utils::{export_request, get_request},
+    reexport::cosmian_kmip::kmip_2_1::{
+        kmip_operations::{GetAttributes, Operation},
+        kmip_types::{AttributeReference, CryptographicParameters},
+    },
 };
-use cosmian_kms_client_utils::export_utils::{export_request, get_request};
 
 use crate::{
     KmsClient, KmsClientError,
