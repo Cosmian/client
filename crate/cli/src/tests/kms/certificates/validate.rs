@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use assert_cmd::cargo::CommandCargoExt;
+use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat;
 #[cfg(feature = "fips")]
 use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat;
 #[cfg(feature = "fips")]
@@ -19,10 +20,7 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            certificates::{
-                encrypt::encrypt,
-                import::{ImportCertificateInput, import_certificate},
-            },
+            certificates::import::{ImportCertificateInput, import_certificate},
             utils::recover_cmd_logs,
         },
     },

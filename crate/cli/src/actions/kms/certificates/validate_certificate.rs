@@ -1,7 +1,7 @@
 use clap::Parser;
 use cosmian_kms_client::{
-    kmip_2_1::{kmip_types::ValidityIndicator, requests::build_validate_certificate_request},
     KmsClient,
+    kmip_2_1::{kmip_types::ValidityIndicator, requests::build_validate_certificate_request},
 };
 
 use crate::{
