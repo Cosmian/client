@@ -185,8 +185,8 @@ pub fn prepare_key_export_elements(
                     ..CryptographicParameters::default()
                 },
                 WrappingAlgorithm::RsaAesKeyWrap => CryptographicParameters {
-                    cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-                    padding_method: Some(PaddingMethod::OAEP),
+                    cryptographic_algorithm: Some(CryptographicAlgorithm::RSA),
+                    padding_method: Some(PaddingMethod::None),
                     hashing_algorithm: Some(HashingAlgorithm::SHA256),
                     ..CryptographicParameters::default()
                 },

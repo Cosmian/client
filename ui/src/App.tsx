@@ -186,6 +186,10 @@ function App() {
                 trackHeight: 32,
                 handleSize: 28,
             },
+            Button: {
+                defaultHoverBorderColor: "#6e31e8",
+                defaultHoverColor: "#6e31e8",
+            },
         },
     };
 

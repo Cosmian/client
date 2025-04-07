@@ -415,7 +415,6 @@ async fn test_certify_a_csr_without_extensions() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, certificate_id],
         None,
     )?;
@@ -453,7 +452,6 @@ async fn test_certify_a_csr_with_extensions() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, certificate_id],
         None,
     )?;
@@ -491,7 +489,6 @@ async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, certificate_id],
         None,
     )?;
@@ -537,7 +534,6 @@ async fn test_certify_a_public_key_test_with_extensions() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, certificate_id],
         None,
     )?;
@@ -586,7 +582,6 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, renewed_certificate_id],
         None,
     )?;
@@ -623,7 +618,6 @@ async fn test_certify_issue_with_subject_name() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![root_id, intermediate_id, certificate_id],
         None,
     )?;
@@ -656,7 +650,6 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![certificate_id],
         None,
     )?;
@@ -696,7 +689,6 @@ async fn test_certify_issue_with_subject_name_self_signed_without_extensions() -
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![certificate_id],
         None,
     )?;
@@ -731,7 +723,6 @@ async fn test_certify_issue_with_subject_name_self_signed_with_extensions() -> C
     let validation = validate::validate_certificate(
         &ctx.owner_client_conf_path,
         "certificates",
-        vec![],
         vec![certificate_id],
         None,
     )?;

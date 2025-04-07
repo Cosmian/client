@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
                 className="absolute inset-0 bg-cover bg-center flex"
                 style={{ backgroundImage: "url('/ui/login_page_background_image.png')" }}
             />
-            <div className="relative w-2/3 shadow-2xl rounded-lg p-20 flex flex-col items-center">
+            <div className="relative w-2/3 shadow-2xl rounded-lg p-20 flex flex-col items-center bg-purple-700/30">
                 <div className="text-center text-7xl font-bold text-white mb-20 z-10">Cosmian KMS user interface</div>
                 <div className="space-y-6 text-center w-1/2">
                     <p className="text-white">Authenticate using your organization's identity provider.</p>
@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
                     {isLoading ? (
                         <Spin size="large" />
                     ) : (
-                        <Button ghost block onClick={handleLogin} loading={isLoading}>
+                        <Button ghost block className="hover:decoration-purple-700" onClick={handleLogin} loading={isLoading}>
                             LOGIN
                         </Button>
                     )}
