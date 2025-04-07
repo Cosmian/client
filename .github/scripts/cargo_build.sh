@@ -8,6 +8,7 @@ set -ex
 # export DEBUG_OR_RELEASE=debug
 # export OPENSSL_DIR=/usr/local/openssl
 # export SKIP_SERVICES_TESTS="--skip hsm"
+# 
 
 ROOT_FOLDER=$(pwd)
 
