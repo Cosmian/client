@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 doctest = false
 
 [features]
-fips = []
+fips = ["cosmian_kmip/fips"]
 
 [dependencies]
 cosmian_config_utils = { workspace = true }
