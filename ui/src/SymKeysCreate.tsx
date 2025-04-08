@@ -33,7 +33,6 @@ const SymKeyCreateForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: SymKeyCreateFormData) => {
-        console.log("Create symmetric key values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

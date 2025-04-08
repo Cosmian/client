@@ -26,7 +26,6 @@ const ECEncryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: ECEncryptFormData) => {
-        console.log("Encrypt values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.keyId ? values.keyId : values.tags ? JSON.stringify(values.tags) : undefined;

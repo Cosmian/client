@@ -27,7 +27,6 @@ const CCEncryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CCEncryptFormData) => {
-        console.log("Encrypt values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.keyId ? values.keyId : values.tags ? JSON.stringify(values.tags) : undefined;

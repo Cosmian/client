@@ -38,7 +38,6 @@ const DestroyForm: React.FC<DestroyFormProps> = (props: DestroyFormProps) => {
     const objectTypeLabel = isKeyType ? "key" : "certificate";
 
     const onFinish = async (values: DestroyFormData) => {
-        console.log(`Destroy ${objectTypeLabel} values:`, values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.objectId ? values.objectId : values.tags ? JSON.stringify(values.tags) : undefined;

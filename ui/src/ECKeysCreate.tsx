@@ -30,7 +30,6 @@ const ECKeyCreateForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: ECKeyCreateFormData) => {
-        console.log("Create EC key pair values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

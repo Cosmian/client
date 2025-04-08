@@ -27,7 +27,6 @@ const AccessListForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: AccessListFormData) => {
-        console.log("List access values:", values);
         setIsLoading(true);
         setRes(undefined);
         setAccessRights([]);

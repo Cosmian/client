@@ -23,7 +23,6 @@ const CertificateValidateForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: ValidateCertificateFormData) => {
-        console.log("Validate Certificate values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

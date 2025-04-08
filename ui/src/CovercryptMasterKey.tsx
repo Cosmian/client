@@ -39,7 +39,6 @@ const CovercryptMasterKeyForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CovercryptMasterKeyFormData) => {
-        console.log("Create master key pair values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

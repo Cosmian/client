@@ -41,7 +41,6 @@ const CertificateImportForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: ImportCertificateFormData) => {
-        console.log("Import certificate values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

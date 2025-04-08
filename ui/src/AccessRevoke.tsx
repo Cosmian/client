@@ -34,7 +34,6 @@ const AccessRevokeForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: AccessRevokeFormData) => {
-        console.log("Revoke access values:", values);
         setIsLoading(true);
         setRes(undefined);
 

@@ -34,7 +34,6 @@ const CertificateDecryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CertificateDecryptFormData) => {
-        console.log("Certificate Decrypt values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.privateKeyId ? values.privateKeyId : values.tags ? JSON.stringify(values.tags) : undefined;

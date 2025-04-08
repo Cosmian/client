@@ -53,7 +53,7 @@ const AppContent: React.FC<AppContentProps> = ({ isDarkMode, setIsDarkMode }) =>
 
     useEffect(() => {
         // const location = window.location.origin; // WHEN USING REAL URL/IP
-        const location = "http://0.0.0.0:9998"; // ONLY FOR DEV MODE
+        const location = "https://0.0.0.0:9998"; // ONLY FOR DEV MODE
         setServerUrl(location);
 
         const fetchUser = async () => {

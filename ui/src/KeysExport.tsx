@@ -1,8 +1,8 @@
-import { Button, Card, Checkbox, Divider, Form, Input, Select, Space } from "antd"
-import React, { useEffect, useRef, useState } from "react"
-import { useAuth } from "./AuthContext"
-import { downloadFile, sendKmipRequest } from "./utils"
-import { export_ttlv_request, parse_export_ttlv_response } from "./wasm/pkg"
+import { Button, Card, Checkbox, Divider, Form, Input, Select, Space } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { downloadFile, sendKmipRequest } from "./utils";
+import { export_ttlv_request, parse_export_ttlv_response } from "./wasm/pkg";
 
 interface KeyExportFormData {
     keyId?: string;
@@ -90,7 +90,6 @@ const KeyExportForm: React.FC<KeyExportFormProps> = (props: KeyExportFormProps) 
     }, [selectedAlgorithm, form]);
 
     const onFinish = async (values: KeyExportFormData) => {
-        console.log("Export key values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.keyId ? values.keyId : values.tags ? JSON.stringify(values.tags) : undefined;
@@ -213,29 +212,33 @@ const KeyExportForm: React.FC<KeyExportFormProps> = (props: KeyExportFormProps) 
                             <Checkbox>Unwrap key before export</Checkbox>
                         </Form.Item>
 
-                        {selectedFormat !== 'raw' && selectedFormat !== 'base64' &&
-                        <>
-                            <Divider />
-                            <h3 className="text-m font-bold mb-4">Wrapping Options</h3>
-                            <Form.Item name="wrapKeyId" label="Wrap Key ID" help="ID of the key/certificate to use for wrapping">
-                                <Input placeholder="Enter wrap key ID" />
-                            </Form.Item>
-
-                            <Form.Item name="wrappingAlgorithm" label="Wrapping Algorithm" help="Algorithm to use when wrapping the key">
-                                <Select options={WRAPPING_ALGORITHMS} placeholder="Select wrapping algorithm" disabled={!wrapKeyId} />
-                            </Form.Item>
-
-                            {selectedAlgorithm === "aes-gcm" && (
-                                <Form.Item
-                                    name="authenticatedAdditionalData"
-                                    label="Authenticated Additional Data"
-                                    help="Only available for AES GCM wrapping"
-                                >
-                                    <Input placeholder="Enter authenticated data" disabled={!wrapKeyId} />
+                        {selectedFormat !== "raw" && selectedFormat !== "base64" && (
+                            <>
+                                <Divider />
+                                <h3 className="text-m font-bold mb-4">Wrapping Options</h3>
+                                <Form.Item name="wrapKeyId" label="Wrap Key ID" help="ID of the key/certificate to use for wrapping">
+                                    <Input placeholder="Enter wrap key ID" />
                                 </Form.Item>
-                            )}
-                        </>
-                        }
+
+                                <Form.Item
+                                    name="wrappingAlgorithm"
+                                    label="Wrapping Algorithm"
+                                    help="Algorithm to use when wrapping the key"
+                                >
+                                    <Select options={WRAPPING_ALGORITHMS} placeholder="Select wrapping algorithm" disabled={!wrapKeyId} />
+                                </Form.Item>
+
+                                {selectedAlgorithm === "aes-gcm" && (
+                                    <Form.Item
+                                        name="authenticatedAdditionalData"
+                                        label="Authenticated Additional Data"
+                                        help="Only available for AES GCM wrapping"
+                                    >
+                                        <Input placeholder="Enter authenticated data" disabled={!wrapKeyId} />
+                                    </Form.Item>
+                                )}
+                            </>
+                        )}
                     </Card>
                     <Card>
                         <Form.Item

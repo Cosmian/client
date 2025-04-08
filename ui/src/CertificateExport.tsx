@@ -40,7 +40,6 @@ const CertificateExportForm: React.FC = () => {
     };
 
     const onFinish = async (values: CertificateExportFormData) => {
-        console.log("Export certificate values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.certificateId ? values.certificateId : values.tags ? JSON.stringify(values.tags) : undefined;

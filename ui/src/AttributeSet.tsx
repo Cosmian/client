@@ -75,12 +75,10 @@ const AttributeSetForm: React.FC = () => {
 
     const onAttributeNameChange = (value: string) => {
         setSelectedAttributeName(value);
-        // Reset attribute value when name changes
         form.setFieldsValue({ attribute_value: undefined });
     };
 
     const onFinish = async (values: AttributeSetFormData) => {
-        console.log("Set attribute values:", values);
         setIsLoading(true);
 
         const id = values.id ? values.id : values.tags ? JSON.stringify(values.tags) : undefined;
@@ -95,7 +93,6 @@ const AttributeSetForm: React.FC = () => {
                 throw Error("Missing attribute");
             }
 
-            // Process special attribute values
             let attributeValue = values.attribute_value;
 
             // For activation_date, convert from timestamp to Unix timestamp in seconds
@@ -118,7 +115,6 @@ const AttributeSetForm: React.FC = () => {
         }
     };
 
-    // Render different input components based on the selected attribute name
     const renderAttributeValueInput = () => {
         if (!selectedAttributeName) {
             return <Input placeholder="First select an attribute name" disabled />;
@@ -177,7 +173,6 @@ const AttributeSetForm: React.FC = () => {
                     </Form.Item>
                 );
 
-            // For all ID fields, render a simple input
             case "public_key_id":
             case "private_key_id":
             case "certificate_id":

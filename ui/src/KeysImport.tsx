@@ -1,9 +1,9 @@
-import { UploadOutlined } from "@ant-design/icons"
-import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd"
-import React, { useEffect, useRef, useState } from "react"
-import { useAuth } from "./AuthContext"
-import { sendKmipRequest } from "./utils"
-import { import_ttlv_request, parse_import_ttlv_response } from "./wasm/pkg"
+import { UploadOutlined } from "@ant-design/icons";
+import { Button, Card, Checkbox, Form, Input, Select, Space, Upload } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { sendKmipRequest } from "./utils";
+import { import_ttlv_request, parse_import_ttlv_response } from "./wasm/pkg";
 
 type ImportKeyFormat = "json-ttlv" | "pem" | "sec1" | "pkcs1-priv" | "pkcs1-pub" | "pkcs8-pub" | "pkcs8-priv" | "aes" | "chacha20";
 
@@ -47,7 +47,6 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
     }, [res]);
 
     const onFinish = async (values: ImportKeyFormData) => {
-        console.log("Import key values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {
@@ -170,39 +169,37 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
                                     const reader = new FileReader();
 
                                     reader.onload = (e) => {
-                                    const content = e.target?.result;
+                                        const content = e.target?.result;
 
-                                    if (typeof content === "string") {
-                                        try {
-                                        // Check if content is Base64 encoded (basic check: valid Base64 characters)
-                                        if (/^[A-Za-z0-9+/=]+$/.test(content.trim())) {
-                                            const decoded = atob(content.trim()); // Decode Base64
-                                            const bytes = new Uint8Array([...decoded].map((char) => char.charCodeAt(0)));
-                                            console.log("Decoded Base64 bytes:", bytes);
-                                            form.setFieldsValue({ keyFile: bytes });
-                                        } else {
-                                            throw new Error("Invalid Base64 format");
-                                        }
-                                        } catch {
-                                        // If Base64 decoding fails, re-read the file as ArrayBuffer
-                                        const binaryReader = new FileReader();
-                                        binaryReader.onload = (event) => {
-                                            const rawContent = event.target?.result;
-                                            if (rawContent instanceof ArrayBuffer) {
-                                            const bytes = new Uint8Array(rawContent);
-                                            console.log("Raw binary bytes:", bytes);
-                                            form.setFieldsValue({ keyFile: bytes });
+                                        if (typeof content === "string") {
+                                            try {
+                                                // Check if content is Base64 encoded (basic check: valid Base64 characters)
+                                                if (/^[A-Za-z0-9+/=]+$/.test(content.trim())) {
+                                                    const decoded = atob(content.trim()); // Decode Base64
+                                                    const bytes = new Uint8Array([...decoded].map((char) => char.charCodeAt(0)));
+                                                    form.setFieldsValue({ keyFile: bytes });
+                                                } else {
+                                                    throw new Error("Invalid Base64 format");
+                                                }
+                                            } catch {
+                                                // If Base64 decoding fails, re-read the file as ArrayBuffer
+                                                const binaryReader = new FileReader();
+                                                binaryReader.onload = (event) => {
+                                                    const rawContent = event.target?.result;
+                                                    if (rawContent instanceof ArrayBuffer) {
+                                                        const bytes = new Uint8Array(rawContent);
+                                                        form.setFieldsValue({ keyFile: bytes });
+                                                    }
+                                                };
+                                                binaryReader.readAsArrayBuffer(file);
                                             }
-                                        };
-                                        binaryReader.readAsArrayBuffer(file);
                                         }
-                                    }
                                     };
 
                                     reader.readAsText(file); // First attempt reading as text for Base64
 
                                     return false;
-  }}
+                                }}
                                 maxCount={1}
                             >
                                 <Button icon={<UploadOutlined />}>Upload Key File</Button>

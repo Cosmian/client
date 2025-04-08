@@ -50,7 +50,6 @@ const CertificateCertifyForm: React.FC = () => {
 
     const onCertifyMethodChange = (e: any) => {
         setCertifyMethod(e.target.value);
-        // Reset related fields when switching methods
         form.resetFields([
             "certificateSigningRequest",
             "publicKeyIdToCertify",
@@ -68,7 +67,6 @@ const CertificateCertifyForm: React.FC = () => {
     };
 
     const onFinish = async (values: CertificateCertifyFormData) => {
-        console.log("Certificate Certify values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

@@ -36,7 +36,6 @@ const AccessGrantForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: AccessGrantFormData) => {
-        console.log("Grant access values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

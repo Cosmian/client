@@ -1,8 +1,8 @@
-import { Button, Card, Form, Input, Select, Space, Typography } from "antd"
-import React, { useEffect, useRef, useState } from "react"
-import { useAuth } from "./AuthContext"
-import { sendKmipRequest } from "./utils"
-import { delete_attribute_ttlv_request, parse_delete_attribute_ttlv_response } from "./wasm/pkg/cosmian_kms_client_wasm"
+import { Button, Card, Form, Input, Select, Space, Typography } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { sendKmipRequest } from "./utils";
+import { delete_attribute_ttlv_request, parse_delete_attribute_ttlv_response } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -42,7 +42,6 @@ const DeleteAttribute: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: AttributeDeleteFormData) => {
-        console.log("Delete attribute values:", values);
         setIsLoading(true);
         const id = values.id ? values.id : values.tags ? JSON.stringify(values.tags) : undefined;
         try {

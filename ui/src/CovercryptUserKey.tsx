@@ -30,7 +30,6 @@ const CovercryptUserKeyForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CovercryptUserKeyFormData) => {
-        console.log("Create user key values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

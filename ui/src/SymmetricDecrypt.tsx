@@ -37,7 +37,6 @@ const SymmetricDecryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: SymmetricDecryptFormData) => {
-        console.log("Decrypt values:", values);
         const id = values.keyId ? values.keyId : values.tags ? JSON.stringify(values.tags) : undefined;
         try {
             if (id == undefined) {

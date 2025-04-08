@@ -26,7 +26,6 @@ const CCDecryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CCDecryptFormData) => {
-        console.log("Decrypt values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.keyId ? values.keyId : values.tags ? JSON.stringify(values.tags) : undefined;

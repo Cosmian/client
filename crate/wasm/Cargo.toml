@@ -32,4 +32,4 @@ x509-cert = { workspace = true, features = ["pem"] }
 zeroize = { workspace = true }
 
 [package.metadata.cargo-machete]
-ignored = ["getrandom", "web-sys"]
+ignored = ["getrandom"]

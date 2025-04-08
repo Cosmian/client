@@ -30,7 +30,6 @@ const RsaKeyCreateForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: RsaKeyCreateFormData) => {
-        console.log("Create key values:", values);
         setIsLoading(true);
         setRes(undefined);
         try {

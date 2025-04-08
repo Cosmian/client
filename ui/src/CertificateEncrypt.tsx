@@ -28,7 +28,6 @@ const CertificateEncryptForm: React.FC = () => {
     }, [res]);
 
     const onFinish = async (values: CertificateEncryptFormData) => {
-        console.log("Certificate Encrypt values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.certificateId ? values.certificateId : values.tags ? JSON.stringify(values.tags) : undefined;

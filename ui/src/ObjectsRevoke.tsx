@@ -35,7 +35,6 @@ const RevokeForm: React.FC<RevokeFormProps> = (props: RevokeFormProps) => {
     }, [res]);
 
     const onFinish = async (values: RevokeFormData) => {
-        console.log("Revoke values:", values);
         setIsLoading(true);
         setRes(undefined);
         const id = values.objectId ? values.objectId : values.tags ? JSON.stringify(values.tags) : undefined;

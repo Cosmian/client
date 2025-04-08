@@ -1098,9 +1098,7 @@ pub fn delete_attribute_ttlv_request(
     unique_identifier: String,
     attribute_name: &str,
 ) -> Result<JsValue, JsValue> {
-    // use web_sys::console;
     let unique_identifier = UniqueIdentifier::TextString(unique_identifier);
-    // console::log_1(&"two".into());
     let request = match attribute_name {
         "public_key_id"
         | "private_key_id"
