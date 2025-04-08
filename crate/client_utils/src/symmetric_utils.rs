@@ -142,39 +142,6 @@ pub fn parse_decrypt_elements(
     cryptographic_parameters: &CryptographicParameters,
     mut ciphertext: Vec<u8>,
 ) -> Result<ParsedSymEncrypted, UtilsError> {
-    // let (nonce_size, tag_size) = match &cryptographic_parameters
-    //     .cryptographic_algorithm
-    //     .unwrap_or(CryptographicAlgorithm::AES)
-    // {
-    //     CryptographicAlgorithm::AES => match cryptographic_parameters
-    //         .block_cipher_mode
-    //         .unwrap_or(BlockCipherMode::GCM)
-    //     {
-    //         BlockCipherMode::GCM | BlockCipherMode::GCMSIV => {
-    //             (AES_128_GCM_IV_LENGTH, AES_128_GCM_MAC_LENGTH)
-    //         }
-    //         BlockCipherMode::XTS => (AES_128_XTS_TWEAK_LENGTH, AES_128_XTS_MAC_LENGTH),
-    //         BlockCipherMode::NISTKeyWrap => (RFC5649_16_IV_LENGTH, RFC5649_16_MAC_LENGTH),
-    //         _ => {
-    //             return Err(UtilsError::Default(
-    //                 "Unsupported block cipher mode".to_owned(),
-    //             ))
-    //         }
-    //     },
-    //     #[cfg(not(feature = "fips"))]
-    //     CryptographicAlgorithm::ChaCha20Poly1305 | CryptographicAlgorithm::ChaCha20 => {
-    //         (CHACHA20_POLY1305_IV_LENGTH, CHACHA20_POLY1305_MAC_LENGTH)
-    //     }
-    //     _ => {
-    //         return Err(UtilsError::Default(
-    //             "Unsupported cryptographic algorithm".to_owned(),
-    //         ))
-    //     }
-    // };
-    // let nonce = ciphertext.drain(..nonce_size).collect::<Vec<_>>();
-    // let tag = ciphertext
-    //     .drain(ciphertext.len() - tag_size..)
-    //     .collect::<Vec<_>>();
     let (nonce_size, tag_size) = match &cryptographic_parameters
         .cryptographic_algorithm
         .unwrap_or(CryptographicAlgorithm::AES)
