@@ -1,50 +1,51 @@
-# React + TypeScript + Vite
+# React App for Cosmian KMS UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React-based frontend for the **Cosmian KMS**. It is designed to be built as a static web application and served by the KMS server.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## WASM Integration
 
-## Expanding the ESLint configuration
+This application uses WebAssembly (WASM) to handle secure request generation and parsing.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+To build the WASM package from the corresponding Rust crate:
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+wasm-pack build --target web
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Then copy the generated `pkg` directory into the React app’s source tree:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+cp -R pkg ../../ui/src/wasm/
 ```
+
+## Running the UI Locally
+
+To run the UI in development mode:
+
+Make sure pnpm is installed. If not, install it:
+```bash
+npm install -g pnpm
+```
+
+Install dependencies:
+```bash
+pnpm install
+```
+
+Start the development server:
+```bash
+pnpm run dev
+```
+
+## Build the Production App
+
+To build the production-ready UI:
+```bash
+pnpm run build
+```
+
+This will generate a `dist` directory containing all static assets.
+
+You can then copy the contents of the dist folder to the static resources directory of the Cosmian KMS server so it can serve the UI.
