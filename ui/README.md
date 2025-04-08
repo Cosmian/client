@@ -24,17 +24,27 @@ cp -R pkg ../../ui/src/wasm/
 
 To run the UI in development mode:
 
+### NPM version
+
+| Component | Required Version |
+| --------- | ---------------- |
+| Node.js   | v23.6.0          |
+| npm       | v11.2.0          |
+
 Make sure pnpm is installed. If not, install it:
+
 ```bash
 npm install -g pnpm
 ```
 
 Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 Start the development server:
+
 ```bash
 pnpm run dev
 ```
@@ -42,6 +52,7 @@ pnpm run dev
 ## Build the Production App
 
 To build the production-ready UI:
+
 ```bash
 pnpm run build
 ```
