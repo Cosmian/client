@@ -20,12 +20,11 @@ use crate::{actions::console, error::result::CosmianResult};
 /// By default, the format is expected to be JSON TTLV but
 /// other formats can be specified with the option `-f`.
 ///   * json-ttlv (the default)
-///   * pem (PKCS#1, PKCS#8, SEC1, SPKI): the function will attempt to detect the type of key and key format
+///   * pem (PKCS#1, PKCS#8, SEC1): the function will attempt to detect the type of key and key format
 ///   * sec1: an elliptic curve private key in SEC1 DER format (NIST curves only - SECG SEC1-v2 #C.4)
 ///   * pkcs1-priv: an RSA private key in PKCS#1 DER format (RFC 8017)
 ///   * pkcs1-pub: an RSA public key in PKCS#1 DER format (RFC 8017)
 ///   * pkcs8: an RSA or Elliptic Curve private key in PKCS#8 DER format (RFC 5208 and 5958)
-///   * spki: an RSA or Elliptic Curve public key in Subject Public Key Info DER format (RFC 5480)
 ///   * aes: the bytes of an AES symmetric key
 ///   * chacha20: the bytes of a `ChaCha20` symmetric key
 ///

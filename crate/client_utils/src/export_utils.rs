@@ -102,8 +102,7 @@ pub fn der_to_pem(
                 ObjectType::PrivateKey => "PRIVATE KEY",
                 ObjectType::PublicKey => "PUBLIC KEY",
                 x => Err(UtilsError::Default(format!(
-                    "Object type {x:?} not supported for PKCS#8 / SPKI. Must be a private key \
-                     PKCS#8) or public key (SPKI)"
+                    "Object type {x:?} not supported for PKCS#8. Must be a private key PKCS#8)"
                 )))?,
             };
             pem::Pem::new(tag, bytes)

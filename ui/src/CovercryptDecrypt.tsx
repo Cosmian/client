@@ -42,12 +42,11 @@ const CCDecryptForm: React.FC = () => {
             if (result_str) {
                 const response = await parse_decrypt_ttlv_response(result_str);
                 const data = new Uint8Array(response.Data);
-                const filteredData = data.filter((byte) => byte !== 0); // TODO: check why 0 byte at the beginning of the byte result
                 const name = values.fileName.slice(0, -4);
                 const lastDotIndex = name.lastIndexOf(".");
                 const fileName = lastDotIndex !== -1 ? name : `${name}.plain`;
                 const mimeType = getMimeType(fileName);
-                saveDecryptedFile(filteredData, fileName, mimeType);
+                saveDecryptedFile(data, fileName, mimeType);
                 setRes("File has been decrypted");
             }
         } catch (e) {

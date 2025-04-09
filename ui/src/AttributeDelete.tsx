@@ -7,7 +7,6 @@ import { delete_attribute_ttlv_request, parse_delete_attribute_ttlv_response } f
 const { Title } = Typography;
 const { Option } = Select;
 
-// Define the allowed attribute names from the Rust function
 const ALLOWED_ATTRIBUTES = [
     { value: "ActivationDate", label: "Activation Date" },
     { value: "CryptographicAlgorithm", label: "Cryptographic Algorithm" },

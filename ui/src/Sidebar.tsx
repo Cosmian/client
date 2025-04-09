@@ -1,7 +1,7 @@
 import { Layout, Menu, MenuProps, Tooltip } from "antd";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { menuItems } from "./menuItems";
+import { menuItems } from "./MenuItems.tsx";
 
 const { Sider } = Layout;
 

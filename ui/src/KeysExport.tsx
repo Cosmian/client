@@ -15,18 +15,7 @@ interface KeyExportFormData {
     authenticatedAdditionalData?: string;
 }
 
-type ExportKeyFormat =
-    | "json-ttlv"
-    | "sec1-pem"
-    | "sec1-der"
-    | "pkcs1-pem"
-    | "pkcs1-der"
-    | "pkcs8-pem"
-    | "pkcs8-der"
-    | "spki-pem"
-    | "spki-der"
-    | "base64"
-    | "raw";
+type ExportKeyFormat = "json-ttlv" | "sec1-pem" | "sec1-der" | "pkcs1-pem" | "pkcs1-der" | "pkcs8-pem" | "pkcs8-der" | "base64" | "raw";
 
 type WrappingAlgorithm = "nist-key-wrap" | "aes-gcm" | "rsa-pkcs-v15" | "rsa-oaep" | "rsa-aes-key-wrap";
 
@@ -45,11 +34,9 @@ const exportFileExtension = {
     "sec1-pem": "pem",
     "pkcs1-pem": "pem",
     "pkcs8-pem": "pem",
-    "spki-pem": "pem",
     "sec1-der": "der",
     "pkcs1-der": "der",
     "pkcs8-der": "der",
-    "spki-der": "der",
     base64: "b64",
     raw: "",
 };

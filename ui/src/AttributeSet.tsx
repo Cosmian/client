@@ -8,7 +8,6 @@ import { parse_set_attribute_ttlv_response, set_attribute_ttlv_request } from ".
 const { Title } = Typography;
 const { Option } = Select;
 
-// Define the allowed attribute names from the Rust function
 const ALLOWED_ATTRIBUTES = [
     { value: "activation_date", label: "Activation Date" },
     { value: "cryptographic_algorithm", label: "Cryptographic Algorithm" },
@@ -23,7 +22,6 @@ const ALLOWED_ATTRIBUTES = [
     { value: "child_id", label: "Child ID link" },
 ];
 
-// Define cryptographic algorithms as shown in the Rust code
 const CRYPTO_ALGORITHMS = [
     { value: "AES", label: "AES" },
     { value: "RSA", label: "RSA" },
@@ -42,7 +40,6 @@ const CRYPTO_ALGORITHMS = [
     { value: "CoverCryptBulk", label: "CoverCryptBulk" },
 ];
 
-// Define key usage options
 const KEY_USAGE_OPTIONS = [
     { value: "Sign", label: "Sign" },
     { value: "Verify", label: "Verify" },

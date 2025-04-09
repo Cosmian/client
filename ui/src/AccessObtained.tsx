@@ -23,7 +23,6 @@ const AccessObtainedList: React.FC = () => {
         }
     }, [res]);
 
-    // TODO Update fields name from server response - when auth is OK
     const columns = [
         {
             title: "Object UID",

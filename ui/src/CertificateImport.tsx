@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 import { sendKmipRequest } from "./utils";
 import { import_certificate_ttlv_request, parse_import_ttlv_response } from "./wasm/pkg";
 
-type CertificateInputFormat = "JsonTtlv" | "Pem" | "Der" | "Chain" | "Pkcs12" | "Ccadb";
+type CertificateInputFormat = "JsonTtlv" | "Pem" | "Der" | "Pkcs12";
 
 type KeyUsage = "sign" | "verify" | "encrypt" | "decrypt" | "wrap" | "unwrap";
 
@@ -97,21 +97,18 @@ const CertificateImportForm: React.FC = () => {
         setSelectedFormat(value);
     };
 
-    // Check if file is required based on format
-    const isFileRequired = selectedFormat !== "Ccadb";
-
     // Check if PKCS#12 password field should be shown
     const showPkcs12Password = selectedFormat === "Pkcs12";
 
     // Check if relationship fields should be shown (not for PKCS12 and CCADB)
-    const showRelationships = !["Pkcs12", "Ccadb"].includes(selectedFormat);
+    const showRelationships = !["Pkcs12"].includes(selectedFormat);
 
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Import Certificate</h1>
 
             <div className="mb-8 space-y-2">
-                <p>Import a certificate, certificate chain, PKCS#12 file, or Mozilla CCADB into the KMS.</p>
+                <p>Import a certificate or PKCS#12 file, into the KMS.</p>
                 <p>When no unique ID is specified, a unique ID based on the key material will be generated.</p>
             </div>
 
@@ -136,32 +133,30 @@ const CertificateImportForm: React.FC = () => {
                             <Select options={formatOptions} onChange={(value) => handleFormatChange(value as CertificateInputFormat)} />
                         </Form.Item>
 
-                        {isFileRequired && (
-                            <Form.Item
-                                name="certificateFile"
-                                label="Certificate File"
-                                rules={[{ required: true, message: "Please upload a certificate file" }]}
-                                help={`Upload the certificate file in ${selectedFormat} format`}
+                        <Form.Item
+                            name="certificateFile"
+                            label="Certificate File"
+                            rules={[{ required: true, message: "Please upload a certificate file" }]}
+                            help={`Upload the certificate file in ${selectedFormat} format`}
+                        >
+                            <Upload
+                                beforeUpload={(file) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        const arrayBuffer = e.target?.result;
+                                        if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
+                                            const bytes = new Uint8Array(arrayBuffer);
+                                            form.setFieldsValue({ certificateFile: bytes });
+                                        }
+                                    };
+                                    reader.readAsArrayBuffer(file);
+                                    return false;
+                                }}
+                                maxCount={1}
                             >
-                                <Upload
-                                    beforeUpload={(file) => {
-                                        const reader = new FileReader();
-                                        reader.onload = (e) => {
-                                            const arrayBuffer = e.target?.result;
-                                            if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
-                                                const bytes = new Uint8Array(arrayBuffer);
-                                                form.setFieldsValue({ certificateFile: bytes });
-                                            }
-                                        };
-                                        reader.readAsArrayBuffer(file);
-                                        return false;
-                                    }}
-                                    maxCount={1}
-                                >
-                                    <Button icon={<UploadOutlined />}>Upload Certificate File</Button>
-                                </Upload>
-                            </Form.Item>
-                        )}
+                                <Button icon={<UploadOutlined />}>Upload Certificate File</Button>
+                            </Upload>
+                        </Form.Item>
 
                         <Form.Item
                             name="certificateId"

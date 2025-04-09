@@ -82,7 +82,7 @@ const AccessListForm: React.FC = () => {
                     </Card>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={isLoading} className="w-full text-white font-medium">
-                            List Access Right
+                            List Access Rights
                         </Button>
                     </Form.Item>
                 </Space>

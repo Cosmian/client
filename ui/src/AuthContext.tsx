@@ -1,6 +1,5 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
-// Define the context type
 interface AuthContextType {
     serverUrl: string;
     setServerUrl: (url: string) => void;
@@ -10,15 +9,12 @@ interface AuthContextType {
     logout: () => void;
 }
 
-// Create the context with a default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [idToken, setIdToken] = useState<string | null>(null);
     const [serverUrl, setServerUrl] = useState<string>("");
 
-    // Login function
     const login = async () => {
         try {
             const kmsUrl = serverUrl + "/ui/login_flow";
@@ -28,7 +24,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    // Logout function
     const logout = () => {
         setIdToken(null);
         const kmsUrl = serverUrl + "/ui/logout";
@@ -38,7 +33,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return <AuthContext.Provider value={{ serverUrl, setServerUrl, idToken, setIdToken, login, logout }}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook for using auth context
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (!context) {

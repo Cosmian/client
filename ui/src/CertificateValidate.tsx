@@ -47,7 +47,7 @@ const CertificateValidateForm: React.FC = () => {
 
             <div className="mb-8 space-y-2">
                 <p>Validate certificate chains to ensure they are properly signed, complete, and valid.</p>
-                <p>You can upload a certificate file, paste certificate content, or specify certificate IDs stored in the KMS.</p>
+                <p>You can specify certificate IDs stored in the KMS.</p>
             </div>
 
             <Form form={form} onFinish={onFinish} layout="vertical">

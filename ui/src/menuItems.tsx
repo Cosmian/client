@@ -1,5 +1,14 @@
 import { SafetyCertificateOutlined, SearchOutlined, SolutionOutlined, ToolOutlined } from "@ant-design/icons";
-import { MenuItem } from "./MenuItem";
+
+export interface MenuItem {
+    key: string;
+    label: string;
+    description?: string;
+    icon?: React.ReactNode;
+    collapsedlabel?: string;
+    children?: MenuItem[];
+    component?: React.ComponentType;
+}
 
 export const menuItems: MenuItem[] = [
     {

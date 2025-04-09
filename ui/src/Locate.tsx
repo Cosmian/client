@@ -93,7 +93,6 @@ const LocateForm: React.FC = () => {
 
             <div className="mb-8 space-y-2">
                 <p>Search for cryptographic objects in the KMS using various criteria.</p>
-                <p>Results will show one ID per line.</p>
             </div>
 
             <Form form={form} onFinish={onFinish} layout="vertical">
