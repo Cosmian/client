@@ -43,7 +43,11 @@ async fn test_import_export_encodings() -> CosmianResult<()> {
         "../../test_data/key_encodings/rsa_public_key_pkcs1.pem",
         ExportKeyFormat::Pkcs1Pem,
     )?;
-    // TODO : Add tests for Pkcs8-pub/priv now added ?
+    test_pems(
+        ctx,
+        "../../test_data/key_encodings/rsa_public_key_pkcs8.pem",
+        ExportKeyFormat::Pkcs8Pem,
+    )?;
 
     Ok(())
 }
