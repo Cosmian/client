@@ -1,11 +1,10 @@
 use std::path::PathBuf;
 
-use cosmian_findex::{
-    Value,
-    test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
+use cosmian_findex::test_utils::{
+    test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
 };
 use cosmian_findex_client::RestClient;
-use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
+use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value};
 use cosmian_kms_client::KmsClient;
 use cosmian_logger::log_init;
 use test_findex_server::{
@@ -277,6 +276,7 @@ async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
     test_guarded_write_concurrent(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
         rand::random(),
+        Some(100),
     )
     .await;
     Ok(())
