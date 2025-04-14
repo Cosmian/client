@@ -1880,6 +1880,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.3.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=fix%2Fconcurrency_bug#7e40fd8e6947166d813e18d41008619db5fc2405"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1913,6 +1914,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.3.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=fix%2Fconcurrency_bug#7e40fd8e6947166d813e18d41008619db5fc2405"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
