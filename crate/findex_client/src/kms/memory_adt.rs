@@ -39,7 +39,7 @@ impl<
         let (ciphertexts_and_tokens, old) = if let Some(word) = optional_word {
             // Zip words and tokens
             bindings_words.push(word); // size: n+1
-            tokens.push(token.clone()); // size: n+1
+            tokens.push(token); // size: n+1
 
             // Bulk Encrypt
             let mut ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
@@ -66,7 +66,7 @@ impl<
         let cur = self
             .mem
             .guarded_write(
-                (token.clone(), old),
+                (token, old),
                 ciphertexts_and_tokens
                     .into_iter()
                     .map(|(w, a)| (a, w))
@@ -285,9 +285,9 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr.clone(), None), vec![
-                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
                 ])
                 .await?,
             None
@@ -319,10 +319,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr.clone(), None), vec![
-                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1.clone(), [1; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2.clone(), [1; CUSTOM_WORD_LENGTH])
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2, [1; CUSTOM_WORD_LENGTH])
                 ])
                 .await?,
             None
@@ -330,10 +330,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr.clone(), None), vec![
-                    (header_addr.clone(), [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1.clone(), [3; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2.clone(), [3; CUSTOM_WORD_LENGTH])
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2, [3; CUSTOM_WORD_LENGTH])
                 ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
@@ -341,10 +341,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr.clone(), Some([2; CUSTOM_WORD_LENGTH])), vec![
-                    (header_addr.clone(), [4; CUSTOM_WORD_LENGTH]),
-                    (val_addr_3.clone(), [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_4.clone(), [2; CUSTOM_WORD_LENGTH])
+                .guarded_write((header_addr, Some([2; CUSTOM_WORD_LENGTH])), vec![
+                    (header_addr, [4; CUSTOM_WORD_LENGTH]),
+                    (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_4, [2; CUSTOM_WORD_LENGTH])
                 ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
