@@ -225,8 +225,8 @@ mod tests {
 
         handles.push(task::spawn(async move {
             for _ in 0..1_000 {
-                let ctx = layer.encrypt(&[ptx], &[tok.clone()]).await?.remove(0);
-                let res = layer.decrypt(&[ctx], &[tok.clone()]).await?.remove(0);
+                let ctx = layer.encrypt(&[ptx], &[tok]).await?.remove(0);
+                let res = layer.decrypt(&[ctx], &[tok]).await?.remove(0);
                 assert_eq!(ptx, res);
                 assert_eq!(ptx.len(), res.len());
             }
@@ -254,8 +254,8 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr.clone(), None), vec![(
-                    header_addr.clone(),
+                .guarded_write((header_addr, None), vec![(
+                    header_addr,
                     [2; CUSTOM_WORD_LENGTH]
                 ),])
                 .await?,
