@@ -117,7 +117,7 @@ macro_rules! cryptoki_fn_not_supported {
 macro_rules! not_null {
     ($ptr:expr) => {
         if $ptr.is_null() {
-            return Err(MError::ArgumentsBad("null pointer".to_string()));
+            return Err(MError::BadArguments("null pointer".to_string()));
         }
     };
 }
@@ -225,7 +225,7 @@ cryptoki_fn!(
         if !pInitArgs.is_null() {
             let args = unsafe { *(pInitArgs as CK_C_INITIALIZE_ARGS_PTR) };
             if !args.pReserved.is_null() {
-                return Err(MError::ArgumentsBad(
+                return Err(MError::BadArguments(
                     "C_Initialize: pReserved is null".to_owned(),
                 ));
             }
@@ -241,7 +241,7 @@ cryptoki_fn!(
     fn C_Finalize(pReserved: CK_VOID_PTR) {
         initialized!();
         if !pReserved.is_null() {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_Finalize: pReserved is null".to_owned(),
             ));
         }
@@ -619,7 +619,7 @@ cryptoki_fn!(
             };
             let template = if ulCount > 0 {
                 if pTemplate.is_null() {
-                    return Err(MError::ArgumentsBad(
+                    return Err(MError::BadArguments(
                         "C_GetAttributeValue: pTemplate is null".to_owned(),
                     ));
                 }
@@ -816,7 +816,7 @@ cryptoki_fn!(
              {pEncryptedData:?}, pulEncryptedDataLen: {pulEncryptedDataLen:?}"
         );
         if ulDataLen == 0 {
-            return Err(MError::ArgumentsBad("C_Encrypt: ulDataLen is 0".to_owned()));
+            return Err(MError::BadArguments("C_Encrypt: ulDataLen is 0".to_owned()));
         }
         not_null!(pData);
         // not_null!(pEncryptedData);
@@ -930,7 +930,7 @@ cryptoki_fn!(
         );
 
         if ulEncryptedDataLen == 0 {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_Decrypt: ulEncryptedDataLen is 0".to_owned(),
             ));
         }
@@ -966,7 +966,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         if ulEncryptedPartLen == 0 {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_DecryptUpdate: ulEncryptedPartLen is 0".to_owned(),
             ));
         }

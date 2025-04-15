@@ -97,7 +97,7 @@ impl Session {
         object: Arc<Object>,
     ) -> MResult<CK_OBJECT_HANDLE> {
         let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            MError::ArgumentsBad(format!(
+            MError::BadArguments(format!(
                 "insert_in_find_context: failed to lock objects store: {e}"
             ))
         })?;
@@ -108,7 +108,7 @@ impl Session {
 
     pub(crate) fn load_find_context(&mut self, attributes: Attributes) -> MResult<()> {
         if attributes.is_empty() {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "load_find_context: empty attributes".to_owned(),
             ));
         }
@@ -126,7 +126,7 @@ impl Session {
             Err(_) => {
                 let label = attributes.get_label()?;
                 let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                    MError::ArgumentsBad(format!(
+                    MError::BadArguments(format!(
                         "load_find_context: failed to lock find context: {e}"
                     ))
                 })?;
@@ -136,7 +136,7 @@ impl Session {
                 );
                 debug!("load_find_context: display current store: {find_ctx}");
                 let (object, handle) = find_ctx.get_using_id(&label).ok_or_else(|| {
-                    MError::ArgumentsBad(format!(
+                    MError::BadArguments(format!(
                         "load_find_context: failed to get id from label: {label}"
                     ))
                 })?;
@@ -161,7 +161,7 @@ impl Session {
         search_class: CK_OBJECT_CLASS,
     ) -> MResult<()> {
         if attributes.is_empty() {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "load_find_context_by_class: empty attributes".to_owned(),
             ));
         }
@@ -239,7 +239,7 @@ impl Session {
                     let id = String::from_utf8(cka_id)?;
                     // Find certificates which have this CKA_ID as private key ID
                     let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        MError::ArgumentsBad(format!(
+                        MError::BadArguments(format!(
                             "load_find_context_by_class: failed to lock find context: {e}"
                         ))
                     })?;
@@ -274,12 +274,12 @@ impl Session {
                     let id = String::from_utf8(cka_id)?;
 
                     let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        MError::ArgumentsBad(format!(
+                        MError::BadArguments(format!(
                             "load_find_context_by_class: failed to lock find context: {e}",
                         ))
                     })?;
                     let (object, handle) = find_ctx.get_using_id(&id).ok_or_else(|| {
-                        MError::ArgumentsBad(format!(
+                        MError::BadArguments(format!(
                             "load_find_context_by_class: id {id} not found in store"
                         ))
                     })?;
@@ -326,7 +326,7 @@ impl Session {
         let signature = match sign_ctx.private_key.sign(&sign_ctx.algorithm, data) {
             Ok(sig) => sig,
             Err(e) => {
-                return Err(MError::ArgumentsBad(format!("signature failed: {e:?}")));
+                return Err(MError::BadArguments(format!("signature failed: {e:?}")));
             }
         };
         if !pSignature.is_null() {
@@ -414,7 +414,7 @@ impl Session {
         attributes: Attributes,
     ) -> MResult<CK_OBJECT_HANDLE> {
         if attributes.is_empty() {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "generate_key: empty attributes".to_owned(),
             ));
         }
@@ -425,7 +425,7 @@ impl Session {
         );
 
         let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            MError::ArgumentsBad(format!("generate_key: failed to lock objects store: {e}"))
+            MError::BadArguments(format!("generate_key: failed to lock objects store: {e}"))
         })?;
 
         let algorithm = KeyAlgorithm::from(mechanism);
