@@ -34,7 +34,7 @@ impl Pkcs11PublicKey {
     pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> MResult<Self> {
         let algorithm = &spki.algorithm;
         let algorithm = KeyAlgorithm::from_oid(&algorithm.oid)
-            .ok_or_else(|| MError::ArgumentsBad(format!("OID not found: {}", algorithm.oid)))?;
+            .ok_or_else(|| MError::BadArguments(format!("OID not found: {}", algorithm.oid)))?;
         let der_bytes = Zeroizing::new(spki.to_der()?);
         let fingerprint = sha3::Sha3_256::digest(&der_bytes).to_vec();
         Ok(Self {

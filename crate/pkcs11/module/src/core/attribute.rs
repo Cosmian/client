@@ -379,7 +379,7 @@ macro_rules! get_attribute {
         pub fn $fn_name(&self) -> MResult<$ret_type> {
             match self.get($attr_type) {
                 Some(Attribute::$enum_variant(val)) => Ok(val.clone()),
-                other => Err(MError::ArgumentsBad(format!(
+                other => Err(MError::BadArguments(format!(
                     "{}: unexpected attribute value: {:?}",
                     stringify!($fn_name),
                     other
@@ -415,7 +415,7 @@ impl Attributes {
                      implemented"
                 ))),
             },
-            Some(other_type) => Err(MError::ArgumentsBad(format!(
+            Some(other_type) => Err(MError::BadArguments(format!(
                 "ensure_X509_or_none: unexpected attribute value: {other_type:?}, on class \
                  attribute type"
             ))),

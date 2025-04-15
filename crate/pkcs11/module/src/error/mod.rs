@@ -39,7 +39,7 @@ pub enum MError {
     Default(String),
     // Cryptoki errors.
     #[error("bad arguments: {0}")]
-    ArgumentsBad(String),
+    BadArguments(String),
     #[error("{0} is not a valid attribute type")]
     AttributeTypeInvalid(CK_ATTRIBUTE_TYPE),
     #[error("the value for attribute {0} is invalid")]
@@ -105,7 +105,7 @@ pub enum MError {
 impl From<MError> for CK_RV {
     fn from(e: MError) -> Self {
         match e {
-            MError::ArgumentsBad(_) => CKR_ARGUMENTS_BAD,
+            MError::BadArguments(_) => CKR_ARGUMENTS_BAD,
             MError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
             MError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
             MError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
