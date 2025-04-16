@@ -41,8 +41,11 @@ fn init(
     _log_home: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let level = level.unwrap_or(Level::INFO);
-    println!("cosmian-pkcs11 module logging at {level} level to file /var/log/{log_name}.log");
-    log_to_file(log_name, level, &PathBuf::from("/var/log"))
+    let log_folder =
+        std::env::var("COSMIAN_PKCS11_LOGGING_FOLDER").unwrap_or_else(|_| "/var/log".to_owned());
+
+    println!("cosmian-pkcs11 module logging at {level} level to file {log_folder}/{log_name}.log");
+    log_to_file(log_name, level, &PathBuf::from(log_folder))
 }
 
 fn log_to_file(
@@ -52,9 +55,11 @@ fn log_to_file(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Use `create_dir_all` to create the directory and all its parent directories
     // if they do not exist.
+    let log_home = PathBuf::from(log_home);
     if !log_home.exists() {
-        fs::create_dir_all(log_home)?;
-    }
+        fs::create_dir_all(&log_home)?;
+    };
+
     let log_path = log_home.join(format!("{log_name}.log"));
     // Open the file in append mode, or create it if it doesn't exist.
     let file = OpenOptions::new()
