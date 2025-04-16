@@ -147,7 +147,7 @@ impl<
 }
 
 #[cfg(test)]
-#[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
+#[expect(clippy::panic_in_result_fn)]
 mod tests {
     use std::sync::Arc;
 
@@ -212,7 +212,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[allow(clippy::panic_in_result_fn, clippy::unwrap_used)]
+    #[expect(clippy::panic_in_result_fn, clippy::unwrap_used)]
     async fn test_adt_encrypt_decrypt() -> ClientResult<()> {
         let mut rng = ChaChaRng::from_os_rng();
         let tok = Address::<ADDRESS_LENGTH>::random(&mut rng);

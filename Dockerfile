@@ -1,7 +1,7 @@
 FROM rust:1.79.0-buster AS builder
 
-LABEL version="0.2.0"
-LABEL name="Cosmian CLI docker container"
+LABEL version="0.3.0"
+LABEL name="Cosmian PKCS11 library container"
 
 ENV OPENSSL_DIR=/usr/local/openssl
 
