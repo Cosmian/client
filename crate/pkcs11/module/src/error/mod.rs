@@ -39,7 +39,7 @@ pub enum MError {
     Default(String),
     // Cryptoki errors.
     #[error("bad arguments: {0}")]
-    BadArguments(String),
+    ArgumentsBad(String),
     #[error("{0} is not a valid attribute type")]
     AttributeTypeInvalid(CK_ATTRIBUTE_TYPE),
     #[error("the value for attribute {0} is invalid")]
@@ -79,8 +79,8 @@ pub enum MError {
     FromUtf8(#[from] std::string::FromUtf8Error),
     #[error(transparent)]
     FromVecWithNul(#[from] std::ffi::FromVecWithNulError),
-    #[error("null pointer error")]
-    NullPtr,
+    #[error("{0} is a null pointer")]
+    NullPtr(String),
     #[error(transparent)]
     TryFromInt(#[from] std::num::TryFromIntError),
     #[error(transparent)]
@@ -105,7 +105,7 @@ pub enum MError {
 impl From<MError> for CK_RV {
     fn from(e: MError) -> Self {
         match e {
-            MError::BadArguments(_) => CKR_ARGUMENTS_BAD,
+            MError::ArgumentsBad(_) => CKR_ARGUMENTS_BAD,
             MError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
             MError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
             MError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
@@ -130,7 +130,7 @@ impl From<MError> for CK_RV {
             | MError::ConstOidError(_)
             | MError::FromUtf8(_)
             | MError::FromVecWithNul(_)
-            | MError::NullPtr
+            | MError::NullPtr(_)
             | MError::Todo(_)
             | MError::Cryptography(_)
             | MError::TryFromInt(_)

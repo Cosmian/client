@@ -134,7 +134,7 @@ impl Backend for TestBackend {
 
 cryptoki_fn!(
     unsafe fn C_GetFunctionList(ppFunctionList: CK_FUNCTION_LIST_PTR_PTR) {
-        not_null!(ppFunctionList);
+        not_null!(ppFunctionList, "C_GetFunctionList: ppFunctionList");
         unsafe { *ppFunctionList = addr_of_mut!(FUNC_LIST) };
         register_backend(Box::new(TestBackend {}));
         Ok(())

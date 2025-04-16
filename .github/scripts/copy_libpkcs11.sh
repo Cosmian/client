@@ -11,6 +11,14 @@ docker run --rm --name lib_pkcs11 -d libpkcs11_buster tail -f /dev/null
 sleep 5
 
 docker cp lib_pkcs11:/usr/bin/libcosmian_pkcs11.so .
+
+# SSH config:
+# Host okv
+#     HostName 192.168.1.210
+#     User cosmian
+#     IdentityFile ~/.ssh/id_rsa
+
+# Copy the library to the OKV server
 scp libcosmian_pkcs11.so okv:
 ssh okv "sudo cp ~/libcosmian_pkcs11.so /usr/local/okv/hsm/generic/"
 ssh okv "sudo chown oracle:oinstall /usr/local/okv/hsm/generic/libcosmian_pkcs11.so"

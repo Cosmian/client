@@ -32,9 +32,9 @@ use pkcs11_sys::{
     CKA_VALUE, CKA_VALUE_LEN, CKA_VERIFY, CKA_VERIFY_RECOVER, CKA_WRAP, CKC_X_509,
 };
 use strum_macros::Display;
-use tracing::{error, trace};
+use tracing::trace;
 
-use crate::{MError, MResult};
+use crate::{MError, MResult, not_null};
 
 #[derive(Debug, Display, PartialEq, Eq, Clone, Copy)]
 pub enum AttributeType {
@@ -279,10 +279,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
         trace!("Parsing attribute: {:?}", attribute);
         let attr_type = AttributeType::try_from(attribute.type_)?;
         let val = if attribute.ulValueLen > 0 {
-            if attribute.pValue.is_null() {
-                error!("Attribute {:?} has a null pointer", attribute);
-                return Err(MError::NullPtr);
-            }
+            not_null!(attribute.pValue, "Attribute::TryFrom: attribute.pValue");
             unsafe {
                 std::slice::from_raw_parts(
                     attribute.pValue as *const u8,
@@ -379,7 +376,7 @@ macro_rules! get_attribute {
         pub fn $fn_name(&self) -> MResult<$ret_type> {
             match self.get($attr_type) {
                 Some(Attribute::$enum_variant(val)) => Ok(val.clone()),
-                other => Err(MError::BadArguments(format!(
+                other => Err(MError::ArgumentsBad(format!(
                     "{}: unexpected attribute value: {:?}",
                     stringify!($fn_name),
                     other
@@ -415,7 +412,7 @@ impl Attributes {
                      implemented"
                 ))),
             },
-            Some(other_type) => Err(MError::BadArguments(format!(
+            Some(other_type) => Err(MError::ArgumentsBad(format!(
                 "ensure_X509_or_none: unexpected attribute value: {other_type:?}, on class \
                  attribute type"
             ))),
@@ -436,9 +433,7 @@ impl TryFrom<(CK_ATTRIBUTE_PTR, CK_ULONG)> for Attributes {
     type Error = MError;
 
     fn try_from((attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG)) -> MResult<Self> {
-        if attributes_ptr.is_null() {
-            return Err(MError::NullPtr);
-        }
+        not_null!(attributes_ptr, "Attributes::TryFrom: attributes_ptr");
         let template: Attributes =
             unsafe { slice::from_raw_parts(attributes_ptr, attributes_len as usize) }
                 .iter()

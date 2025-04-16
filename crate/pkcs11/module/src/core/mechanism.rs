@@ -28,7 +28,7 @@ use pkcs11_sys::{
 use tracing::{debug, error};
 
 use crate::{
-    MError,
+    MError, not_null,
     traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
@@ -87,10 +87,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
             let mechanism_type = mechanism.mechanism;
             let parameter_ptr = mechanism.pParameter;
             let parameter_len = mechanism.ulParameterLen;
-            if parameter_ptr.is_null() {
-                error!("pParameter null");
-                return Err(MError::MechanismInvalid(mechanism_type));
-            }
+            not_null!(parameter_ptr, "parse_mechanism: parameter_ptr");
             if (parameter_len as usize) != std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>() {
                 error!(
                     "pParameter incorrect: {} != {}",
