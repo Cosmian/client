@@ -16,16 +16,18 @@ services:
     depends_on:
       - redis
     container_name: findex-server
-    image: ghcr.io/cosmian/findex-server:develop
+    image: ghcr.io/cosmian/findex-server:0.3.0
     ports:
       - 16668:6668
     environment:
-      RUST_LOG: cosmian_findex_server=trace
+      RUST_LOG: cosmian_findex_server=info
       FINDEX_SERVER_DATABASE_TYPE: redis
       FINDEX_SERVER_DATABASE_URL: redis://redis:6379
 
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:develop
+    image: ghcr.io/cosmian/kms:4.23.0
     ports:
       - 19998:9998
+    environment:
+      RUST_LOG: cosmian_kms_server=info
