@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, Select, Space } from "antd";
+import { Button, Card, Checkbox, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { postNoTTLVRequest } from "./utils";
@@ -7,10 +7,10 @@ interface AccessGrantFormData {
     user_id: string;
     unique_identifier: string;
     operation_types: Array<"create" | "get" | "encrypt" | "decrypt" | "import" | "revoke" | "locate" | "rekey" | "destroy">;
+    grant_create_access_right: boolean;
 }
 
 const KMIP_OPERATIONS = [
-    { label: "Create", value: "create" },
     { label: "Get", value: "get" },
     { label: "Encrypt", value: "encrypt" },
     { label: "Decrypt", value: "decrypt" },
@@ -39,6 +39,9 @@ const AccessGrantForm: React.FC = () => {
         setIsLoading(true);
         setRes(undefined);
         try {
+            if (values.grant_create_access_right) {
+                values.operation_types.push("create");
+            }
             const response = await postNoTTLVRequest("/access/grant", values, idToken, serverUrl);
             setRes(response.success);
         } catch (e) {
@@ -58,7 +61,12 @@ const AccessGrantForm: React.FC = () => {
                 <p>This action can only be performed by the owner of the object.</p>
             </div>
 
-            <Form form={form} onFinish={onFinish} layout="vertical">
+            <Form
+                form={form}
+                onFinish={onFinish}
+                layout="vertical"
+                initialValues={{ operation_types: [], grant_create_access_right: false }}
+            >
                 <Space direction="vertical" size="middle" style={{ display: "flex" }}>
                     <Card>
                         <Form.Item
@@ -70,24 +78,50 @@ const AccessGrantForm: React.FC = () => {
                             <Input placeholder="Enter user identifier" />
                         </Form.Item>
 
-                        <Form.Item
-                            name="unique_identifier"
-                            label="Object UID"
-                            rules={[{ required: true, message: "Please enter the object UID" }]}
-                            help="The unique identifier of the object stored in the KMS"
-                        >
-                            <Input placeholder="Enter object UID" />
+                        <Form.Item name="operation_types" label="KMIP Operations" help="Select one or more operations to grant access to">
+                            <Select
+                                mode="multiple"
+                                options={KMIP_OPERATIONS}
+                                placeholder="Select operations"
+                                onChange={() => {
+                                    // Trigger revalidation of dependent fields
+                                    form.validateFields(["unique_identifier"]);
+                                }}
+                            />
                         </Form.Item>
 
                         <Form.Item
-                            name="operation_types"
-                            label="KMIP Operations"
-                            rules={[{ required: true, message: "Please select at least one operation" }]}
-                            help="Select one or more operations to grant access to"
+                            label="Object UID"
+                            shouldUpdate={(prevValues, currentValues) => prevValues.operation_types !== currentValues.operation_types}
                         >
-                            <Select mode="multiple" options={KMIP_OPERATIONS} placeholder="Select operations" />
+                            {({ getFieldValue }) => {
+                                const ops = getFieldValue("operation_types") || [];
+                                return (
+                                    <Form.Item
+                                        name="unique_identifier"
+                                        rules={[
+                                            {
+                                                required: ops.length > 0,
+                                                message: "Please enter the object UID",
+                                            },
+                                        ]}
+                                        help="The unique identifier of the object stored in the KMS"
+                                    >
+                                        <Input placeholder="Enter object UID" disabled={ops.length === 0} />
+                                    </Form.Item>
+                                );
+                            }}
+                        </Form.Item>
+
+                        <Form.Item
+                            name="grant_create_access_right"
+                            valuePropName="checked"
+                            help="If set, the user will have the right to create Kms objects."
+                        >
+                            <Checkbox>Grant create access right to user</Checkbox>
                         </Form.Item>
                     </Card>
+
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={isLoading} className="w-full text-white font-medium">
                             Grant Access
