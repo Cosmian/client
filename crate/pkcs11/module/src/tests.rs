@@ -19,7 +19,7 @@ use zeroize::Zeroizing;
 use super::*;
 use crate::traits::{
     Backend, Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
-    SearchOptions, Version, register_backend,
+    SearchOptions, SymmetricKey, Version, register_backend,
 };
 
 static TRACING_INIT: Once = Once::new();
@@ -93,11 +93,31 @@ impl Backend for TestBackend {
         Ok(vec![])
     }
 
+    fn find_all_symmetric_keys(&self) -> MResult<Vec<Arc<dyn SymmetricKey>>> {
+        Ok(vec![])
+    }
+
+    fn find_all_keys(&self) -> MResult<Vec<Arc<Object>>> {
+        Ok(vec![])
+    }
+
     fn generate_key(
         &self,
         _algorithm: KeyAlgorithm,
+        _key_length: usize,
+        _sensitive: bool,
         _label: Option<&str>,
-    ) -> MResult<Arc<dyn PrivateKey>> {
+    ) -> MResult<Arc<dyn SymmetricKey>> {
+        todo!()
+    }
+
+    fn encrypt(
+        &self,
+        remote_object_id: String,
+        algorithm: EncryptionAlgorithm,
+        cleartext: Vec<u8>,
+        iv: Option<Vec<u8>>,
+    ) -> MResult<Vec<u8>> {
         todo!()
     }
 
@@ -106,6 +126,7 @@ impl Backend for TestBackend {
         _remote_object_id: String,
         _algorithm: EncryptionAlgorithm,
         _data: Vec<u8>,
+        _iv: Option<Vec<u8>>,
     ) -> MResult<Zeroizing<Vec<u8>>> {
         Ok(Zeroizing::new(Vec::new()))
     }
@@ -113,7 +134,7 @@ impl Backend for TestBackend {
 
 cryptoki_fn!(
     unsafe fn C_GetFunctionList(ppFunctionList: CK_FUNCTION_LIST_PTR_PTR) {
-        not_null!(ppFunctionList);
+        not_null!(ppFunctionList, "C_GetFunctionList: ppFunctionList");
         unsafe { *ppFunctionList = addr_of_mut!(FUNC_LIST) };
         register_backend(Box::new(TestBackend {}));
         Ok(())
@@ -128,7 +149,11 @@ pub(crate) fn test_init() {
         };
         // Update the function list with this PKCS#11 entry function
         func_list.C_GetFunctionList = Some(C_GetFunctionList);
-        unsafe { C_GetFunctionList(std::ptr::addr_of_mut!(func_list) as *mut _) };
+        unsafe {
+            C_GetFunctionList(
+                std::ptr::addr_of_mut!(func_list) as *mut *mut pkcs11_sys::CK_FUNCTION_LIST
+            );
+        }
     }
 }
 

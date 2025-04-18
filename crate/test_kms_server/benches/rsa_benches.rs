@@ -220,7 +220,7 @@ pub(crate) fn bench_rsa_encrypt(
             let _ = encrypt(
                 &kms_rest_client,
                 &pk,
-                vec![0u8; 32],
+                vec![0_u8; 32],
                 cryptographic_parameters,
             )
             .await;
@@ -244,7 +244,7 @@ pub(crate) fn bench_rsa_decrypt(
         let ciphertext = encrypt(
             &kms_rest_client,
             &pk,
-            vec![0u8; 32],
+            vec![0_u8; 32],
             cryptographic_parameters,
         )
         .await;
@@ -416,7 +416,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
                 let ciphertext = encrypt(
                     &kms_rest_client,
                     &pk,
-                    vec![0u8; 32],
+                    vec![0_u8; 32],
                     &cryptographic_parameters,
                 )
                 .await;
@@ -438,7 +438,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
                     format!("{}-bit key encrypt", key_size),
                     parameter_name.clone(),
                 ),
-                &vec![0u8; 32],
+                &vec![0_u8; 32],
                 |b, pt| {
                     b.to_async(&runtime).iter(|| async {
                         let _ = message_encrypt(

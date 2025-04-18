@@ -54,16 +54,12 @@ use x509_cert::{
 };
 use zeroize::Zeroizing;
 
-fn parse_ttlv_response<T>(response: &str) -> Result<JsValue, JsValue>
-where
-    T: DeserializeOwned + Serialize,
-{
+fn parse_ttlv_response<T: DeserializeOwned + Serialize>(
+    response: &str,
+) -> Result<JsValue, JsValue> {
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
-    from_ttlv(&ttlv)
-        .map_err(|e| JsValue::from(e.to_string()))
-        .and_then(|objects: T| {
-            serde_wasm_bindgen::to_value(&objects).map_err(|e| JsValue::from(e.to_string()))
-        })
+    let parsed: T = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
+    serde_wasm_bindgen::to_value(&parsed).map_err(|e| JsValue::from(e.to_string()))
 }
 
 // Locate request

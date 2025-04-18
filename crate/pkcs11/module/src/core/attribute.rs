@@ -18,11 +18,11 @@
 // limitations under the License.
 
 use core::ops::Deref;
-use std::ffi::CString;
+use std::{ffi::CString, slice};
 
 use pkcs11_sys::{
-    CK_ATTRIBUTE, CK_ATTRIBUTE_TYPE, CK_BBOOL, CK_CERTIFICATE_CATEGORY, CK_CERTIFICATE_TYPE,
-    CK_FALSE, CK_KEY_TYPE, CK_OBJECT_CLASS, CK_PROFILE_ID, CK_TRUE, CK_ULONG,
+    CK_ATTRIBUTE, CK_ATTRIBUTE_PTR, CK_ATTRIBUTE_TYPE, CK_BBOOL, CK_CERTIFICATE_CATEGORY,
+    CK_CERTIFICATE_TYPE, CK_FALSE, CK_KEY_TYPE, CK_OBJECT_CLASS, CK_PROFILE_ID, CK_TRUE, CK_ULONG,
     CKA_ALWAYS_AUTHENTICATE, CKA_ALWAYS_SENSITIVE, CKA_APPLICATION, CKA_CERTIFICATE_CATEGORY,
     CKA_CERTIFICATE_TYPE, CKA_CLASS, CKA_COEFFICIENT, CKA_DECRYPT, CKA_EC_PARAMS, CKA_EC_POINT,
     CKA_ENCRYPT, CKA_EXPONENT_1, CKA_EXPONENT_2, CKA_EXTRACTABLE, CKA_ID, CKA_ISSUER, CKA_KEY_TYPE,
@@ -32,9 +32,9 @@ use pkcs11_sys::{
     CKA_VALUE, CKA_VALUE_LEN, CKA_VERIFY, CKA_VERIFY_RECOVER, CKA_WRAP, CKC_X_509,
 };
 use strum_macros::Display;
-use tracing::{error, trace};
+use tracing::trace;
 
-use crate::{MError, MResult};
+use crate::{MError, MResult, not_null};
 
 #[derive(Debug, Display, PartialEq, Eq, Clone, Copy)]
 pub enum AttributeType {
@@ -148,7 +148,7 @@ pub enum Attribute {
     Exponent1(Vec<u8>),
     Exponent2(Vec<u8>),
     Extractable(bool),
-    Id(String),
+    Id(Vec<u8>),
     Issuer(Vec<u8>),
     KeyType(CK_KEY_TYPE),
     Label(String),
@@ -264,10 +264,10 @@ impl Attribute {
             | Attribute::PublicExponent(bytes)
             | Attribute::SerialNumber(bytes)
             | Attribute::Subject(bytes)
+            | Attribute::Id(bytes)
             | Attribute::Value(bytes) => bytes.clone(),
             Attribute::Application(c_string) => c_string.as_bytes().to_vec(),
             Attribute::Label(string) => string.as_bytes().to_vec(),
-            Attribute::Id(string) => string.as_bytes().to_vec(),
         }
     }
 }
@@ -279,10 +279,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
         trace!("Parsing attribute: {:?}", attribute);
         let attr_type = AttributeType::try_from(attribute.type_)?;
         let val = if attribute.ulValueLen > 0 {
-            if attribute.pValue.is_null() {
-                error!("Attribute {:?} has a null pointer", attribute);
-                return Err(MError::NullPtr);
-            }
+            not_null!(attribute.pValue, "Attribute::TryFrom: attribute.pValue");
             unsafe {
                 std::slice::from_raw_parts(
                     attribute.pValue as *const u8,
@@ -320,7 +317,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
             AttributeType::Exponent1 => Ok(Attribute::Exponent1(val.to_vec())),
             AttributeType::Exponent2 => Ok(Attribute::Exponent2(val.to_vec())),
             AttributeType::Extractable => Ok(Attribute::Extractable(try_u8_into_bool(val)?)),
-            AttributeType::Id => Ok(Attribute::Id(String::from_utf8(val.to_vec())?)),
+            AttributeType::Id => Ok(Attribute::Id(val.to_vec())),
             AttributeType::Issuer => Ok(Attribute::Issuer(val.to_vec())),
             AttributeType::KeyType => Ok(Attribute::KeyType(CK_KEY_TYPE::from_ne_bytes(
                 val.try_into()?,
@@ -368,26 +365,41 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
 fn try_u8_into_bool(slice: &[u8]) -> MResult<bool> {
     let as_array: [u8; std::mem::size_of::<CK_BBOOL>()] = slice.try_into()?;
     let as_byte = CK_BBOOL::from_ne_bytes(as_array);
-    Ok(!matches!(as_byte, 0u8))
+    Ok(!matches!(as_byte, 0_u8))
 }
 
 #[derive(Debug, Clone)]
 pub struct Attributes(Vec<Attribute>);
 
-impl Attributes {
-    #[must_use]
-    pub fn get(&self, type_: AttributeType) -> Option<&Attribute> {
-        self.0.iter().find(|&attr| attr.attribute_type() == type_)
-    }
-
-    pub fn get_class(&self) -> MResult<CK_OBJECT_CLASS> {
-        match self.get(AttributeType::Class) {
-            Some(Attribute::Class(class)) => Ok(*class),
-            None => Err(MError::Todo("get_class: no class attribute".to_string())),
-            other => Err(MError::Todo(format!(
-                "get_class: unexpected attribute value: {other:?}, on class attribute type"
-            ))),
+macro_rules! get_attribute {
+    ($fn_name:ident, $attr_type:expr, $enum_variant:ident, $ret_type:ty) => {
+        pub fn $fn_name(&self) -> MResult<$ret_type> {
+            match self.get($attr_type) {
+                Some(Attribute::$enum_variant(val)) => Ok(val.clone()),
+                other => Err(MError::ArgumentsBad(format!(
+                    "{}: unexpected attribute value: {:?}",
+                    stringify!($fn_name),
+                    other
+                ))),
+            }
         }
+    };
+}
+
+impl Attributes {
+    get_attribute!(get_class, AttributeType::Class, Class, CK_OBJECT_CLASS);
+
+    get_attribute!(get_label, AttributeType::Label, Label, String);
+
+    get_attribute!(get_value_len, AttributeType::ValueLen, ValueLen, CK_ULONG);
+
+    get_attribute!(get_sensitive, AttributeType::Sensitive, Sensitive, bool);
+
+    #[must_use]
+    pub fn get(&self, attribute_type: AttributeType) -> Option<&Attribute> {
+        self.0
+            .iter()
+            .find(|&attr| attr.attribute_type() == attribute_type)
     }
 
     /// Ensure that the attributes contain a `CKC_X_509` certificate request or None.
@@ -400,7 +412,7 @@ impl Attributes {
                      implemented"
                 ))),
             },
-            Some(other_type) => Err(MError::Todo(format!(
+            Some(other_type) => Err(MError::ArgumentsBad(format!(
                 "ensure_X509_or_none: unexpected attribute value: {other_type:?}, on class \
                  attribute type"
             ))),
@@ -414,6 +426,21 @@ impl Deref for Attributes {
 
     fn deref(&self) -> &Vec<Attribute> {
         &self.0
+    }
+}
+
+impl TryFrom<(CK_ATTRIBUTE_PTR, CK_ULONG)> for Attributes {
+    type Error = MError;
+
+    fn try_from((attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG)) -> MResult<Self> {
+        not_null!(attributes_ptr, "Attributes::TryFrom: attributes_ptr");
+        let template: Attributes =
+            unsafe { slice::from_raw_parts(attributes_ptr, attributes_len as usize) }
+                .iter()
+                .map(|attr| (*attr).try_into())
+                .collect::<MResult<Vec<Attribute>>>()?
+                .into();
+        Ok(template)
     }
 }
 

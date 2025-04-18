@@ -1,12 +1,13 @@
 use std::str::FromStr;
 
 use pkcs1::ObjectIdentifier;
-use pkcs11_sys::{CK_KEY_TYPE, CKK_EC, CKK_RSA};
+use pkcs11_sys::{CK_KEY_TYPE, CKK_AES, CKK_EC, CKK_RSA};
 
 use crate::MResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyAlgorithm {
+    Aes256,
     Rsa,
     EccP256,
     EccP384,
@@ -20,6 +21,7 @@ pub enum KeyAlgorithm {
 impl KeyAlgorithm {
     pub fn to_ck_key_type(&self) -> CK_KEY_TYPE {
         match self {
+            KeyAlgorithm::Aes256 => CKK_AES,
             KeyAlgorithm::Rsa => CKK_RSA,
             KeyAlgorithm::EccP256
             | KeyAlgorithm::EccP384
@@ -50,6 +52,7 @@ impl KeyAlgorithm {
 
     pub fn to_oid_str(&self) -> &'static str {
         match self {
+            KeyAlgorithm::Aes256 => "2.16.840.1.101.3.4.1.41",
             KeyAlgorithm::Rsa => "1.2.840.113549.1.1.1",
             KeyAlgorithm::EccP256 => "1.2.840.10045.3.1.7",
             KeyAlgorithm::EccP384 => "1.3.132.0.34",
@@ -67,6 +70,7 @@ impl KeyAlgorithm {
 
     pub fn from_oid_str(oid: &str) -> Option<Self> {
         match oid {
+            "2.16.840.1.101.3.4.1.41" => Some(KeyAlgorithm::Aes256),
             "1.2.840.113549.1.1.1" => Some(KeyAlgorithm::Rsa),
             "1.2.840.10045.3.1.7" => Some(KeyAlgorithm::EccP256),
             "1.3.132.0.34" => Some(KeyAlgorithm::EccP384),
