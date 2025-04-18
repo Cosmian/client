@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use cosmian_findex::test_utils::{
-    test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
+    gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
 };
 use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value};
@@ -254,7 +254,7 @@ pub(crate) async fn test_findex_sequential_read_write() -> CosmianResult<()> {
 
     test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
     )
     .await;
     Ok(())
@@ -264,7 +264,7 @@ pub(crate) async fn test_findex_sequential_read_write() -> CosmianResult<()> {
 async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
     test_wrong_guard(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
     )
     .await;
     Ok(())
@@ -274,7 +274,7 @@ async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
 async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
     test_guarded_write_concurrent(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
         Some(100),
     )
     .await;

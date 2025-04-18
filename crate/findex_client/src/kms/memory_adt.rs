@@ -154,7 +154,9 @@ mod tests {
     use cosmian_crypto_core::{CsRng, Sampling, reexport::rand_core::SeedableRng};
     use cosmian_findex::{
         InMemory,
-        test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
+        test_utils::{
+            gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
+        },
     };
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
     use cosmian_kms_client::{
@@ -377,7 +379,7 @@ mod tests {
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 
-        test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;
+        test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed()).await;
         Ok(())
     }
 
@@ -385,7 +387,7 @@ mod tests {
     async fn test_sequential_wrong_guard() -> ClientResult<()> {
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
-        test_wrong_guard::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random()).await;
+        test_wrong_guard::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed()).await;
         Ok(())
     }
 
@@ -394,7 +396,7 @@ mod tests {
         log_init(None);
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
-        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, rand::random(), Some(100))
+        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
             .await;
         Ok(())
     }
