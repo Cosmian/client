@@ -58,7 +58,7 @@ fn log_to_file(
     let log_home = PathBuf::from(log_home);
     if !log_home.exists() {
         fs::create_dir_all(&log_home)?;
-    };
+    }
 
     let log_path = log_home.join(format!("{log_name}.log"));
     // Open the file in append mode, or create it if it doesn't exist.

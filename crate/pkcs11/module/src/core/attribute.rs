@@ -34,7 +34,7 @@ use pkcs11_sys::{
 use strum_macros::Display;
 use tracing::trace;
 
-use crate::{MError, MResult, not_null};
+use crate::{MError, ModuleResult, not_null};
 
 #[derive(Debug, Display, PartialEq, Eq, Clone, Copy)]
 pub enum AttributeType {
@@ -84,7 +84,7 @@ pub enum AttributeType {
 impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
     type Error = MError;
 
-    fn try_from(type_: CK_ATTRIBUTE_TYPE) -> MResult<Self> {
+    fn try_from(type_: CK_ATTRIBUTE_TYPE) -> ModuleResult<Self> {
         match type_ {
             CKA_ALWAYS_AUTHENTICATE => Ok(AttributeType::AlwaysAuthenticate),
             CKA_ALWAYS_SENSITIVE => Ok(AttributeType::AlwaysSensitive),
@@ -275,7 +275,7 @@ impl Attribute {
 impl TryFrom<CK_ATTRIBUTE> for Attribute {
     type Error = MError;
 
-    fn try_from(attribute: CK_ATTRIBUTE) -> MResult<Self> {
+    fn try_from(attribute: CK_ATTRIBUTE) -> ModuleResult<Self> {
         trace!("Parsing attribute: {:?}", attribute);
         let attr_type = AttributeType::try_from(attribute.type_)?;
         let val = if attribute.ulValueLen > 0 {
@@ -362,7 +362,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
 
 // Borrowed from:
 // https://github.com/parallaxsecond/rust-cryptoki/blob/89055f2a30e30d07a99e5904e9231d743c75d8e5/cryptoki/src/object.rs#L769
-fn try_u8_into_bool(slice: &[u8]) -> MResult<bool> {
+fn try_u8_into_bool(slice: &[u8]) -> ModuleResult<bool> {
     let as_array: [u8; std::mem::size_of::<CK_BBOOL>()] = slice.try_into()?;
     let as_byte = CK_BBOOL::from_ne_bytes(as_array);
     Ok(!matches!(as_byte, 0_u8))
@@ -373,7 +373,7 @@ pub struct Attributes(Vec<Attribute>);
 
 macro_rules! get_attribute {
     ($fn_name:ident, $attr_type:expr, $enum_variant:ident, $ret_type:ty) => {
-        pub fn $fn_name(&self) -> MResult<$ret_type> {
+        pub fn $fn_name(&self) -> ModuleResult<$ret_type> {
             match self.get($attr_type) {
                 Some(Attribute::$enum_variant(val)) => Ok(val.clone()),
                 other => Err(MError::ArgumentsBad(format!(
@@ -403,7 +403,7 @@ impl Attributes {
     }
 
     /// Ensure that the attributes contain a `CKC_X_509` certificate request or None.
-    pub fn ensure_X509_or_none(&self) -> MResult<()> {
+    pub fn ensure_X509_or_none(&self) -> ModuleResult<()> {
         match self.get(AttributeType::CertificateType) {
             Some(Attribute::CertificateType(cert_type)) => match *cert_type {
                 CKC_X_509 => Ok(()),
@@ -432,13 +432,15 @@ impl Deref for Attributes {
 impl TryFrom<(CK_ATTRIBUTE_PTR, CK_ULONG)> for Attributes {
     type Error = MError;
 
-    fn try_from((attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG)) -> MResult<Self> {
+    fn try_from(
+        (attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG),
+    ) -> ModuleResult<Self> {
         not_null!(attributes_ptr, "Attributes::TryFrom: attributes_ptr");
         let template: Attributes =
             unsafe { slice::from_raw_parts(attributes_ptr, attributes_len as usize) }
                 .iter()
                 .map(|attr| (*attr).try_into())
-                .collect::<MResult<Vec<Attribute>>>()?
+                .collect::<ModuleResult<Vec<Attribute>>>()?
                 .into();
         Ok(template)
     }

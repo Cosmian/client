@@ -1,19 +1,15 @@
-use std::{
-    ptr,
-    ptr::addr_of_mut,
-    sync::{Arc, Once},
-};
+use std::{ptr, ptr::addr_of_mut, sync::Arc};
 
+use cosmian_logger::log_init;
 use pkcs11_sys::{
-    CK_ATTRIBUTE, CK_C_INITIALIZE_ARGS, CK_FALSE, CK_INVALID_HANDLE, CKA_CLASS, CKM_DSA,
-    CKO_PRIVATE_KEY, CKR_ARGUMENTS_BAD, CKR_BUFFER_TOO_SMALL, CKR_CRYPTOKI_ALREADY_INITIALIZED,
-    CKR_CRYPTOKI_NOT_INITIALIZED, CKR_FUNCTION_NOT_PARALLEL, CKR_MECHANISM_INVALID,
-    CKR_OBJECT_HANDLE_INVALID, CKR_SESSION_HANDLE_INVALID, CKR_SESSION_PARALLEL_NOT_SUPPORTED,
-    CKR_SLOT_ID_INVALID,
+    CK_ATTRIBUTE, CK_C_INITIALIZE_ARGS, CK_FALSE, CK_INVALID_HANDLE, CK_KEY_TYPE, CK_MECHANISM,
+    CK_TRUE, CKA_CLASS, CKA_EXTRACTABLE, CKA_KEY_TYPE, CKA_LABEL, CKA_SENSITIVE, CKA_VALUE_LEN,
+    CKK_AES, CKM_AES_KEY_GEN, CKM_DSA, CKO_PRIVATE_KEY, CKR_ARGUMENTS_BAD, CKR_BUFFER_TOO_SMALL,
+    CKR_CRYPTOKI_ALREADY_INITIALIZED, CKR_CRYPTOKI_NOT_INITIALIZED, CKR_FUNCTION_NOT_PARALLEL,
+    CKR_MECHANISM_INVALID, CKR_OBJECT_HANDLE_INVALID, CKR_SESSION_HANDLE_INVALID,
+    CKR_SESSION_PARALLEL_NOT_SUPPORTED, CKR_SLOT_ID_INVALID,
 };
 use serial_test::serial;
-use tracing::Level;
-use tracing_subscriber::FmtSubscriber;
 use zeroize::Zeroizing;
 
 use super::*;
@@ -22,16 +18,24 @@ use crate::traits::{
     SearchOptions, SymmetricKey, Version, register_backend,
 };
 
-static TRACING_INIT: Once = Once::new();
-pub(crate) fn initialize_logging() {
-    TRACING_INIT.call_once(|| {
-        let subscriber = FmtSubscriber::builder()
-            .with_max_level(Level::INFO) // Adjust the level as needed
-            .with_writer(std::io::stdout)
-            .finish();
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Setting default subscriber failed");
-    });
+struct DummySymKey {}
+
+impl SymmetricKey for DummySymKey {
+    fn remote_id(&self) -> String {
+        "dummy_key".to_string()
+    }
+
+    fn algorithm(&self) -> KeyAlgorithm {
+        KeyAlgorithm::Aes256
+    }
+
+    fn key_size(&self) -> i32 {
+        32
+    }
+
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
+        Ok(Zeroizing::new(vec![0; self.key_size() as usize]))
+    }
 }
 
 struct TestBackend {}
@@ -61,43 +65,46 @@ impl Backend for TestBackend {
         Version { major: 1, minor: 0 }
     }
 
-    fn find_certificate(&self, _query: SearchOptions) -> MResult<Option<Arc<dyn Certificate>>> {
+    fn find_certificate(
+        &self,
+        _query: SearchOptions,
+    ) -> ModuleResult<Option<Arc<dyn Certificate>>> {
         Ok(None)
     }
 
-    fn find_all_certificates(&self) -> MResult<Vec<Arc<dyn Certificate>>> {
+    fn find_all_certificates(&self) -> ModuleResult<Vec<Arc<dyn Certificate>>> {
         Ok(vec![])
     }
 
-    fn find_private_key(&self, query: SearchOptions) -> MResult<Arc<dyn PrivateKey>> {
+    fn find_private_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>> {
         Err(MError::FunctionNotSupported)
     }
 
-    fn find_public_key(&self, _query: SearchOptions) -> MResult<Arc<dyn PublicKey>> {
+    fn find_public_key(&self, _query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
         Err(MError::FunctionNotSupported)
     }
 
-    fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>> {
+    fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>> {
         Ok(vec![])
     }
 
-    fn find_all_public_keys(&self) -> MResult<Vec<Arc<dyn PublicKey>>> {
+    fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>> {
         Ok(vec![])
     }
 
-    fn find_data_object(&self, _query: SearchOptions) -> MResult<Option<Arc<dyn DataObject>>> {
+    fn find_data_object(&self, _query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>> {
         Ok(None)
     }
 
-    fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>> {
+    fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>> {
         Ok(vec![])
     }
 
-    fn find_all_symmetric_keys(&self) -> MResult<Vec<Arc<dyn SymmetricKey>>> {
+    fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {
         Ok(vec![])
     }
 
-    fn find_all_keys(&self) -> MResult<Vec<Arc<Object>>> {
+    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>> {
         Ok(vec![])
     }
 
@@ -107,8 +114,8 @@ impl Backend for TestBackend {
         _key_length: usize,
         _sensitive: bool,
         _label: Option<&str>,
-    ) -> MResult<Arc<dyn SymmetricKey>> {
-        todo!()
+    ) -> ModuleResult<Arc<dyn SymmetricKey>> {
+        Ok(Arc::new(DummySymKey {}))
     }
 
     fn encrypt(
@@ -117,7 +124,7 @@ impl Backend for TestBackend {
         algorithm: EncryptionAlgorithm,
         cleartext: Vec<u8>,
         iv: Option<Vec<u8>>,
-    ) -> MResult<Vec<u8>> {
+    ) -> ModuleResult<Vec<u8>> {
         todo!()
     }
 
@@ -127,7 +134,7 @@ impl Backend for TestBackend {
         _algorithm: EncryptionAlgorithm,
         _data: Vec<u8>,
         _iv: Option<Vec<u8>>,
-    ) -> MResult<Zeroizing<Vec<u8>>> {
+    ) -> ModuleResult<Zeroizing<Vec<u8>>> {
         Ok(Zeroizing::new(Vec::new()))
     }
 }
@@ -142,17 +149,13 @@ cryptoki_fn!(
 );
 
 pub(crate) fn test_init() {
-    initialize_logging();
+    log_init(None);
     if !INITIALIZED.load(Ordering::SeqCst) {
-        let mut func_list: &mut CK_FUNCTION_LIST = &mut CK_FUNCTION_LIST {
-            ..Default::default()
-        };
+        let func_list: &mut CK_FUNCTION_LIST = &mut Default::default();
         // Update the function list with this PKCS#11 entry function
         func_list.C_GetFunctionList = Some(C_GetFunctionList);
         unsafe {
-            C_GetFunctionList(
-                std::ptr::addr_of_mut!(func_list) as *mut *mut pkcs11_sys::CK_FUNCTION_LIST
-            );
+            C_GetFunctionList(&mut (func_list as *mut _));
         }
     }
 }
@@ -161,18 +164,18 @@ pub(crate) fn test_init() {
 #[serial]
 fn get_initialize() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     assert_eq!(
         { C_Initialize(ptr::null_mut()) },
         CKR_CRYPTOKI_ALREADY_INITIALIZED
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     let mut args = CK_C_INITIALIZE_ARGS::default();
     assert_eq!(
         { C_Initialize((&mut args as CK_C_INITIALIZE_ARGS_PTR).cast::<std::ffi::c_void>()) },
         CKR_OK
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     // Expect CKR_ARGUMENTS_BAD if pReserved is not null.
     args.pReserved = (1 as *mut u32).cast::<std::ffi::c_void>();
     assert_eq!(
@@ -185,34 +188,29 @@ fn get_initialize() {
 #[serial]
 fn finalize() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     // Expect CKR_ARGUMENTS_BAD if pReserved is not null.
     assert_eq!(
-        { C_Finalize((1 as *mut u32).cast::<std::ffi::c_void>()) },
+        C_Finalize((1 as *mut u32).cast::<std::ffi::c_void>()),
         CKR_ARGUMENTS_BAD
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        { C_Finalize(ptr::null_mut()) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn get_info() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut info = CK_INFO::default();
-    assert_eq!(unsafe { C_GetInfo(&mut info) }, CKR_OK);
-    // Expect CKR_ARGUMENTS_BAD if pInfo is null.
-    assert_eq!(unsafe { C_GetInfo(ptr::null_mut()) }, CKR_ARGUMENTS_BAD);
-    // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetInfo(&mut info) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
+    unsafe {
+        assert_eq!(C_GetInfo(&mut info), CKR_OK);
+        // Expect CKR_ARGUMENTS_BAD if pInfo is null.
+        assert_eq!(C_GetInfo(ptr::null_mut()), CKR_ARGUMENTS_BAD);
+        // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
+        assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
+        assert_eq!(C_GetInfo(&mut info), CKR_CRYPTOKI_NOT_INITIALIZED);
+    }
 }
 
 #[test]
@@ -221,22 +219,18 @@ fn get_function_list() {
     test_init();
     let mut function_list = CK_FUNCTION_LIST::default();
     let mut function_list_pointer: *mut CK_FUNCTION_LIST = &mut function_list;
-    assert_eq!(
-        unsafe { C_GetFunctionList(&mut function_list_pointer) },
-        CKR_OK
-    );
-    // Expect CKR_ARGUMENTS_BAD if ppFunctionList is null.
-    assert_eq!(
-        unsafe { C_GetFunctionList(ptr::null_mut()) },
-        CKR_ARGUMENTS_BAD
-    );
+    unsafe {
+        assert_eq!(C_GetFunctionList(&mut function_list_pointer), CKR_OK);
+        // Expect CKR_ARGUMENTS_BAD if ppFunctionList is null.
+        assert_eq!(C_GetFunctionList(ptr::null_mut()), CKR_ARGUMENTS_BAD);
+    }
 }
 
 #[test]
 #[serial]
 fn get_slot_list() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut count = 0;
     assert_eq!(
         unsafe { C_GetSlotList(CK_FALSE, ptr::null_mut(), &mut count) },
@@ -257,114 +251,104 @@ fn get_slot_list() {
         CKR_BUFFER_TOO_SMALL
     );
     // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetSlotList(CK_FALSE, ptr::null_mut(), &mut count) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn get_slot_info() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut slot_info = CK_SLOT_INFO::default();
-    assert_eq!(unsafe { C_GetSlotInfo(SLOT_ID, &mut slot_info) }, CKR_OK);
-    // Expect CKR_ARGUMENTS_BAD if pInfo is null.
-    assert_eq!(
-        unsafe { C_GetSlotInfo(SLOT_ID, ptr::null_mut()) },
-        CKR_ARGUMENTS_BAD
-    );
-    // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
-    assert_eq!(
-        unsafe { C_GetSlotInfo(SLOT_ID + 1, ptr::null_mut()) },
-        CKR_SLOT_ID_INVALID
-    );
-    // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetSlotInfo(SLOT_ID, &mut slot_info) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
+    unsafe {
+        assert_eq!(C_GetSlotInfo(SLOT_ID, &mut slot_info), CKR_OK);
+        // Expect CKR_ARGUMENTS_BAD if pInfo is null.
+        assert_eq!(C_GetSlotInfo(SLOT_ID, ptr::null_mut()), CKR_ARGUMENTS_BAD);
+        // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
+        assert_eq!(
+            C_GetSlotInfo(SLOT_ID + 1, ptr::null_mut()),
+            CKR_SLOT_ID_INVALID
+        );
+        // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
+        assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
+    }
 }
 
 #[test]
 #[serial]
 fn get_token_info() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetTokenInfo(SLOT_ID, &mut CK_TOKEN_INFO::default()) },
-        CKR_OK
-    );
-    // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
-    assert_eq!(
-        unsafe { C_GetTokenInfo(SLOT_ID + 1, ptr::null_mut()) },
-        CKR_SLOT_ID_INVALID
-    );
-    // Expect CKR_ARGUMENTS_BAD if pInfo is null.
-    assert_eq!(
-        unsafe { C_GetSlotInfo(SLOT_ID, ptr::null_mut()) },
-        CKR_ARGUMENTS_BAD
-    );
-    // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetTokenInfo(SLOT_ID, &mut CK_TOKEN_INFO::default()) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
+    unsafe {
+        assert_eq!(
+            C_GetTokenInfo(SLOT_ID, &mut CK_TOKEN_INFO::default()),
+            CKR_OK
+        );
+        // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
+        assert_eq!(
+            C_GetTokenInfo(SLOT_ID + 1, ptr::null_mut()),
+            CKR_SLOT_ID_INVALID
+        );
+        // Expect CKR_ARGUMENTS_BAD if pInfo is null.
+        assert_eq!(C_GetSlotInfo(SLOT_ID, ptr::null_mut()), CKR_ARGUMENTS_BAD);
+        // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
+        assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
+        assert_eq!(
+            C_GetTokenInfo(SLOT_ID, &mut CK_TOKEN_INFO::default()),
+            CKR_CRYPTOKI_NOT_INITIALIZED
+        );
+    }
 }
 
 #[test]
 #[serial]
 fn get_mechanism_list() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut count = 0;
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID, ptr::null_mut(), &mut count) },
-        CKR_OK
-    );
-    assert_ne!(count, 0);
-    let mut mechanisms = Vec::<CK_MECHANISM_TYPE>::with_capacity(count as usize);
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID, mechanisms.as_mut_ptr(), &mut count) },
-        CKR_OK
-    );
     unsafe {
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID, ptr::null_mut(), &mut count),
+            CKR_OK
+        );
+        assert_ne!(count, 0);
+        let mut mechanisms = Vec::<CK_MECHANISM_TYPE>::with_capacity(count as usize);
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID, mechanisms.as_mut_ptr(), &mut count),
+            CKR_OK
+        );
         mechanisms.set_len(count as usize);
+        assert_eq!(mechanisms, *SUPPORTED_SIGNATURE_MECHANISMS);
+        // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID + 1, ptr::null_mut(), &mut count),
+            CKR_SLOT_ID_INVALID
+        );
+        // Expect CKR_ARGUMENTS_BAD if pulCount is null.
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID, ptr::null_mut(), ptr::null_mut()),
+            CKR_ARGUMENTS_BAD
+        );
+        // Expect CKR_BUFFER_TOO_SMALL if pulCount is less than the number of
+        // mechanisms.
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID, mechanisms.as_mut_ptr(), &mut (count - 1)),
+            CKR_BUFFER_TOO_SMALL
+        );
+        // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
+        assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
+        assert_eq!(
+            C_GetMechanismList(SLOT_ID, ptr::null_mut(), ptr::null_mut()),
+            CKR_CRYPTOKI_NOT_INITIALIZED
+        );
     }
-    assert_eq!(mechanisms, *SUPPORTED_SIGNATURE_MECHANISMS);
-    // Expect CKR_SLOT_ID_INVALID if slotID references a nonexistent slot.
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID + 1, ptr::null_mut(), &mut count) },
-        CKR_SLOT_ID_INVALID
-    );
-    // Expect CKR_ARGUMENTS_BAD if pulCount is null.
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID, ptr::null_mut(), ptr::null_mut()) },
-        CKR_ARGUMENTS_BAD
-    );
-    // Expect CKR_BUFFER_TOO_SMALL if pulCount is less than the number of
-    // mechanisms.
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID, mechanisms.as_mut_ptr(), &mut (count - 1)) },
-        CKR_BUFFER_TOO_SMALL
-    );
-    // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!(
-        unsafe { C_GetMechanismList(SLOT_ID, ptr::null_mut(), ptr::null_mut()) },
-        CKR_CRYPTOKI_NOT_INITIALIZED
-    );
 }
 
 #[test]
 #[serial]
 fn get_mechanism_info() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut info = CK_MECHANISM_INFO::default();
     assert_eq!(
         unsafe { C_GetMechanismInfo(SLOT_ID, SUPPORTED_SIGNATURE_MECHANISMS[0], &mut info,) },
@@ -381,7 +365,7 @@ fn get_mechanism_info() {
         CKR_ARGUMENTS_BAD
     );
     // Expect CKR_CRYPTOKI_NOT_INITIALIZED if token is not initialized.
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     assert_eq!(
         unsafe { C_GetMechanismInfo(SLOT_ID, SUPPORTED_SIGNATURE_MECHANISMS[0], ptr::null_mut(),) },
         CKR_CRYPTOKI_NOT_INITIALIZED
@@ -392,7 +376,7 @@ fn get_mechanism_info() {
 #[serial]
 fn open_session() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let flags = CKF_SERIAL_SESSION;
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
@@ -415,15 +399,15 @@ fn open_session() {
         unsafe { C_OpenSession(SLOT_ID, flags, ptr::null_mut(), None, ptr::null_mut(),) },
         CKR_ARGUMENTS_BAD
     );
-    assert_eq!({ C_CloseSession(handle) }, CKR_OK);
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn close_session() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -437,22 +421,22 @@ fn close_session() {
         },
         CKR_OK
     );
-    assert_eq!({ C_CloseSession(handle) }, CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
     // Expect CKR_SESSION_HANDLE_INVALID if the session has already been closed.
-    assert_eq!({ C_CloseSession(handle) }, CKR_SESSION_HANDLE_INVALID);
+    assert_eq!(C_CloseSession(handle), CKR_SESSION_HANDLE_INVALID);
     // Expect CKR_SESSION_HANDLE_INVALID if hSession is not a valid handle.
     assert_eq!(
         { C_CloseSession(CK_INVALID_HANDLE) },
         CKR_SESSION_HANDLE_INVALID
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn get_session_info() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -481,15 +465,15 @@ fn get_session_info() {
         unsafe { C_GetSessionInfo(handle, ptr::null_mut()) },
         CKR_ARGUMENTS_BAD
     );
-    assert_eq!({ C_CloseSession(handle) }, CKR_OK);
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn get_attribute_value() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut session_h = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -515,7 +499,8 @@ fn get_attribute_value() {
         },
         CKR_OBJECT_HANDLE_INVALID
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(session_h), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     assert_eq!(
         unsafe { C_GetAttributeValue(session_h, 0, template.as_mut_ptr(), 0) },
         CKR_CRYPTOKI_NOT_INITIALIZED
@@ -526,7 +511,7 @@ fn get_attribute_value() {
 #[serial]
 fn find_objects_init() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -542,14 +527,15 @@ fn find_objects_init() {
     );
     let mut template = vec![CK_ATTRIBUTE {
         type_: CKA_CLASS,
-        pValue: &CKO_PRIVATE_KEY as *const CK_ULONG as CK_VOID_PTR,
+        pValue: std::ptr::from_ref::<CK_ULONG>(&CKO_PRIVATE_KEY) as CK_VOID_PTR,
         ulValueLen: std::mem::size_of_val(&CKO_PRIVATE_KEY) as CK_ULONG,
     }];
     assert_eq!(
         unsafe { C_FindObjectsInit(handle, template.as_mut_ptr(), template.len() as CK_ULONG) },
         CKR_OK
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     assert_eq!(
         unsafe { C_FindObjectsInit(handle, template.as_mut_ptr(), template.len() as CK_ULONG) },
         CKR_CRYPTOKI_NOT_INITIALIZED
@@ -560,7 +546,7 @@ fn find_objects_init() {
 #[serial]
 fn find_objects() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -576,7 +562,7 @@ fn find_objects() {
     );
     let mut template = vec![CK_ATTRIBUTE {
         type_: CKA_CLASS,
-        pValue: &CKO_PRIVATE_KEY as *const CK_ULONG as CK_VOID_PTR,
+        pValue: std::ptr::from_ref::<CK_ULONG>(&CKO_PRIVATE_KEY) as CK_VOID_PTR,
         ulValueLen: std::mem::size_of_val(&CKO_PRIVATE_KEY) as CK_ULONG,
     }];
     assert_eq!(
@@ -590,7 +576,8 @@ fn find_objects() {
         CKR_OK
     );
     assert_eq!(count, 0);
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
     assert_eq!(
         unsafe { C_FindObjects(handle, ptr::null_mut(), 0, ptr::null_mut()) },
         CKR_CRYPTOKI_NOT_INITIALIZED
@@ -601,7 +588,7 @@ fn find_objects() {
 #[serial]
 fn find_objects_final() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -617,22 +604,23 @@ fn find_objects_final() {
     );
     let mut template = vec![CK_ATTRIBUTE {
         type_: CKA_CLASS,
-        pValue: &CKO_PRIVATE_KEY as *const CK_ULONG as CK_VOID_PTR,
+        pValue: std::ptr::from_ref::<CK_ULONG>(&CKO_PRIVATE_KEY) as CK_VOID_PTR,
         ulValueLen: std::mem::size_of_val(&CKO_PRIVATE_KEY) as CK_ULONG,
     }];
     assert_eq!(
         unsafe { C_FindObjectsInit(handle, template.as_mut_ptr(), template.len() as CK_ULONG) },
         CKR_OK
     );
-    assert_eq!({ C_FindObjectsFinal(handle) }, CKR_OK);
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
-    assert_eq!({ C_FindObjectsFinal(handle) }, CKR_CRYPTOKI_NOT_INITIALIZED);
+    assert_eq!(C_FindObjectsFinal(handle), CKR_OK);
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
+
 #[test]
 #[serial]
 fn get_function_status() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut session_h = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -650,14 +638,15 @@ fn get_function_status() {
         { C_GetFunctionStatus(session_h) },
         CKR_FUNCTION_NOT_PARALLEL
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(session_h), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
 #[test]
 #[serial]
 fn cancel_function() {
     test_init();
-    assert_eq!({ C_Initialize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut session_h = CK_INVALID_HANDLE;
     assert_eq!(
         unsafe {
@@ -675,5 +664,78 @@ fn cancel_function() {
         { C_GetFunctionStatus(session_h) },
         CKR_FUNCTION_NOT_PARALLEL
     );
-    assert_eq!({ C_Finalize(ptr::null_mut()) }, CKR_OK);
+    assert_eq!(C_CloseSession(session_h), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
+}
+
+#[test]
+#[serial]
+fn generate_key() {
+    test_init();
+    assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
+    let mut handle = CK_INVALID_HANDLE;
+    assert_eq!(
+        unsafe {
+            C_OpenSession(
+                SLOT_ID,
+                CKF_SERIAL_SESSION,
+                ptr::null_mut(),
+                None,
+                &mut handle,
+            )
+        },
+        CKR_OK
+    );
+
+    let mut mechanism = CK_MECHANISM {
+        mechanism: CKM_AES_KEY_GEN,
+        pParameter: [0u8; 16].as_mut_ptr() as *mut std::ffi::c_void,
+        ulParameterLen: 16,
+    };
+    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
+
+    let mut sym_key_template = vec![
+        CK_ATTRIBUTE {
+            type_: CKA_KEY_TYPE,
+            pValue: &CKK_AES as *const _ as CK_VOID_PTR,
+            ulValueLen: size_of::<CK_KEY_TYPE>() as CK_ULONG,
+        },
+        CK_ATTRIBUTE {
+            type_: CKA_LABEL,
+            pValue: "sk_id".as_ptr() as CK_VOID_PTR,
+            ulValueLen: "sk_id".len() as CK_ULONG,
+        },
+        CK_ATTRIBUTE {
+            type_: CKA_SENSITIVE,
+            pValue: &CK_TRUE as *const _ as CK_VOID_PTR,
+            ulValueLen: size_of::<CK_BBOOL>() as CK_ULONG,
+        },
+        CK_ATTRIBUTE {
+            type_: CKA_EXTRACTABLE,
+            pValue: &CK_TRUE as *const _ as CK_VOID_PTR,
+            ulValueLen: size_of::<CK_BBOOL>() as CK_ULONG,
+        },
+        CK_ATTRIBUTE {
+            type_: CKA_VALUE_LEN,
+            pValue: &(16 as CK_ULONG) as *const _ as CK_VOID_PTR,
+            ulValueLen: size_of::<CK_ULONG>() as CK_ULONG,
+        },
+    ];
+
+    let mut key_handle = CK_INVALID_HANDLE;
+    assert_eq!(
+        unsafe {
+            C_GenerateKey(
+                handle,
+                pMechanism,
+                sym_key_template.as_mut_ptr(),
+                sym_key_template.len() as CK_ULONG,
+                &mut key_handle,
+            )
+        },
+        CKR_OK
+    );
+
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }

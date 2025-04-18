@@ -17,9 +17,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(non_snake_case)]
-#![allow(clippy::missing_safety_doc)]
-#![deny(unsafe_op_in_unsafe_fn)]
+#![deny(
+    // nonstandard_style,
+    // refining_impl_trait,
+    // future_incompatible,
+    // keyword_idents,
+    // let_underscore,
+    // unused,
+    unsafe_op_in_unsafe_fn,
+    // clippy::all,
+    // clippy::suspicious,
+    // clippy::complexity,
+    // clippy::perf,
+    // clippy::style,
+    // clippy::pedantic,
+    // clippy::cargo,
+    // clippy::nursery,
+
+    // restriction lints
+    clippy::unwrap_used,
+    clippy::get_unwrap,
+    clippy::expect_used,
+    // clippy::indexing_slicing,
+    // clippy::missing_asserts_for_indexing,
+    // clippy::unwrap_in_result,
+    // clippy::assertions_on_result_states,
+    clippy::panic,
+    clippy::panic_in_result_fn,
+    // clippy::renamed_function_params,
+    // clippy::verbose_file_reads,
+    // clippy::str_to_string,
+    // clippy::string_to_string,
+    // clippy::unreachable,
+    // clippy::as_conversions,
+    // clippy::print_stdout,
+    // clippy::empty_structs_with_brackets,
+    // clippy::unseparated_literal_suffix,
+    // clippy::map_err_ignore,
+    // clippy::redundant_clone,
+)]
+#![allow(
+    non_snake_case, // case come from C
+    clippy::missing_safety_doc,
+    clippy::module_name_repetitions,
+    clippy::similar_names,
+    clippy::cargo_common_metadata,
+    clippy::multiple_crate_versions,
+    clippy::redundant_pub_crate,
+)]
 //avoid renaming all unused parameters with _ in all unused functions
 #![allow(unused_variables)]
 
@@ -58,7 +103,7 @@ use crate::{sessions::SignContext, traits::backend};
 pub mod core;
 mod error;
 
-pub use error::{MError, MResult};
+pub use error::{MError, ModuleResult};
 
 use crate::{
     core::attribute::AttributeType, objects_store::OBJECTS_STORE, sessions::DecryptContext,
@@ -66,8 +111,10 @@ use crate::{
 
 mod objects_store;
 mod sessions;
+
 #[cfg(test)]
 mod tests;
+
 pub mod traits;
 
 const SLOT_DESCRIPTION: &[u8; 64] =
@@ -78,7 +125,7 @@ static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 fn result_to_rv<F>(name: &str, f: F) -> CK_RV
 where
-    F: FnOnce() -> MResult<()>,
+    F: FnOnce() -> ModuleResult<()>,
 {
     match f() {
         Ok(()) => CKR_OK,
@@ -135,7 +182,7 @@ macro_rules! initialized {
 
 macro_rules! valid_session {
     ($handle:expr) => {
-        if !sessions::exists($handle) {
+        if !sessions::exists($handle)? {
             return Err(MError::SessionHandleInvalid($handle));
         }
     };
@@ -477,7 +524,7 @@ cryptoki_fn!(
     fn C_CloseSession(hSession: CK_SESSION_HANDLE) {
         initialized!();
         info!("C_CloseSession: session: {:?}", hSession);
-        if sessions::close(hSession) {
+        if sessions::close(hSession)? {
             return Ok(());
         }
         Err(MError::SessionHandleInvalid(hSession))
@@ -489,7 +536,7 @@ cryptoki_fn!(
         initialized!();
         valid_slot!(slotID);
         info!("C_CloseAllSessions: slot: {:?}", slotID);
-        sessions::close_all();
+        sessions::close_all()?;
         Ok(())
     }
 );
@@ -499,7 +546,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pInfo, "C_GetSessionInfo: pInfo");
-        let flags = sessions::flags(hSession);
+        let flags = sessions::flags(hSession)?;
         let state = if flags & CKF_RW_SESSION == 0 {
             CKS_RO_USER_FUNCTIONS
         } else {
@@ -604,7 +651,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pTemplate, "C_GetAttributeValue: pTemplate");
 
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let find_ctx = OBJECTS_STORE
                 .read()
                 .map_err(|_| MError::OperationNotInitialized(hSession))?;
@@ -677,7 +724,7 @@ cryptoki_fn!(
 
         let attributes = Attributes::try_from((pTemplate, ulCount))
             .context("C_FindObjectsInit: attributes conversion failed")?;
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             info!(
                 "C_FindObjectsInit: session: {hSession:?}, load Objects Store context for \
                  attributes: {attributes:?}"
@@ -698,7 +745,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(phObject, "C_FindObjects: phObject");
         not_null!(pulObjectCount, "C_FindObjects: pulObjectCount");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             trace!(
                 "C_FindObjects: session: {:?}, objects available: {:?}",
                 hSession, session.find_objects_ctx
@@ -751,7 +798,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pMechanism, "C_EncryptInit: pMechanism");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
             let find_ctx = OBJECTS_STORE
@@ -766,8 +813,8 @@ cryptoki_fn!(
                         &mechanism
                     );
                     session.encrypt_ctx = Some(EncryptContext {
-                        remote_object_id: pk.remote_id().to_string(),
-                        algorithm: mechanism.into(),
+                        remote_object_id: pk.remote_id(),
+                        algorithm: mechanism.try_into()?,
                         plaintext: None,
                         iv: None,
                     });
@@ -785,8 +832,8 @@ cryptoki_fn!(
                         mech => return Err(MError::MechanismInvalid(parsed_mechanism.mechanism)),
                     };
                     session.encrypt_ctx = Some(EncryptContext {
-                        remote_object_id: sk.remote_id().to_string(),
-                        algorithm: EncryptionAlgorithm::from(mechanism),
+                        remote_object_id: sk.remote_id(),
+                        algorithm: EncryptionAlgorithm::try_from(mechanism)?,
                         iv,
                         plaintext: None,
                     });
@@ -818,7 +865,7 @@ cryptoki_fn!(
         not_null!(pData, "C_Encrypt: pData");
         // not_null!(pEncryptedData);
         not_null!(pulEncryptedDataLen, "C_Encrypt: pulEncryptedDataLen");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let cleartext_data = unsafe { slice::from_raw_parts(pData, ulDataLen as usize) };
             unsafe {
                 debug!(
@@ -861,7 +908,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pMechanism, "C_DecryptInit: pMechanism");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
             let find_ctx = OBJECTS_STORE
@@ -877,8 +924,8 @@ cryptoki_fn!(
                         &mechanism
                     );
                     session.decrypt_ctx = Some(DecryptContext {
-                        remote_object_id: sk.remote_id().to_string(),
-                        algorithm: mechanism.into(),
+                        remote_object_id: sk.remote_id(),
+                        algorithm: mechanism.try_into()?,
                         ciphertext: None,
                         iv: None,
                     });
@@ -898,8 +945,8 @@ cryptoki_fn!(
                     };
 
                     session.decrypt_ctx = Some(DecryptContext {
-                        remote_object_id: sk.remote_id().to_string(),
-                        algorithm: mechanism.into(),
+                        remote_object_id: sk.remote_id(),
+                        algorithm: mechanism.try_into()?,
                         ciphertext: None,
                         iv,
                     });
@@ -933,7 +980,7 @@ cryptoki_fn!(
         }
         not_null!(pEncryptedData, "C_Decrypt: pEncryptedData");
         not_null!(pulDataLen, "C_Decrypt: pulDataLen");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let encrypted_data =
                 unsafe { slice::from_raw_parts(pEncryptedData, ulEncryptedDataLen as usize) };
             unsafe {
@@ -1032,7 +1079,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pMechanism, "C_SignInit: pMechanism");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let find_ctx = OBJECTS_STORE
                 .read()
                 .map_err(|_| MError::OperationNotInitialized(hSession))?;
@@ -1043,7 +1090,7 @@ cryptoki_fn!(
             };
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
             session.sign_ctx = Some(SignContext {
-                algorithm: mechanism.into(),
+                algorithm: mechanism.try_into()?,
                 private_key: private_key.clone(),
                 payload: None,
             });
@@ -1064,7 +1111,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pData, "C_Sign: pData");
         not_null!(pulSignatureLen, "C_Sign: pulSignatureLen");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let data = unsafe { slice::from_raw_parts(pData, ulDataLen as usize) };
             unsafe { session.sign(Some(data), pSignature, pulSignatureLen) }?;
             Ok(())
@@ -1077,7 +1124,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pPart, "C_SignUpdate: pPart");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let sign_ctx = match session.sign_ctx.as_mut() {
                 None => return Err(MError::OperationNotInitialized(hSession)),
                 Some(sign_ctx) => sign_ctx,
@@ -1101,7 +1148,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pSignature, "C_SignFinal: pSignature");
         not_null!(pulSignatureLen, "C_SignFinal: pulSignatureLen");
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             unsafe { session.sign(None, pSignature, pulSignatureLen) }?;
             Ok(())
         })
@@ -1226,12 +1273,11 @@ cryptoki_fn!(
         let attributes = Attributes::try_from((pTemplate, ulCount))
             .context("C_GenerateKey: attributes conversion failed")?;
 
-        sessions::session(hSession, |session| -> MResult<()> {
+        sessions::session(hSession, |session| -> ModuleResult<()> {
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
 
             unsafe {
-                let h_key = session.generate_key(mechanism, attributes)?;
-                *phKey = h_key
+                *phKey = session.generate_key(mechanism, attributes)?;
             };
 
             Ok(())

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use pkcs1::ObjectIdentifier;
 use pkcs11_sys::{CK_KEY_TYPE, CKK_AES, CKK_EC, CKK_RSA};
 
-use crate::MResult;
+use crate::ModuleResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyAlgorithm {
@@ -64,8 +64,8 @@ impl KeyAlgorithm {
         }
     }
 
-    pub fn to_oid(&self) -> MResult<ObjectIdentifier> {
-        ObjectIdentifier::from_str(self.to_oid_str()).map_err(Into::into)
+    pub fn to_oid(&self) -> ModuleResult<ObjectIdentifier> {
+        Ok(ObjectIdentifier::from_str(self.to_oid_str())?)
     }
 
     pub fn from_oid_str(oid: &str) -> Option<Self> {

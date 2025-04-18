@@ -30,7 +30,7 @@ use pkcs11_sys::{
 use tracing::debug;
 
 use crate::{
-    MError, MResult,
+    MError, MResultHelper, ModuleResult,
     core::{
         attribute::Attributes,
         mechanism::Mechanism,
@@ -95,7 +95,7 @@ impl Session {
     pub(crate) fn update_find_objects_context(
         &mut self,
         object: Arc<Object>,
-    ) -> MResult<CK_OBJECT_HANDLE> {
+    ) -> ModuleResult<CK_OBJECT_HANDLE> {
         let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
             MError::ArgumentsBad(format!(
                 "insert_in_find_context: failed to lock objects store: {e}"
@@ -106,7 +106,7 @@ impl Session {
         Ok(handle)
     }
 
-    pub(crate) fn load_find_context(&mut self, attributes: Attributes) -> MResult<()> {
+    pub(crate) fn load_find_context(&mut self, attributes: Attributes) -> ModuleResult<()> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
                 "load_find_context: empty attributes".to_owned(),
@@ -117,7 +117,7 @@ impl Session {
             .find_all_keys()?
             .into_iter()
             .map(|o| self.update_find_objects_context(o))
-            .collect::<MResult<Vec<_>>>()?;
+            .collect::<ModuleResult<Vec<_>>>()?;
 
         let search_class = attributes.get_class();
 
@@ -159,7 +159,7 @@ impl Session {
         &mut self,
         attributes: Attributes,
         search_class: CK_OBJECT_CLASS,
-    ) -> MResult<()> {
+    ) -> ModuleResult<()> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
                 "load_find_context_by_class: empty attributes".to_owned(),
@@ -182,7 +182,7 @@ impl Session {
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::Certificate(c)))
                             })
-                            .collect::<MResult<Vec<_>>>()?;
+                            .collect::<ModuleResult<Vec<_>>>()?;
                         debug!(
                             "load_find_context_by_class: added {} certificates with handles: {:?}",
                             res.len(),
@@ -196,7 +196,7 @@ impl Session {
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::PublicKey(c)))
                             })
-                            .collect::<MResult<Vec<_>>>()?;
+                            .collect::<ModuleResult<Vec<_>>>()?;
                         debug!(
                             "load_find_context_by_class: added {} public keys with handles: {:?}",
                             res.len(),
@@ -210,7 +210,7 @@ impl Session {
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::PrivateKey(c)))
                             })
-                            .collect::<MResult<Vec<_>>>()?;
+                            .collect::<ModuleResult<Vec<_>>>()?;
                         debug!(
                             "load_find_context_by_class: added {} private keys with handles: {:?}",
                             res.len(),
@@ -224,7 +224,7 @@ impl Session {
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::DataObject(c)))
                             })
-                            .collect::<MResult<Vec<_>>>()?;
+                            .collect::<ModuleResult<Vec<_>>>()?;
                         debug!(
                             "load_find_context_by_class: added {} data objects with handles: {:?}",
                             res.len(),
@@ -315,7 +315,7 @@ impl Session {
         data: Option<&[u8]>,
         pSignature: CK_BYTE_PTR,
         pulSignatureLen: CK_ULONG_PTR,
-    ) -> MResult<()> {
+    ) -> ModuleResult<()> {
         let sign_ctx = match self.sign_ctx.as_mut() {
             Some(sign_ctx) => sign_ctx,
             None => return Err(MError::OperationNotInitialized(0)),
@@ -342,7 +342,7 @@ impl Session {
             self.sign_ctx = None;
         }
         unsafe {
-            *pulSignatureLen = signature.len().try_into().unwrap();
+            *pulSignatureLen = signature.len().try_into()?;
         }
         Ok(())
     }
@@ -352,7 +352,7 @@ impl Session {
         ciphertext: Vec<u8>,
         pData: CK_BYTE_PTR,
         pulDataLen: CK_ULONG_PTR,
-    ) -> MResult<()> {
+    ) -> ModuleResult<()> {
         let decrypt_ctx = match self.decrypt_ctx.as_mut() {
             Some(decrypt_ctx) => decrypt_ctx,
             None => return Err(MError::OperationNotInitialized(0)),
@@ -383,7 +383,7 @@ impl Session {
         cleartext: Vec<u8>,
         pEncryptedData: CK_BYTE_PTR,
         pulEncryptedDataLen: CK_ULONG_PTR,
-    ) -> MResult<()> {
+    ) -> ModuleResult<()> {
         let encrypt_ctx = match self.encrypt_ctx.as_mut() {
             Some(encrypt_ctx) => encrypt_ctx,
             None => return Err(MError::OperationNotInitialized(0)),
@@ -412,7 +412,7 @@ impl Session {
         &mut self,
         mechanism: Mechanism,
         attributes: Attributes,
-    ) -> MResult<CK_OBJECT_HANDLE> {
+    ) -> ModuleResult<CK_OBJECT_HANDLE> {
         if attributes.is_empty() {
             return Err(MError::ArgumentsBad(
                 "generate_key: empty attributes".to_owned(),
@@ -428,16 +428,18 @@ impl Session {
             MError::ArgumentsBad(format!("generate_key: failed to lock objects store: {e}"))
         })?;
 
-        let algorithm = KeyAlgorithm::from(mechanism);
         let key_length = attributes.get_value_len()?;
         let sensitive = attributes.get_sensitive()?;
         let label = attributes.get_label()?;
 
-        let object =
-            backend().generate_key(algorithm, key_length.try_into()?, sensitive, Some(&label))?;
+        let object = backend().generate_key(
+            KeyAlgorithm::try_from(mechanism)?,
+            key_length.try_into()?,
+            sensitive,
+            Some(&label),
+        )?;
         let handle = objects_store.upsert(Arc::new(Object::SymmetricKey(object)))?;
 
-        // let handle = objects_store.generate_key()?;
         debug!("generate_key: generated key with handle: {handle}");
         Ok(handle)
     }
@@ -450,6 +452,7 @@ fn ignore_sessions() -> bool {
         == "true"
 }
 
+#[expect(clippy::expect_used)]
 pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
     if ignore_sessions() {
         {
@@ -475,27 +478,27 @@ pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
     }
 }
 
-pub(crate) fn exists(handle: CK_SESSION_HANDLE) -> bool {
-    SESSIONS
+pub(crate) fn exists(handle: CK_SESSION_HANDLE) -> ModuleResult<bool> {
+    Ok(SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
-        .contains_key(&handle)
+        .context("failed locking the sessions map")?
+        .contains_key(&handle))
 }
 
-pub(crate) fn flags(handle: CK_SESSION_HANDLE) -> CK_FLAGS {
-    SESSIONS
+pub(crate) fn flags(handle: CK_SESSION_HANDLE) -> ModuleResult<CK_FLAGS> {
+    Ok(SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
+        .context("failed locking the sessions map")?
         .get(&handle)
-        .unwrap()
-        .flags
+        .ok_or_else(|| MError::SessionHandleInvalid(handle))?
+        .flags)
 }
 
-pub(crate) fn session<F>(h: CK_SESSION_HANDLE, callback: F) -> MResult<()>
+pub(crate) fn session<F>(h: CK_SESSION_HANDLE, callback: F) -> ModuleResult<()>
 where
-    F: FnOnce(&mut Session) -> MResult<()>,
+    F: FnOnce(&mut Session) -> ModuleResult<()>,
 {
-    let mut session_map = SESSIONS.lock().expect("failed locking the sessions map");
+    let mut session_map = SESSIONS.lock().context("failed locking the sessions map")?;
     let session = &mut session_map
         .get_mut(&h)
         .ok_or(MError::SessionHandleInvalid(h))?;
@@ -503,20 +506,21 @@ where
     callback(session)
 }
 
-pub(crate) fn close(handle: CK_SESSION_HANDLE) -> bool {
+pub(crate) fn close(handle: CK_SESSION_HANDLE) -> ModuleResult<bool> {
     if !ignore_sessions() {
-        return SESSIONS
+        return Ok(SESSIONS
             .lock()
-            .expect("failed locking the sessions map")
+            .context("failed locking the sessions map")?
             .remove(&handle)
-            .is_some();
+            .is_some());
     }
-    true
+    Ok(true)
 }
 
-pub(crate) fn close_all() {
+pub(crate) fn close_all() -> ModuleResult<()> {
     SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
+        .context("failed locking the sessions map")?
         .clear();
+    Ok(())
 }

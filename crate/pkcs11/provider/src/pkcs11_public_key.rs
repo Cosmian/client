@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use cosmian_pkcs11_module::{
-    MError, MResult,
+    MError, ModuleResult,
     traits::{KeyAlgorithm, PublicKey, SignatureAlgorithm},
 };
 use p256::pkcs8::DecodePublicKey;
@@ -31,7 +31,7 @@ impl Pkcs11PublicKey {
         }
     }
 
-    pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> MResult<Self> {
+    pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> ModuleResult<Self> {
         let algorithm = &spki.algorithm;
         let algorithm = KeyAlgorithm::from_oid(&algorithm.oid)
             .ok_or_else(|| MError::ArgumentsBad(format!("OID not found: {}", algorithm.oid)))?;
@@ -60,7 +60,7 @@ impl PublicKey for Pkcs11PublicKey {
         _algorithm: &SignatureAlgorithm,
         _data: &[u8],
         _signature: &[u8],
-    ) -> MResult<()> {
+    ) -> ModuleResult<()> {
         error!("verify not implemented for Pkcs11PublicKey");
         todo!()
     }
@@ -71,7 +71,7 @@ impl PublicKey for Pkcs11PublicKey {
         self.algorithm
     }
 
-    fn rsa_public_key(&self) -> MResult<RsaPublicKey> {
+    fn rsa_public_key(&self) -> ModuleResult<RsaPublicKey> {
         if self.algorithm == KeyAlgorithm::Rsa {
             RsaPublicKey::from_der(&self.der_bytes).map_err(|e| {
                 error!("Failed to parse RSA public key: {:?}", e);
@@ -85,7 +85,7 @@ impl PublicKey for Pkcs11PublicKey {
         }
     }
 
-    fn ec_p256_public_key(&self) -> MResult<p256::PublicKey> {
+    fn ec_p256_public_key(&self) -> ModuleResult<p256::PublicKey> {
         if self.algorithm == KeyAlgorithm::EccP256 {
             let ec_p256 = p256::PublicKey::from_public_key_der(&self.der_bytes).map_err(|e| {
                 MError::Cryptography(format!("Failed to parse EC P256 public key: {e:?}"))

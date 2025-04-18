@@ -31,7 +31,7 @@ use thiserror::Error;
 use crate::core::attribute::AttributeType;
 
 pub(crate) mod result;
-pub use result::MResult;
+pub use result::ModuleResult;
 
 #[derive(Error, Debug)]
 pub enum MError {
@@ -85,6 +85,8 @@ pub enum MError {
     TryFromInt(#[from] std::num::TryFromIntError),
     #[error(transparent)]
     TryFromSlice(#[from] std::array::TryFromSliceError),
+    #[error("Algorithm not supported")]
+    AlgorithmNotSupported(String),
     // Catch-all for backend-related errors.
     #[error(transparent)]
     Backend(#[from] Box<dyn std::error::Error>),
@@ -92,14 +94,18 @@ pub enum MError {
     Bincode(#[from] Box<bincode::ErrorKind>),
     #[error(transparent)]
     Pkcs1DerError(#[from] pkcs1::der::Error),
-    #[error(transparent)]
-    ConstOidError(#[from] const_oid::Error),
     #[error("Oid: {0}")]
     Oid(String),
     #[error("{0}")]
     Todo(String),
     #[error("cryptographic error: {0}")]
     Cryptography(String),
+}
+
+impl From<const_oid::Error> for MError {
+    fn from(e: const_oid::Error) -> Self {
+        Self::Oid(e.to_string())
+    }
 }
 
 impl From<MError> for CK_RV {
@@ -125,9 +131,9 @@ impl From<MError> for CK_RV {
             MError::TokenWriteProtected => CKR_TOKEN_WRITE_PROTECTED,
 
             MError::Backend(_)
+            | MError::AlgorithmNotSupported(_)
             | MError::Default(_)
             | MError::Bincode(_)
-            | MError::ConstOidError(_)
             | MError::FromUtf8(_)
             | MError::FromVecWithNul(_)
             | MError::NullPtr(_)

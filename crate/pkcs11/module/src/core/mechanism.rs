@@ -28,7 +28,7 @@ use pkcs11_sys::{
 use tracing::{debug, error};
 
 use crate::{
-    MError, not_null,
+    MError, ModuleResult, not_null,
     traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
@@ -155,44 +155,50 @@ impl From<Mechanism> for CK_MECHANISM_TYPE {
     }
 }
 
-impl From<Mechanism> for SignatureAlgorithm {
-    fn from(mechanism: Mechanism) -> Self {
+impl TryFrom<Mechanism> for SignatureAlgorithm {
+    type Error = MError;
+
+    fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
-            Mechanism::Ecdsa => Self::Ecdsa,
-            Mechanism::RsaPkcs => Self::RsaPkcs1v15Raw,
-            Mechanism::RsaPkcsSha1 => Self::RsaPkcs1v15Sha1,
-            Mechanism::RsaPkcsSha256 => Self::RsaPkcs1v15Sha256,
-            Mechanism::RsaPkcsSha384 => Self::RsaPkcs1v15Sha512,
-            Mechanism::RsaPkcsSha512 => Self::RsaPkcs1v15Sha384,
+            Mechanism::Ecdsa => Ok(Self::Ecdsa),
+            Mechanism::RsaPkcs => Ok(Self::RsaPkcs1v15Raw),
+            Mechanism::RsaPkcsSha1 => Ok(Self::RsaPkcs1v15Sha1),
+            Mechanism::RsaPkcsSha256 => Ok(Self::RsaPkcs1v15Sha256),
+            Mechanism::RsaPkcsSha384 => Ok(Self::RsaPkcs1v15Sha512),
+            Mechanism::RsaPkcsSha512 => Ok(Self::RsaPkcs1v15Sha384),
             Mechanism::RsaPss {
                 digest_algorithm,
                 mask_generation_function,
                 salt_length,
-            } => Self::RsaPss {
+            } => Ok(Self::RsaPss {
                 digest: digest_algorithm,
                 mask_generation_function,
                 salt_length,
-            },
-            x => panic!("Unsupported signature algorithm: {x:?}"),
+            }),
+            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }
 
-impl From<Mechanism> for EncryptionAlgorithm {
-    fn from(mechanism: Mechanism) -> Self {
+impl TryFrom<Mechanism> for EncryptionAlgorithm {
+    type Error = MError;
+
+    fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
-            Mechanism::RsaPkcs => Self::RsaPkcs1v15,
-            Mechanism::AesCbcPad { .. } => Self::AesCbcPad,
-            x => panic!("Unsupported encryption algorithm: {x:?}"),
+            Mechanism::RsaPkcs => Ok(Self::RsaPkcs1v15),
+            Mechanism::AesCbcPad { .. } => Ok(Self::AesCbcPad),
+            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }
 
-impl From<Mechanism> for KeyAlgorithm {
-    fn from(mechanism: Mechanism) -> Self {
+impl TryFrom<Mechanism> for KeyAlgorithm {
+    type Error = MError;
+
+    fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
-            Mechanism::AesKeyGen => Self::Aes256,
-            x => panic!("Unsupported key gen algorithm: {x:?}"),
+            Mechanism::AesKeyGen => Ok(Self::Aes256),
+            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }

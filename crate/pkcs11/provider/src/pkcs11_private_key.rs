@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
-    MError, MResult,
+    MError, ModuleResult,
     traits::{KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend},
 };
 use pkcs1::{RsaPrivateKey, der::Decode};
@@ -32,7 +32,7 @@ impl Pkcs11PrivateKey {
         }
     }
 
-    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> MResult<Self> {
+    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> ModuleResult<Self> {
         let der_bytes = Arc::new(RwLock::new(
             kms_object
                 .object
@@ -60,7 +60,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.remote_id.clone()
     }
 
-    fn sign(&self, _algorithm: &SignatureAlgorithm, _data: &[u8]) -> MResult<Vec<u8>> {
+    fn sign(&self, _algorithm: &SignatureAlgorithm, _data: &[u8]) -> ModuleResult<Vec<u8>> {
         error!(
             "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
             self.remote_id
@@ -79,7 +79,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.key_size
     }
 
-    fn pkcs8_der_bytes(&self) -> MResult<Zeroizing<Vec<u8>>> {
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
         let der_bytes = self
             .der_bytes
             .read()
@@ -104,7 +104,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         Ok(der_bytes.clone())
     }
 
-    fn rsa_public_exponent(&self) -> MResult<Vec<u8>> {
+    fn rsa_public_exponent(&self) -> ModuleResult<Vec<u8>> {
         let pkcs8_der_bytes = self.der_bytes.read().map_err(|e| {
             error!("Failed to read DER bytes: {:?}", e);
             MError::Cryptography("Failed to read DER bytes".to_owned())

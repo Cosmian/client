@@ -5,7 +5,7 @@ use zeroize::Zeroizing;
 
 use super::SymmetricKey;
 use crate::{
-    MResult,
+    ModuleResult,
     core::object::Object,
     traits::{
         Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
@@ -16,12 +16,21 @@ use crate::{
 //  The Backend is first staged so it can be stored in a Box<dyn Backend>. This
 //  allows the Backend to be reference with `&'static`.
 static STAGED_BACKEND: RwLock<Option<Box<dyn Backend>>> = RwLock::new(None);
-static BACKEND: Lazy<Box<dyn Backend>> =
-    Lazy::new(|| STAGED_BACKEND.write().unwrap().take().unwrap());
+#[expect(clippy::expect_used)]
+static BACKEND: Lazy<Box<dyn Backend>> = Lazy::new(|| {
+    STAGED_BACKEND
+        .write()
+        .expect("Failed to acquire write lock")
+        .take()
+        .expect("Backend not initialized")
+});
 
 /// Stores a backend to later be returned by all calls `crate::backend()`.
+#[expect(clippy::expect_used)]
 pub fn register_backend(backend: Box<dyn Backend>) {
-    *STAGED_BACKEND.write().unwrap() = Some(backend);
+    *STAGED_BACKEND
+        .write()
+        .expect("Failed to acquire write lock") = Some(backend);
 }
 
 pub fn backend() -> &'static dyn Backend {
@@ -44,16 +53,16 @@ pub trait Backend: Send + Sync {
     /// The version of this library
     fn library_version(&self) -> Version;
 
-    fn find_certificate(&self, query: SearchOptions) -> MResult<Option<Arc<dyn Certificate>>>;
-    fn find_all_certificates(&self) -> MResult<Vec<Arc<dyn Certificate>>>;
-    fn find_private_key(&self, query: SearchOptions) -> MResult<Arc<dyn PrivateKey>>;
-    fn find_public_key(&self, query: SearchOptions) -> MResult<Arc<dyn PublicKey>>;
-    fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>>;
-    fn find_all_public_keys(&self) -> MResult<Vec<Arc<dyn PublicKey>>>;
-    fn find_all_symmetric_keys(&self) -> MResult<Vec<Arc<dyn SymmetricKey>>>;
-    fn find_data_object(&self, query: SearchOptions) -> MResult<Option<Arc<dyn DataObject>>>;
-    fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>>;
-    fn find_all_keys(&self) -> MResult<Vec<Arc<Object>>>;
+    fn find_certificate(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn Certificate>>>;
+    fn find_all_certificates(&self) -> ModuleResult<Vec<Arc<dyn Certificate>>>;
+    fn find_private_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>>;
+    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>>;
+    fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>>;
+    fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>>;
+    fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>>;
+    fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>>;
+    fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>>;
+    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>>;
 
     fn generate_key(
         &self,
@@ -61,7 +70,7 @@ pub trait Backend: Send + Sync {
         key_length: usize,
         sensitive: bool,
         label: Option<&str>,
-    ) -> MResult<Arc<dyn SymmetricKey>>;
+    ) -> ModuleResult<Arc<dyn SymmetricKey>>;
 
     fn encrypt(
         &self,
@@ -69,7 +78,7 @@ pub trait Backend: Send + Sync {
         algorithm: EncryptionAlgorithm,
         cleartext: Vec<u8>,
         iv: Option<Vec<u8>>,
-    ) -> MResult<Vec<u8>>;
+    ) -> ModuleResult<Vec<u8>>;
 
     fn decrypt(
         &self,
@@ -77,5 +86,5 @@ pub trait Backend: Send + Sync {
         algorithm: EncryptionAlgorithm,
         ciphertext: Vec<u8>,
         iv: Option<Vec<u8>>,
-    ) -> MResult<Zeroizing<Vec<u8>>>;
+    ) -> ModuleResult<Zeroizing<Vec<u8>>>;
 }

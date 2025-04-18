@@ -66,13 +66,13 @@ impl Certificate for Pkcs11Certificate {
         self.remote_id.clone()
     }
 
-    fn to_der(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn to_der(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         self.certificate
             .to_der()
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn public_key(&self) -> cosmian_pkcs11_module::MResult<Box<dyn PublicKey>> {
+    fn public_key(&self) -> cosmian_pkcs11_module::ModuleResult<Box<dyn PublicKey>> {
         let res: Box<dyn PublicKey> = Pkcs11PublicKey::try_from_spki(
             &self.certificate.tbs_certificate.subject_public_key_info,
         )
@@ -81,17 +81,17 @@ impl Certificate for Pkcs11Certificate {
         Ok(res)
     }
 
-    fn issuer(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn issuer(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.issuer)
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn serial_number(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn serial_number(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.serial_number)
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn subject(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn subject(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.subject)
             .map_err(|e| Pkcs11Error::from(e).into())
     }

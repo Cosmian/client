@@ -278,8 +278,6 @@ pub(crate) async fn kms_encrypt_async(
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
-            // padding_method: Some(PaddingMethod::)
-            // padding_method: Some(PaddingMethod::PKCS7), // PKCS7 to implement
             ..Default::default()
         },
         EncryptionAlgorithm::RsaPkcs1v15 => CryptographicParameters {
@@ -297,7 +295,7 @@ pub(crate) async fn kms_encrypt_async(
     };
     let response = kms_rest_client.encrypt(encryption_request).await?;
     let ciphertext = response.data.ok_or_else(|| {
-        Pkcs11Error::ServerError("Decryption response does not contain data".to_owned())
+        Pkcs11Error::ServerError("Encryption response does not contain data".to_owned())
     })?;
 
     debug!(
@@ -334,7 +332,6 @@ pub(crate) async fn kms_decrypt_async(
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
-            // padding_method: Some(PaddingMethod::PKCS7), // PKCS7 to implement
             ..Default::default()
         },
         EncryptionAlgorithm::RsaPkcs1v15 => CryptographicParameters {

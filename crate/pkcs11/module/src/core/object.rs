@@ -30,7 +30,7 @@ use rsa::{RsaPrivateKey, pkcs8::DecodePrivateKey, traits::PublicKeyParts};
 use tracing::debug;
 
 use crate::{
-    MError, MResult,
+    MError, ModuleResult,
     core::attribute::{Attribute, AttributeType},
     traits::{Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SymmetricKey},
 };
@@ -111,12 +111,11 @@ impl Object {
             Object::Profile(_) => "Profile",
             Object::PublicKey(_) => "Public Key",
             Object::DataObject(_) => "Data Object",
-            // Object::RemoteObjectId(_) => "Remote Object ID",
         }
         .to_owned()
     }
 
-    pub fn attribute(&self, type_: AttributeType) -> MResult<Option<Attribute>> {
+    pub fn attribute(&self, type_: AttributeType) -> ModuleResult<Option<Attribute>> {
         let attribute = match self {
             Object::Certificate(cert) => match type_ {
                 AttributeType::CertificateCategory => Some(Attribute::CertificateCategory(

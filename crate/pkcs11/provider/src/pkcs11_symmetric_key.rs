@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
-    MError, MResult,
+    MError, ModuleResult,
     traits::{KeyAlgorithm, SearchOptions, SymmetricKey, backend},
 };
 use tracing::error;
@@ -31,7 +31,7 @@ impl Pkcs11SymmetricKey {
         }
     }
 
-    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> MResult<Self> {
+    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> ModuleResult<Self> {
         let der_bytes = Arc::new(RwLock::new(
             kms_object
                 .object
@@ -67,7 +67,7 @@ impl SymmetricKey for Pkcs11SymmetricKey {
         self.key_size
     }
 
-    fn pkcs8_der_bytes(&self) -> MResult<Zeroizing<Vec<u8>>> {
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
         let der_bytes = self
             .der_bytes
             .read()

@@ -29,12 +29,8 @@ rsa = "0.9"
 strum_macros = "0.26.4"
 thiserror = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = [
-  "fmt",
-  "env-filter",
-  "std",
-] }
 zeroize = { workspace = true }
 
 [dev-dependencies]
+cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }

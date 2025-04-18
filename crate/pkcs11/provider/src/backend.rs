@@ -3,7 +3,7 @@ use std::sync::Arc;
 use cosmian_cli::reexport::cosmian_kms_client::KmsClient;
 use cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType};
 use cosmian_pkcs11_module::{
-    MError, MResult,
+    MError, ModuleResult,
     core::object::Object,
     traits::{
         Backend, Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
@@ -72,12 +72,15 @@ impl Backend for CliBackend {
         Version { major, minor }
     }
 
-    fn find_certificate(&self, _query: SearchOptions) -> MResult<Option<Arc<dyn Certificate>>> {
+    fn find_certificate(
+        &self,
+        _query: SearchOptions,
+    ) -> ModuleResult<Option<Arc<dyn Certificate>>> {
         trace!("find_certificate");
         Ok(None)
     }
 
-    fn find_all_certificates(&self) -> MResult<Vec<Arc<dyn Certificate>>> {
+    fn find_all_certificates(&self) -> ModuleResult<Vec<Arc<dyn Certificate>>> {
         trace!("find_all_certificates");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
@@ -94,7 +97,7 @@ impl Backend for CliBackend {
         Ok(result)
     }
 
-    fn find_private_key(&self, query: SearchOptions) -> MResult<Arc<dyn PrivateKey>> {
+    fn find_private_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>> {
         trace!("find_private_key: {:?}", query);
         let id = match query {
             SearchOptions::Id(id) => id,
@@ -109,14 +112,14 @@ impl Backend for CliBackend {
         Ok(Arc::new(Pkcs11PrivateKey::try_from_kms_object(kms_object)?))
     }
 
-    fn find_public_key(&self, query: SearchOptions) -> MResult<Arc<dyn PublicKey>> {
+    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
         trace!("find_public_key: {:?}", query);
         Err(MError::Backend(Box::new(pkcs11_error!(
             "find_public_key: not implemented"
         ))))
     }
 
-    fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>> {
+    fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>> {
         trace!("find_all_private_keys");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
@@ -140,17 +143,17 @@ impl Backend for CliBackend {
         Ok(private_keys)
     }
 
-    fn find_all_public_keys(&self) -> MResult<Vec<Arc<dyn PublicKey>>> {
+    fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>> {
         warn!("find_all_public_keys not implemented");
         Ok(vec![])
     }
 
-    fn find_data_object(&self, query: SearchOptions) -> MResult<Option<Arc<dyn DataObject>>> {
+    fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>> {
         warn!("find_data_object: {:?}, not implemented", query);
         Ok(None)
     }
 
-    fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>> {
+    fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>> {
         trace!("find_all_data_objects");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
@@ -167,7 +170,7 @@ impl Backend for CliBackend {
         Ok(result)
     }
 
-    fn find_all_symmetric_keys(&self) -> MResult<Vec<Arc<dyn SymmetricKey>>> {
+    fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {
         trace!("find_all_symmetric_keys");
         let mut symmetric_keys = vec![];
         for id in locate_kms_objects(&self.kms_rest_client, &[])? {
@@ -186,7 +189,7 @@ impl Backend for CliBackend {
         Ok(symmetric_keys)
     }
 
-    fn find_all_keys(&self) -> MResult<Vec<Arc<Object>>> {
+    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>> {
         trace!("find_all_keys");
         let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
         let mut objects = Vec::with_capacity(kms_ids.len());
@@ -235,8 +238,8 @@ impl Backend for CliBackend {
         key_length: usize,
         sensitive: bool,
         label: Option<&str>,
-    ) -> MResult<Arc<dyn SymmetricKey>> {
-        trace!("generate_key: {algorithm:?}, {label:?}");
+    ) -> ModuleResult<Arc<dyn SymmetricKey>> {
+        trace!("generate_key: {algorithm:?}-{key_length}, {label:?}");
 
         let kms_object = kms_create(
             &self.kms_rest_client,
@@ -256,7 +259,7 @@ impl Backend for CliBackend {
         algorithm: EncryptionAlgorithm,
         cleartext: Vec<u8>,
         iv: Option<Vec<u8>>,
-    ) -> MResult<Vec<u8>> {
+    ) -> ModuleResult<Vec<u8>> {
         debug!(
             "encrypt: {remote_object_id}, cleartext length: {}, iv: {iv:?}",
             cleartext.len()
@@ -277,9 +280,9 @@ impl Backend for CliBackend {
         algorithm: EncryptionAlgorithm,
         ciphertext: Vec<u8>,
         iv: Option<Vec<u8>>,
-    ) -> MResult<Zeroizing<Vec<u8>>> {
+    ) -> ModuleResult<Zeroizing<Vec<u8>>> {
         debug!(
-            "decrypt: {:?}, cipher text length: {}, iv: {iv:?}",
+            "decrypt: {}, cipher text length: {}, iv: {iv:?}",
             remote_object_id,
             ciphertext.len()
         );

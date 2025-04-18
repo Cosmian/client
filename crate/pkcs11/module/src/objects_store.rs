@@ -9,7 +9,7 @@ use pkcs11_sys::CK_OBJECT_HANDLE;
 use tracing::debug;
 
 use crate::{
-    MResult,
+    ModuleResult,
     core::object::{Object, ObjectType},
 };
 
@@ -26,7 +26,7 @@ pub(crate) struct ObjectsStore {
 
 impl ObjectsStore {
     /// Insert the object
-    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> MResult<CK_OBJECT_HANDLE> {
+    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> ModuleResult<CK_OBJECT_HANDLE> {
         // check if the object already exists in the store by searching it by ID
         let id = object.remote_id();
         if let Some((object, handle)) = self.objects.get_mut(&id) {
@@ -35,7 +35,11 @@ impl ObjectsStore {
             self.ids.insert(*handle, Arc::downgrade(object));
             return Ok(*handle);
         }
-        let handle = self.ids.len() as CK_OBJECT_HANDLE;
+        let handle = if self.ids.is_empty() {
+            1 // start from 1, 0 is reserved for invalid handle
+        } else {
+            self.ids.len() as CK_OBJECT_HANDLE
+        };
         debug!("STORE: inserting new object with remote id: {id} and handle: {handle}");
         self.ids.insert(handle, Arc::downgrade(&object));
         self.objects.insert(id, (object, handle));

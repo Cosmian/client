@@ -171,10 +171,11 @@ Example using docker-compose.yml:
       - ./keystore:/opt/oracle/keystore
 ```
 
-Prepare docker volumes permissions (MUST BE REVIEWED):
+Prepare docker volumes permissions:
 
 ```sh
-sudo chmod 777 oradata keystore
+sudo chown -R oracle:oinstall /opt/oracle/oradata
+sudo chown -R oracle:oinstall /opt/oracle/keystore
 ```
 
 To connect to the database at the CDB$ROOT level as sysdba:

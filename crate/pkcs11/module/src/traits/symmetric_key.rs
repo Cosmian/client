@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use zeroize::Zeroizing;
 
-use crate::{MResult, traits::KeyAlgorithm};
+use crate::{ModuleResult, traits::KeyAlgorithm};
 
 pub trait SymmetricKey: Send + Sync {
     /// The unique identifier of the key (in the KMS)
@@ -20,7 +20,7 @@ pub trait SymmetricKey: Send + Sync {
 
     /// Return the DER bytes of the private key
     /// This is a lazy loaded value
-    fn pkcs8_der_bytes(&self) -> MResult<Zeroizing<Vec<u8>>>;
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>>;
 }
 
 impl std::fmt::Debug for dyn SymmetricKey {
