@@ -17,7 +17,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use backend::{Backend, backend, register_backend};
+pub use backend::{
+    Backend, DecryptContext, EncryptContext, SignContext, backend, register_backend,
+};
 pub use certificate::Certificate;
 pub use data_object::DataObject;
 pub use encryption_algorithms::EncryptionAlgorithm;

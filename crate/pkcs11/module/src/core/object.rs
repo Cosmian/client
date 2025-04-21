@@ -224,7 +224,6 @@ impl Object {
                             })?
                             .map(|sd| Attribute::Value(sd.to_bytes().to_vec()))
                             .ok()
-                        // Some(Attribute::Value(der_bytes.to_vec()))
                     }
                     KeyAlgorithm::EccP256
                     | KeyAlgorithm::Aes256

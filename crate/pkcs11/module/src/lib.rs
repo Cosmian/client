@@ -88,20 +88,18 @@ use pkcs11_sys::{
 };
 pub use pkcs11_sys::{CK_FUNCTION_LIST_PTR_PTR, CK_RV, CKR_OK};
 use rand::RngCore;
-use sessions::{EncryptContext, Session};
+use sessions::Session;
 use tracing::{error, info, trace};
-use traits::EncryptionAlgorithm;
+use traits::{DecryptContext, EncryptContext, EncryptionAlgorithm, SignContext};
 
-use crate::{sessions::SignContext, traits::backend};
+use crate::traits::backend;
 
 pub mod core;
 mod error;
 
 pub use error::{MError, ModuleResult};
 
-use crate::{
-    core::attribute::AttributeType, objects_store::OBJECTS_STORE, sessions::DecryptContext,
-};
+use crate::{core::attribute::AttributeType, objects_store::OBJECTS_STORE};
 
 mod objects_store;
 mod sessions;
@@ -861,7 +859,6 @@ cryptoki_fn!(
             return Err(MError::BadArguments("C_Encrypt: ulDataLen is 0".to_owned()));
         }
         not_null!(pData, "C_Encrypt: pData");
-        // not_null!(pEncryptedData);
         not_null!(pulEncryptedDataLen, "C_Encrypt: pulEncryptedDataLen");
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let cleartext_data =

@@ -19,7 +19,9 @@ use cosmian_kmip::kmip_2_1::{
         CryptographicUsageMask, KeyFormatType, PaddingMethod, RecommendedCurve, UniqueIdentifier,
     },
 };
-use cosmian_pkcs11_module::traits::{EncryptionAlgorithm, KeyAlgorithm};
+use cosmian_pkcs11_module::traits::{
+    DecryptContext, EncryptContext, EncryptionAlgorithm, KeyAlgorithm,
+};
 use tracing::{debug, error, trace};
 use zeroize::Zeroizing;
 
@@ -172,6 +174,10 @@ pub(crate) fn kms_create(
     ))
 }
 
+/// Creates a new KMS key.
+/// At first, the key is locally created and then imported to the KMS. There are 2 reasons why:
+/// - 1/ a key with `sensitive` flag cannot be extracted and then cannot be exported afterwards
+/// - 2/ is that the content of the key must be kept in cache to be reused later.
 pub(crate) async fn kms_create_async(
     kms_rest_client: &KmsClient,
     algorithm: KeyAlgorithm,
@@ -253,28 +259,18 @@ pub(crate) async fn kms_create_async(
 
 pub(crate) fn kms_encrypt(
     kms_rest_client: &KmsClient,
-    key_id: String,
-    encryption_algorithm: EncryptionAlgorithm,
+    encrypt_ctx: &EncryptContext,
     data: Vec<u8>,
-    iv: Option<Vec<u8>>,
 ) -> Pkcs11Result<Vec<u8>> {
-    tokio::runtime::Runtime::new()?.block_on(kms_encrypt_async(
-        kms_rest_client,
-        key_id,
-        encryption_algorithm,
-        data,
-        iv,
-    ))
+    tokio::runtime::Runtime::new()?.block_on(kms_encrypt_async(kms_rest_client, encrypt_ctx, data))
 }
 
 pub(crate) async fn kms_encrypt_async(
     kms_rest_client: &KmsClient,
-    key_id: String,
-    encryption_algorithm: EncryptionAlgorithm,
+    encrypt_ctx: &EncryptContext,
     data: Vec<u8>,
-    iv: Option<Vec<u8>>,
 ) -> Pkcs11Result<Vec<u8>> {
-    let cryptographic_parameters = match encryption_algorithm {
+    let cryptographic_parameters = match encrypt_ctx.algorithm {
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
@@ -287,10 +283,12 @@ pub(crate) async fn kms_encrypt_async(
         },
     };
     let encryption_request = Encrypt {
-        unique_identifier: Some(UniqueIdentifier::TextString(key_id)),
+        unique_identifier: Some(UniqueIdentifier::TextString(
+            encrypt_ctx.remote_object_id.clone(),
+        )),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(Zeroizing::new(data)),
-        iv_counter_nonce: iv,
+        iv_counter_nonce: encrypt_ctx.iv.clone(),
         ..Default::default()
     };
     let response = kms_rest_client.encrypt(encryption_request).await?;
@@ -307,28 +305,18 @@ pub(crate) async fn kms_encrypt_async(
 
 pub(crate) fn kms_decrypt(
     kms_rest_client: &KmsClient,
-    key_id: String,
-    encryption_algorithm: EncryptionAlgorithm,
+    decrypt_ctx: &DecryptContext,
     data: Vec<u8>,
-    iv: Option<Vec<u8>>,
 ) -> Pkcs11Result<Zeroizing<Vec<u8>>> {
-    tokio::runtime::Runtime::new()?.block_on(kms_decrypt_async(
-        kms_rest_client,
-        key_id,
-        encryption_algorithm,
-        data,
-        iv,
-    ))
+    tokio::runtime::Runtime::new()?.block_on(kms_decrypt_async(kms_rest_client, decrypt_ctx, data))
 }
 
 pub(crate) async fn kms_decrypt_async(
     kms_rest_client: &KmsClient,
-    key_id: String,
-    encryption_algorithm: EncryptionAlgorithm,
+    decrypt_ctx: &DecryptContext,
     data: Vec<u8>,
-    iv: Option<Vec<u8>>,
 ) -> Pkcs11Result<Zeroizing<Vec<u8>>> {
-    let cryptographic_parameters = match encryption_algorithm {
+    let cryptographic_parameters = match decrypt_ctx.algorithm {
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
@@ -341,10 +329,12 @@ pub(crate) async fn kms_decrypt_async(
         },
     };
     let decryption_request = Decrypt {
-        unique_identifier: Some(UniqueIdentifier::TextString(key_id)),
+        unique_identifier: Some(UniqueIdentifier::TextString(
+            decrypt_ctx.remote_object_id.clone(),
+        )),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(data),
-        iv_counter_nonce: iv,
+        iv_counter_nonce: decrypt_ctx.iv.clone(),
         ..Default::default()
     };
     let response = kms_rest_client.decrypt(decryption_request).await?;

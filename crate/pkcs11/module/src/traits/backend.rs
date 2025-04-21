@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use zeroize::Zeroizing;
 
-use super::SymmetricKey;
+use super::{SignatureAlgorithm, SymmetricKey};
 use crate::{
     ModuleResult,
     core::object::Object,
@@ -11,6 +11,28 @@ use crate::{
         SearchOptions, Version,
     },
 };
+
+#[derive(Debug)]
+pub struct SignContext {
+    pub algorithm: SignatureAlgorithm,
+    pub private_key: Arc<dyn PrivateKey>,
+    /// Payload stored for multipart `C_SignUpdate` operations.
+    pub payload: Option<Vec<u8>>,
+}
+
+#[derive(Debug)]
+pub struct DecryptContext {
+    pub remote_object_id: String,
+    pub algorithm: EncryptionAlgorithm,
+    pub iv: Option<Vec<u8>>,
+}
+
+#[derive(Debug)]
+pub struct EncryptContext {
+    pub remote_object_id: String,
+    pub algorithm: EncryptionAlgorithm,
+    pub iv: Option<Vec<u8>>,
+}
 
 //  The Backend is first staged so it can be stored in a Box<dyn Backend>. This
 //  allows the Backend to be reference with `&'static`.
@@ -72,19 +94,11 @@ pub trait Backend: Send + Sync {
         label: Option<&str>,
     ) -> ModuleResult<Arc<dyn SymmetricKey>>;
 
-    fn encrypt(
-        &self,
-        remote_object_id: String,
-        algorithm: EncryptionAlgorithm,
-        cleartext: Vec<u8>,
-        iv: Option<Vec<u8>>,
-    ) -> ModuleResult<Vec<u8>>;
+    fn encrypt(&self, ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>>;
 
     fn decrypt(
         &self,
-        remote_object_id: String,
-        algorithm: EncryptionAlgorithm,
+        ctx: &DecryptContext,
         ciphertext: Vec<u8>,
-        iv: Option<Vec<u8>>,
     ) -> ModuleResult<Zeroizing<Vec<u8>>>;
 }

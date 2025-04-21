@@ -6,8 +6,8 @@ use cosmian_pkcs11_module::{
     MError, ModuleResult,
     core::object::Object,
     traits::{
-        Backend, Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
-        SearchOptions, SymmetricKey, Version,
+        Backend, Certificate, DataObject, DecryptContext, EncryptContext, KeyAlgorithm, PrivateKey,
+        PublicKey, SearchOptions, SymmetricKey, Version,
     },
 };
 use tracing::{debug, trace, warn};
@@ -281,46 +281,17 @@ impl Backend for CliBackend {
         )?))
     }
 
-    fn encrypt(
-        &self,
-        remote_object_id: String,
-        algorithm: EncryptionAlgorithm,
-        cleartext: Vec<u8>,
-        iv: Option<Vec<u8>>,
-    ) -> ModuleResult<Vec<u8>> {
-        debug!(
-            "encrypt: {remote_object_id}, cleartext length: {}, iv: {iv:?}",
-            cleartext.len()
-        );
-        kms_encrypt(
-            &self.kms_rest_client,
-            remote_object_id,
-            algorithm,
-            cleartext,
-            iv,
-        )
-        .map_err(Into::into)
+    fn encrypt(&self, ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>> {
+        debug!("encrypt: ctx: {ctx:?}");
+        kms_encrypt(&self.kms_rest_client, ctx, cleartext).map_err(Into::into)
     }
 
     fn decrypt(
         &self,
-        remote_object_id: String,
-        algorithm: EncryptionAlgorithm,
+        ctx: &DecryptContext,
         ciphertext: Vec<u8>,
-        iv: Option<Vec<u8>>,
     ) -> ModuleResult<Zeroizing<Vec<u8>>> {
-        debug!(
-            "decrypt: {}, cipher text length: {}, iv: {iv:?}",
-            remote_object_id,
-            ciphertext.len()
-        );
-        kms_decrypt(
-            &self.kms_rest_client,
-            remote_object_id,
-            algorithm,
-            ciphertext,
-            iv,
-        )
-        .map_err(Into::into)
+        debug!("decrypt: decrypt_ctx: {ctx:?}");
+        kms_decrypt(&self.kms_rest_client, ctx, ciphertext).map_err(Into::into)
     }
 }

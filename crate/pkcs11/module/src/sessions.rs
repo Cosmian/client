@@ -36,9 +36,7 @@ use crate::{
         object::{Object, ObjectType},
     },
     objects_store::OBJECTS_STORE,
-    traits::{
-        EncryptionAlgorithm, KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend,
-    },
+    traits::{DecryptContext, EncryptContext, KeyAlgorithm, SearchOptions, SignContext, backend},
 };
 
 // "Valid session handles in Cryptoki always have nonzero values."
@@ -51,28 +49,6 @@ type SessionMap = HashMap<CK_SESSION_HANDLE, Session>;
 
 static SESSIONS: std::sync::LazyLock<sync::Mutex<SessionMap>> =
     std::sync::LazyLock::new(Default::default);
-
-#[derive(Debug)]
-pub(crate) struct SignContext {
-    pub algorithm: SignatureAlgorithm,
-    pub private_key: Arc<dyn PrivateKey>,
-    /// Payload stored for multipart `C_SignUpdate` operations.
-    pub payload: Option<Vec<u8>>,
-}
-
-#[derive(Debug)]
-pub(crate) struct DecryptContext {
-    pub remote_object_id: String,
-    pub algorithm: EncryptionAlgorithm,
-    pub iv: Option<Vec<u8>>,
-}
-
-#[derive(Debug)]
-pub(crate) struct EncryptContext {
-    pub remote_object_id: String,
-    pub algorithm: EncryptionAlgorithm,
-    pub iv: Option<Vec<u8>>,
-}
 
 #[derive(Default)]
 pub(crate) struct Session {
@@ -344,15 +320,11 @@ impl Session {
         pData: CK_BYTE_PTR,
         pulDataLen: CK_ULONG_PTR,
     ) -> ModuleResult<()> {
-        let Some(decrypt_ctx) = self.decrypt_ctx.as_mut() else {
-            return Err(MError::OperationNotInitialized(0))
-        };
-        let cleartext = backend().decrypt(
-            decrypt_ctx.remote_object_id.clone(),
-            decrypt_ctx.algorithm,
-            ciphertext,
-            decrypt_ctx.iv.clone(),
-        )?;
+        let decrypt_ctx = self
+            .decrypt_ctx
+            .as_ref()
+            .ok_or_else(|| MError::OperationNotInitialized(0))?;
+        let cleartext = backend().decrypt(decrypt_ctx, ciphertext)?;
         unsafe {
             if pData.is_null() {
                 *pulDataLen = cleartext.len() as CK_ULONG;
@@ -376,14 +348,9 @@ impl Session {
     ) -> ModuleResult<()> {
         let encrypt_ctx = self
             .encrypt_ctx
-            .as_mut()
+            .as_ref()
             .ok_or_else(|| MError::OperationNotInitialized(0))?;
-        let ciphertext = backend().encrypt(
-            encrypt_ctx.remote_object_id.clone(),
-            encrypt_ctx.algorithm,
-            cleartext,
-            encrypt_ctx.iv.clone(),
-        )?;
+        let ciphertext = backend().encrypt(encrypt_ctx, cleartext)?;
         unsafe {
             *pulEncryptedDataLen = ciphertext.len() as CK_ULONG;
             if !pEncryptedData.is_null() {

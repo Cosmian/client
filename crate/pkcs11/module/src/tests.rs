@@ -16,8 +16,8 @@ use super::*;
 use crate::{
     core::mechanism::AES_IV_SIZE,
     traits::{
-        Backend, Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
-        SearchOptions, SymmetricKey, Version, register_backend,
+        Backend, Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SearchOptions,
+        SymmetricKey, Version, register_backend,
     },
 };
 
@@ -125,22 +125,14 @@ impl Backend for TestBackend {
         Ok(Arc::new(DummySymKey {}))
     }
 
-    fn encrypt(
-        &self,
-        _remote_object_id: String,
-        _algorithm: EncryptionAlgorithm,
-        cleartext: Vec<u8>,
-        _iv: Option<Vec<u8>>,
-    ) -> ModuleResult<Vec<u8>> {
+    fn encrypt(&self, _encrypt_ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>> {
         Ok(vec![0; cleartext.len() + AES_IV_SIZE])
     }
 
     fn decrypt(
         &self,
-        _remote_object_id: String,
-        _algorithm: EncryptionAlgorithm,
+        _decrypt_ctx: &DecryptContext,
         _data: Vec<u8>,
-        _iv: Option<Vec<u8>>,
     ) -> ModuleResult<Zeroizing<Vec<u8>>> {
         Ok(Zeroizing::new(vec![0; 32]))
     }
