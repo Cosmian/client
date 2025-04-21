@@ -4,21 +4,18 @@ use std::{
     sync::{self, Arc, Weak},
 };
 
-use once_cell::sync::Lazy;
 use pkcs11_sys::CK_OBJECT_HANDLE;
 use tracing::debug;
 
-use crate::{
-    ModuleResult,
-    core::object::{Object, ObjectType},
-};
+use crate::core::object::{Object, ObjectType};
 
 /// The objects store is a global store for all the objects that are fetched by the PKCS#11 module.
 /// These objects are visible across all the sessions and are not session-specific.
-pub(crate) static OBJECTS_STORE: Lazy<sync::RwLock<ObjectsStore>> = Lazy::new(Default::default);
+pub(crate) static OBJECTS_STORE: std::sync::LazyLock<sync::RwLock<ObjectsStore>> =
+    std::sync::LazyLock::new(Default::default);
 
 #[derive(Default, Debug)]
-pub(crate) struct ObjectsStore {
+pub struct ObjectsStore {
     /// The PKCS#11 objects manipulated by this store; the key is the remote id.
     pub objects: HashMap<String, (Arc<Object>, CK_OBJECT_HANDLE)>,
     pub ids: HashMap<CK_OBJECT_HANDLE, Weak<Object>>,
@@ -26,14 +23,14 @@ pub(crate) struct ObjectsStore {
 
 impl ObjectsStore {
     /// Insert the object
-    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> ModuleResult<CK_OBJECT_HANDLE> {
+    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> CK_OBJECT_HANDLE {
         // check if the object already exists in the store by searching it by ID
         let id = object.remote_id();
         if let Some((object, handle)) = self.objects.get_mut(&id) {
             debug!("STORE: updating object with remote id: {id} and handle: {handle}");
             *object = object.clone();
             self.ids.insert(*handle, Arc::downgrade(object));
-            return Ok(*handle);
+            return *handle;
         }
         let handle = if self.ids.is_empty() {
             1 // start from 1, 0 is reserved for invalid handle
@@ -43,7 +40,7 @@ impl ObjectsStore {
         debug!("STORE: inserting new object with remote id: {id} and handle: {handle}");
         self.ids.insert(handle, Arc::downgrade(&object));
         self.objects.insert(id, (object, handle));
-        Ok(handle)
+        handle
     }
 
     pub(crate) fn get_using_handle(&self, handle: CK_OBJECT_HANDLE) -> Option<Arc<Object>> {
@@ -58,11 +55,11 @@ impl ObjectsStore {
     /// Get Using he Object Type
     pub(crate) fn get_using_type(
         &self,
-        object_type: ObjectType,
+        object_type: &ObjectType,
     ) -> Vec<(Arc<Object>, CK_OBJECT_HANDLE)> {
         self.objects
             .iter()
-            .filter(|(_, (object, _))| object.object_type() == object_type)
+            .filter(|(_, (object, _))| &object.object_type() == object_type)
             .map(|(_, (object, handle))| (object.clone(), *handle))
             .collect()
     }

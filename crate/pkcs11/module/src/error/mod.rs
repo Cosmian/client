@@ -1,3 +1,5 @@
+use std::sync::{PoisonError, RwLockReadGuard};
+
 // Copyright 2024 Cosmian Tech SAS
 // Changes made to the original code are
 // licensed under the Business Source License version 1.1.
@@ -28,7 +30,7 @@ use pkcs11_sys::{
 };
 use thiserror::Error;
 
-use crate::core::attribute::AttributeType;
+use crate::{core::attribute::AttributeType, objects_store::ObjectsStore};
 
 pub(crate) mod result;
 pub use result::ModuleResult;
@@ -39,7 +41,7 @@ pub enum MError {
     Default(String),
     // Cryptoki errors.
     #[error("bad arguments: {0}")]
-    ArgumentsBad(String),
+    BadArguments(String),
     #[error("{0} is not a valid attribute type")]
     AttributeTypeInvalid(CK_ATTRIBUTE_TYPE),
     #[error("the value for attribute {0} is invalid")]
@@ -94,6 +96,8 @@ pub enum MError {
     Bincode(#[from] Box<bincode::ErrorKind>),
     #[error(transparent)]
     Pkcs1DerError(#[from] pkcs1::der::Error),
+    #[error(transparent)]
+    PoisonError(#[from] PoisonError<RwLockReadGuard<'static, ObjectsStore>>),
     #[error("Oid: {0}")]
     Oid(String),
     #[error("{0}")]
@@ -111,7 +115,7 @@ impl From<const_oid::Error> for MError {
 impl From<MError> for CK_RV {
     fn from(e: MError) -> Self {
         match e {
-            MError::ArgumentsBad(_) => CKR_ARGUMENTS_BAD,
+            MError::BadArguments(_) => CKR_ARGUMENTS_BAD,
             MError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
             MError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
             MError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
@@ -142,6 +146,7 @@ impl From<MError> for CK_RV {
             | MError::TryFromInt(_)
             | MError::Pkcs1DerError(_)
             | MError::Oid(_)
+            | MError::PoisonError(_)
             | MError::TryFromSlice(_) => CKR_GENERAL_ERROR,
         }
     }

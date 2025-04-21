@@ -170,6 +170,27 @@ impl Backend for CliBackend {
         Ok(result)
     }
 
+    fn find_symmetric_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn SymmetricKey>> {
+        trace!("find_symmetric_key: {:?}", query);
+        let id = match query {
+            SearchOptions::Id(id) => id,
+            SearchOptions::All => {
+                return Err(MError::Backend(Box::new(pkcs11_error!(
+                    "find_symmetric_key: find must be made using an ID"
+                ))))
+            }
+        };
+        let id = String::from_utf8(id)?;
+        let kms_object = get_kms_object(
+            &self.kms_rest_client,
+            &id,
+            KeyFormatType::TransparentSymmetricKey,
+        )?;
+        Ok(Arc::new(Pkcs11SymmetricKey::try_from_kms_object(
+            kms_object,
+        )?))
+    }
+
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {
         trace!("find_all_symmetric_keys");
         let mut symmetric_keys = vec![];
@@ -240,6 +261,12 @@ impl Backend for CliBackend {
         label: Option<&str>,
     ) -> ModuleResult<Arc<dyn SymmetricKey>> {
         trace!("generate_key: {algorithm:?}-{key_length}, {label:?}");
+
+        if algorithm != KeyAlgorithm::Aes256 {
+            return Err(MError::Backend(Box::new(pkcs11_error!(
+                "generate_key: only support AES-256 algorithm"
+            ))));
+        }
 
         let kms_object = kms_create(
             &self.kms_rest_client,

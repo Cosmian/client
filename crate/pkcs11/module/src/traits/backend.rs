@@ -1,6 +1,5 @@
 use std::sync::{Arc, RwLock};
 
-use once_cell::sync::Lazy;
 use zeroize::Zeroizing;
 
 use super::SymmetricKey;
@@ -17,7 +16,7 @@ use crate::{
 //  allows the Backend to be reference with `&'static`.
 static STAGED_BACKEND: RwLock<Option<Box<dyn Backend>>> = RwLock::new(None);
 #[expect(clippy::expect_used)]
-static BACKEND: Lazy<Box<dyn Backend>> = Lazy::new(|| {
+static BACKEND: std::sync::LazyLock<Box<dyn Backend>> = std::sync::LazyLock::new(|| {
     STAGED_BACKEND
         .write()
         .expect("Failed to acquire write lock")
@@ -26,7 +25,7 @@ static BACKEND: Lazy<Box<dyn Backend>> = Lazy::new(|| {
 });
 
 /// Stores a backend to later be returned by all calls `crate::backend()`.
-#[expect(clippy::expect_used)]
+#[expect(clippy::expect_used, clippy::missing_panics_doc)]
 pub fn register_backend(backend: Box<dyn Backend>) {
     *STAGED_BACKEND
         .write()
@@ -59,6 +58,7 @@ pub trait Backend: Send + Sync {
     fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>>;
     fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>>;
     fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>>;
+    fn find_symmetric_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn SymmetricKey>>;
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>>;
     fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>>;
     fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>>;

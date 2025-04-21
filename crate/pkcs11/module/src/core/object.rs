@@ -81,43 +81,46 @@ impl PartialEq for Object {
 }
 
 impl Object {
-    pub fn object_type(&self) -> ObjectType {
+    #[must_use]
+    pub const fn object_type(&self) -> ObjectType {
         match self {
-            Object::Certificate(_) => ObjectType::Certificate,
-            Object::PrivateKey(_) => ObjectType::PrivateKey,
-            Object::Profile(_) => ObjectType::Profile,
-            Object::PublicKey(_) => ObjectType::PublicKey,
-            Object::DataObject(_) => ObjectType::DataObject,
-            Object::SymmetricKey(_) => ObjectType::DataObject,
+            Self::Certificate(_) => ObjectType::Certificate,
+            Self::PrivateKey(_) => ObjectType::PrivateKey,
+            Self::Profile(_) => ObjectType::Profile,
+            Self::PublicKey(_) => ObjectType::PublicKey,
+            Self::DataObject(_) | Self::SymmetricKey(_) => ObjectType::DataObject,
         }
     }
 
+    #[must_use]
     pub fn remote_id(&self) -> String {
         match self {
-            Object::Certificate(cert) => cert.remote_id(),
-            Object::PrivateKey(private_key) => private_key.remote_id(),
-            Object::SymmetricKey(symmetric_key) => symmetric_key.remote_id(),
-            Object::Profile(id) => id.to_string(),
-            Object::PublicKey(public_key) => public_key.remote_id(),
-            Object::DataObject(data) => data.remote_id(),
+            Self::Certificate(cert) => cert.remote_id(),
+            Self::PrivateKey(private_key) => private_key.remote_id(),
+            Self::SymmetricKey(symmetric_key) => symmetric_key.remote_id(),
+            Self::Profile(id) => id.to_string(),
+            Self::PublicKey(public_key) => public_key.remote_id(),
+            Self::DataObject(data) => data.remote_id(),
         }
     }
 
+    #[must_use]
     pub fn name(&self) -> String {
         match self {
-            Object::Certificate(_) => "Certificate",
-            Object::PrivateKey(_) => "Private Key",
-            Object::SymmetricKey(_) => "Symmetric Key",
-            Object::Profile(_) => "Profile",
-            Object::PublicKey(_) => "Public Key",
-            Object::DataObject(_) => "Data Object",
+            Self::Certificate(_) => "Certificate",
+            Self::PrivateKey(_) => "Private Key",
+            Self::SymmetricKey(_) => "Symmetric Key",
+            Self::Profile(_) => "Profile",
+            Self::PublicKey(_) => "Public Key",
+            Self::DataObject(_) => "Data Object",
         }
         .to_owned()
     }
 
+    #[expect(clippy::too_many_lines)]
     pub fn attribute(&self, type_: AttributeType) -> ModuleResult<Option<Attribute>> {
         let attribute = match self {
-            Object::Certificate(cert) => match type_ {
+            Self::Certificate(cert) => match type_ {
                 AttributeType::CertificateCategory => Some(Attribute::CertificateCategory(
                     CK_CERTIFICATE_CATEGORY_UNSPECIFIED,
                 )),
@@ -141,11 +144,11 @@ impl Object {
                     cert.public_key()?.rsa_public_exponent()?,
                 )),
                 _ => {
-                    error!("certificate: type_ unimplemented: {:?}", type_);
+                    error!("certificate: type_ unimplemented: {type_:?}");
                     None
                 }
             },
-            Object::SymmetricKey(sym_key) => match type_ {
+            Self::SymmetricKey(sym_key) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_DATA)),
                 AttributeType::Id => Some(Attribute::Id(sym_key.remote_id().into_bytes())),
                 AttributeType::KeyType => {
@@ -153,13 +156,13 @@ impl Object {
                 }
                 AttributeType::Label => Some(Attribute::Label("Symmetric Key".to_owned())),
                 AttributeType::Token => Some(Attribute::Token(true)),
-                AttributeType::Value => Some(Attribute::Value(sym_key.pkcs8_der_bytes()?.to_vec())),
+                AttributeType::Value => Some(Attribute::Value(sym_key.raw_bytes()?.to_vec())),
                 _ => {
-                    error!("symmetric_key: type_ unimplemented: {:?}", type_);
+                    error!("symmetric_key: type_ unimplemented: {type_:?}");
                     None
                 }
             },
-            Object::PrivateKey(private_key) => match type_ {
+            Self::PrivateKey(private_key) => match type_ {
                 AttributeType::AlwaysSensitive => Some(Attribute::AlwaysSensitive(true)),
                 AttributeType::AlwaysAuthenticate => Some(Attribute::AlwaysAuthenticate(false)),
                 AttributeType::Class => Some(Attribute::Class(CKO_PRIVATE_KEY)),
@@ -188,7 +191,7 @@ impl Object {
                 AttributeType::Modulus => {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
-                        error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
+                        error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
                         MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::Modulus(sk.n().to_bytes_be()))
@@ -198,7 +201,7 @@ impl Object {
                 AttributeType::PublicExponent => {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
-                        error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
+                        error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
                         MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::PublicExponent(sk.e().to_bytes_be()))
@@ -214,7 +217,7 @@ impl Object {
                         RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref())
                             .map(|sk| sk.to_pkcs1_der())
                             .map_err(|e| {
-                                error!("Failed to fetch the PKCS1 DER bytes: {:?}", e);
+                                error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
                                 MError::Cryptography(
                                     "Failed to fetch the PKCS1 DER bytes".to_owned(),
                                 )
@@ -235,21 +238,21 @@ impl Object {
                     }
                 },
                 _ => {
-                    error!("private_key: type_ unimplemented: {:?}", type_);
+                    error!("private_key: type_ unimplemented: {type_:?}");
                     None
                 }
             },
-            Object::Profile(id) => match type_ {
+            Self::Profile(id) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_PROFILE)),
                 AttributeType::ProfileId => Some(Attribute::ProfileId(*id)),
                 AttributeType::Token => Some(Attribute::Token(true)),
                 AttributeType::Private => Some(Attribute::Private(true)),
                 _ => {
-                    error!("profile: type_ unimplemented: {:?}", type_);
+                    error!("profile: type_ unimplemented: {type_:?}");
                     None
                 }
             },
-            Object::PublicKey(pk) => match type_ {
+            Self::PublicKey(pk) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_PUBLIC_KEY)),
                 AttributeType::Label => Some(Attribute::Label("Public Key".to_owned())),
                 AttributeType::Modulus => Some(Attribute::Modulus(pk.rsa_modulus()?)),
@@ -276,11 +279,11 @@ impl Object {
                     Some(Attribute::EcParams(pk.algorithm().to_oid()?.to_der()?))
                 }
                 _ => {
-                    error!("public_key: type_ unimplemented: {:?}", type_);
+                    error!("public_key: type_ unimplemented: {type_:?}");
                     None
                 }
             },
-            Object::DataObject(data) => match type_ {
+            Self::DataObject(data) => match type_ {
                 AttributeType::Class => Some(Attribute::Class(CKO_DATA)),
                 AttributeType::Id => Some(Attribute::Id(data.remote_id().into_bytes())),
                 // TODO(BGR) should we hold zeroizable values here ?
@@ -289,7 +292,7 @@ impl Object {
                 AttributeType::Private => Some(Attribute::Private(true)),
                 AttributeType::Label => Some(Attribute::Label("Data Object".to_owned())),
                 _ => {
-                    error!("Data object: type_ unimplemented: {:?}", type_);
+                    error!("Data object: type_ unimplemented: {type_:?}");
                     None
                 }
             },

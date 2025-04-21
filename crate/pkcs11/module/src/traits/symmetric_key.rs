@@ -18,9 +18,8 @@ pub trait SymmetricKey: Send + Sync {
     /// Return the key size in bits
     fn key_size(&self) -> i32;
 
-    /// Return the DER bytes of the private key
-    /// This is a lazy loaded value
-    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>>;
+    /// Return raw bytes
+    fn raw_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>>;
 }
 
 impl std::fmt::Debug for dyn SymmetricKey {

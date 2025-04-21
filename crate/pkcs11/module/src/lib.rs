@@ -19,18 +19,18 @@
 
 #![deny(
     // nonstandard_style,
-    // refining_impl_trait,
-    // future_incompatible,
-    // keyword_idents,
-    // let_underscore,
-    // unused,
+    refining_impl_trait,
+    future_incompatible,
+    keyword_idents,
+    let_underscore,
+    unused,
     unsafe_op_in_unsafe_fn,
-    // clippy::all,
-    // clippy::suspicious,
-    // clippy::complexity,
-    // clippy::perf,
-    // clippy::style,
-    // clippy::pedantic,
+    clippy::all,
+    clippy::suspicious,
+    clippy::complexity,
+    clippy::perf,
+    clippy::style,
+    clippy::pedantic,
     // clippy::cargo,
     // clippy::nursery,
 
@@ -38,35 +38,31 @@
     clippy::unwrap_used,
     clippy::get_unwrap,
     clippy::expect_used,
-    // clippy::indexing_slicing,
+    clippy::indexing_slicing,
     // clippy::missing_asserts_for_indexing,
-    // clippy::unwrap_in_result,
-    // clippy::assertions_on_result_states,
+    clippy::unwrap_in_result,
+    clippy::assertions_on_result_states,
     clippy::panic,
     clippy::panic_in_result_fn,
-    // clippy::renamed_function_params,
-    // clippy::verbose_file_reads,
-    // clippy::str_to_string,
-    // clippy::string_to_string,
-    // clippy::unreachable,
+    clippy::renamed_function_params,
+    clippy::verbose_file_reads,
+    clippy::str_to_string,
+    clippy::string_to_string,
+    clippy::unreachable,
     // clippy::as_conversions,
-    // clippy::print_stdout,
-    // clippy::empty_structs_with_brackets,
-    // clippy::unseparated_literal_suffix,
-    // clippy::map_err_ignore,
-    // clippy::redundant_clone,
+    clippy::print_stdout,
+    clippy::empty_structs_with_brackets,
+    clippy::unseparated_literal_suffix,
+    clippy::map_err_ignore,
+    clippy::redundant_clone,
 )]
 #![allow(
     non_snake_case, // case come from C
     clippy::missing_safety_doc,
-    clippy::module_name_repetitions,
-    clippy::similar_names,
-    clippy::cargo_common_metadata,
-    clippy::multiple_crate_versions,
+    clippy::missing_errors_doc,
+    // clippy::multiple_crate_versions,
     clippy::redundant_pub_crate,
 )]
-//avoid renaming all unused parameters with _ in all unused functions
-#![allow(unused_variables)]
 
 use core::{
     attribute::Attributes,
@@ -94,8 +90,8 @@ use pkcs11_sys::{
 };
 pub use pkcs11_sys::{CK_FUNCTION_LIST_PTR_PTR, CK_RV, CKR_OK};
 use rand::RngCore;
-use sessions::EncryptContext;
-use tracing::{info, trace};
+use sessions::{EncryptContext, Session};
+use tracing::{error, info, trace};
 use traits::EncryptionAlgorithm;
 
 use crate::{sessions::SignContext, traits::backend};
@@ -113,6 +109,11 @@ mod objects_store;
 mod sessions;
 
 #[cfg(test)]
+#[expect(
+    clippy::panic_in_result_fn,
+    clippy::unwrap_used,
+    clippy::indexing_slicing
+)]
 mod tests;
 
 pub mod traits;
@@ -164,7 +165,7 @@ macro_rules! cryptoki_fn_not_supported {
 macro_rules! not_null {
     ($ptr:expr, $variable_name:expr) => {
         if $ptr.is_null() {
-            return Err(MError::ArgumentsBad(format!(
+            return Err(MError::BadArguments(format!(
                 "{} is a null pointer",
                 $variable_name
             )));
@@ -275,7 +276,7 @@ cryptoki_fn!(
         if !pInitArgs.is_null() {
             let args = unsafe { *(pInitArgs as CK_C_INITIALIZE_ARGS_PTR) };
             if !args.pReserved.is_null() {
-                return Err(MError::ArgumentsBad(
+                return Err(MError::BadArguments(
                     "C_Initialize: pReserved is null".to_owned(),
                 ));
             }
@@ -291,7 +292,7 @@ cryptoki_fn!(
     fn C_Finalize(pReserved: CK_VOID_PTR) {
         initialized!();
         if !pReserved.is_null() {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_Finalize: pReserved is null".to_owned(),
             ));
         }
@@ -327,7 +328,7 @@ cryptoki_fn!(
 
 cryptoki_fn!(
     unsafe fn C_GetSlotList(
-        _tokenPresent: CK_BBOOL,
+        tokenPresent: CK_BBOOL,
         pSlotList: CK_SLOT_ID_PTR,
         pulCount: CK_ULONG_PTR,
     ) {
@@ -422,7 +423,7 @@ cryptoki_fn!(
         valid_slot!(slotID);
         unsafe {
             if !pMechanismList.is_null() {
-                if (*pulCount as usize) < SUPPORTED_SIGNATURE_MECHANISMS.len() {
+                if (usize::try_from(*pulCount)?) < SUPPORTED_SIGNATURE_MECHANISMS.len() {
                     *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG;
                     return Err(MError::BufferTooSmall);
                 }
@@ -461,9 +462,9 @@ cryptoki_fn!(
 cryptoki_fn!(
     fn C_InitToken(
         slotID: CK_SLOT_ID,
-        _pPin: CK_UTF8CHAR_PTR,
-        _ulPinLen: CK_ULONG,
-        _pLabel: CK_UTF8CHAR_PTR,
+        pPin: CK_UTF8CHAR_PTR,
+        ulPinLen: CK_ULONG,
+        pLabel: CK_UTF8CHAR_PTR,
     ) {
         initialized!();
         valid_slot!(slotID);
@@ -472,7 +473,7 @@ cryptoki_fn!(
 );
 
 cryptoki_fn!(
-    fn C_InitPIN(hSession: CK_SESSION_HANDLE, _pPin: CK_UTF8CHAR_PTR, _ulPinLen: CK_ULONG) {
+    fn C_InitPIN(hSession: CK_SESSION_HANDLE, pPin: CK_UTF8CHAR_PTR, ulPinLen: CK_ULONG) {
         initialized!();
         valid_session!(hSession);
         Err(MError::TokenWriteProtected)
@@ -482,10 +483,10 @@ cryptoki_fn!(
 cryptoki_fn!(
     fn C_SetPIN(
         hSession: CK_SESSION_HANDLE,
-        _pOldPin: CK_UTF8CHAR_PTR,
-        _ulOldLen: CK_ULONG,
-        _pNewPin: CK_UTF8CHAR_PTR,
-        _ulNewLen: CK_ULONG,
+        pOldPin: CK_UTF8CHAR_PTR,
+        ulOldLen: CK_ULONG,
+        pNewPin: CK_UTF8CHAR_PTR,
+        ulNewLen: CK_ULONG,
     ) {
         initialized!();
         valid_session!(hSession);
@@ -497,8 +498,8 @@ cryptoki_fn!(
     unsafe fn C_OpenSession(
         slotID: CK_SLOT_ID,
         flags: CK_FLAGS,
-        _pApplication: CK_VOID_PTR,
-        _Notify: CK_NOTIFY,
+        pApplication: CK_VOID_PTR,
+        Notify: CK_NOTIFY,
         phSession: CK_SESSION_HANDLE_PTR,
     ) {
         initialized!();
@@ -588,9 +589,9 @@ cryptoki_fn_not_supported!(
 cryptoki_fn!(
     fn C_Login(
         hSession: CK_SESSION_HANDLE,
-        _userType: CK_USER_TYPE,
-        _pPin: CK_UTF8CHAR_PTR,
-        _ulPinLen: CK_ULONG,
+        userType: CK_USER_TYPE,
+        pPin: CK_UTF8CHAR_PTR,
+        ulPinLen: CK_ULONG,
     ) {
         initialized!();
         valid_session!(hSession);
@@ -651,31 +652,31 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pTemplate, "C_GetAttributeValue: pTemplate");
 
-        sessions::session(hSession, |session| -> ModuleResult<()> {
-            let find_ctx = OBJECTS_STORE
-                .read()
-                .map_err(|_| MError::OperationNotInitialized(hSession))?;
-            let object = match find_ctx.get_using_handle(hObject) {
-                Some(object) => object,
-                None => {
-                    return Err(MError::ObjectHandleInvalid(hObject));
-                }
+        sessions::session(hSession, |_session| -> ModuleResult<()> {
+            let find_ctx = OBJECTS_STORE.read()?;
+            let Some(object) = find_ctx.get_using_handle(hObject) else {
+                return Err(MError::ObjectHandleInvalid(hObject));
             };
             let template = if ulCount > 0 {
                 if pTemplate.is_null() {
-                    return Err(MError::ArgumentsBad(
+                    return Err(MError::BadArguments(
                         "C_GetAttributeValue: pTemplate is null".to_owned(),
                     ));
                 }
-                unsafe { slice::from_raw_parts_mut(pTemplate, ulCount as usize) }
+                unsafe { slice::from_raw_parts_mut(pTemplate, usize::try_from(ulCount)?) }
             } else {
                 &mut []
             };
             for attribute in template.iter_mut() {
-                let type_: AttributeType = attribute
-                    .type_
-                    .try_into()
-                    .map_err(|_| MError::AttributeTypeInvalid(attribute.type_))?;
+                let type_: AttributeType = attribute.type_.try_into().map_err(|e| {
+                    error!(
+                        "C_GetAttributeValue: error: {e}, session: {:?}, object: {:?}, type: {:?}",
+                        hSession,
+                        object.remote_id(),
+                        attribute.type_
+                    );
+                    MError::AttributeTypeInvalid(attribute.type_)
+                })?;
                 info!(
                     "C_GetAttributeValue: session: {:?}, object: {:?} [handle: {}], type: {:?}",
                     hSession,
@@ -689,7 +690,7 @@ cryptoki_fn!(
                     if attribute.pValue.is_null() {
                         continue;
                     }
-                    if (attribute.ulValueLen as usize) < value.len() {
+                    if (usize::try_from(attribute.ulValueLen)?) < value.len() {
                         continue;
                     }
                     unsafe {
@@ -729,7 +730,7 @@ cryptoki_fn!(
                 "C_FindObjectsInit: session: {hSession:?}, load Objects Store context for \
                  attributes: {attributes:?}"
             );
-            session.load_find_context(attributes)
+            session.load_find_context(&attributes)
         })
     }
 );
@@ -760,7 +761,10 @@ cryptoki_fn!(
                 }
                 return Ok(());
             }
-            let max_objects = cmp::min(session.find_objects_ctx.len(), ulMaxObjectCount as usize);
+            let max_objects = cmp::min(
+                session.find_objects_ctx.len(),
+                usize::try_from(ulMaxObjectCount)?,
+            );
             let handles = session
                 .find_objects_ctx
                 .drain(0..max_objects)
@@ -801,9 +805,7 @@ cryptoki_fn!(
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
-            let find_ctx = OBJECTS_STORE
-                .read()
-                .map_err(|_| MError::OperationNotInitialized(hSession))?;
+            let find_ctx = OBJECTS_STORE.read()?;
             match find_ctx.get_using_handle(hKey).as_deref() {
                 Some(Object::PublicKey(pk)) => {
                     debug!(
@@ -815,7 +817,6 @@ cryptoki_fn!(
                     session.encrypt_ctx = Some(EncryptContext {
                         remote_object_id: pk.remote_id(),
                         algorithm: mechanism.try_into()?,
-                        plaintext: None,
                         iv: None,
                     });
                     Ok(())
@@ -828,14 +829,13 @@ cryptoki_fn!(
                         &mechanism
                     );
                     let iv = match &mechanism {
-                        Mechanism::AesCbcPad { iv } => Some(iv.clone()),
-                        mech => return Err(MError::MechanismInvalid(parsed_mechanism.mechanism)),
+                        Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
+                        mech => return Err(MError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech))),
                     };
                     session.encrypt_ctx = Some(EncryptContext {
                         remote_object_id: sk.remote_id(),
                         algorithm: EncryptionAlgorithm::try_from(mechanism)?,
                         iv,
-                        plaintext: None,
                     });
                     Ok(())
                 }
@@ -860,20 +860,21 @@ cryptoki_fn!(
              {pEncryptedData:?}, pulEncryptedDataLen: {pulEncryptedDataLen:?}"
         );
         if ulDataLen == 0 {
-            return Err(MError::ArgumentsBad("C_Encrypt: ulDataLen is 0".to_owned()));
+            return Err(MError::BadArguments("C_Encrypt: ulDataLen is 0".to_owned()));
         }
         not_null!(pData, "C_Encrypt: pData");
         // not_null!(pEncryptedData);
         not_null!(pulEncryptedDataLen, "C_Encrypt: pulEncryptedDataLen");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let cleartext_data = unsafe { slice::from_raw_parts(pData, ulDataLen as usize) };
+            let cleartext_data =
+                unsafe { slice::from_raw_parts(pData, usize::try_from(ulDataLen)?) };
             unsafe {
                 debug!(
                     "C_Encrypt: session: {:?}, plain_data_len: {:?}, ciphertext_len: {:?}, \
                      cleartext: {:?}",
                     hSession,
                     cleartext_data.len(),
-                    *pulEncryptedDataLen as usize,
+                    usize::try_from(*pulEncryptedDataLen)?,
                     hex::encode(cleartext_data)
                 );
                 session.encrypt(cleartext_data.to_vec(), pEncryptedData, pulEncryptedDataLen)
@@ -911,9 +912,7 @@ cryptoki_fn!(
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
-            let find_ctx = OBJECTS_STORE
-                .read()
-                .map_err(|_| MError::OperationNotInitialized(hSession))?;
+            let find_ctx = OBJECTS_STORE.read()?;
             match find_ctx.get_using_handle(hKey).as_deref() {
                 Some(Object::PrivateKey(sk)) => {
                     debug!(
@@ -926,7 +925,6 @@ cryptoki_fn!(
                     session.decrypt_ctx = Some(DecryptContext {
                         remote_object_id: sk.remote_id(),
                         algorithm: mechanism.try_into()?,
-                        ciphertext: None,
                         iv: None,
                     });
                     Ok(())
@@ -940,14 +938,13 @@ cryptoki_fn!(
                         &mechanism
                     );
                     let iv = match &mechanism {
-                        Mechanism::AesCbcPad { iv } => Some(iv.clone()),
-                        mech => return Err(MError::MechanismInvalid(parsed_mechanism.mechanism)),
+                        Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
+                        mech => return Err(MError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech))),
                     };
 
                     session.decrypt_ctx = Some(DecryptContext {
                         remote_object_id: sk.remote_id(),
                         algorithm: mechanism.try_into()?,
-                        ciphertext: None,
                         iv,
                     });
                     Ok(())
@@ -974,22 +971,23 @@ cryptoki_fn!(
         );
 
         if ulEncryptedDataLen == 0 {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_Decrypt: ulEncryptedDataLen is 0".to_owned(),
             ));
         }
         not_null!(pEncryptedData, "C_Decrypt: pEncryptedData");
         not_null!(pulDataLen, "C_Decrypt: pulDataLen");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let encrypted_data =
-                unsafe { slice::from_raw_parts(pEncryptedData, ulEncryptedDataLen as usize) };
+            let encrypted_data = unsafe {
+                slice::from_raw_parts(pEncryptedData, usize::try_from(ulEncryptedDataLen)?)
+            };
             unsafe {
                 debug!(
                     "C_Decrypt: session: {:?}, encrypted_data_len: {:?}, cleartext_len: {:?}, \
                      ciphertext: {:?}",
                     hSession,
                     encrypted_data.len(),
-                    *pulDataLen as usize,
+                    usize::try_from(*pulDataLen)?,
                     hex::encode(encrypted_data)
                 );
                 session.decrypt(encrypted_data.to_vec(), pData, pulDataLen)
@@ -1010,7 +1008,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         if ulEncryptedPartLen == 0 {
-            return Err(MError::ArgumentsBad(
+            return Err(MError::BadArguments(
                 "C_DecryptUpdate: ulEncryptedPartLen is 0".to_owned(),
             ));
         }
@@ -1080,13 +1078,11 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pMechanism, "C_SignInit: pMechanism");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let find_ctx = OBJECTS_STORE
-                .read()
-                .map_err(|_| MError::OperationNotInitialized(hSession))?;
+            let find_ctx = OBJECTS_STORE.read()?;
+            // .map_err(|_| MError::OperationNotInitialized(hSession))?;
             let object = find_ctx.get_using_handle(hKey);
-            let private_key = match object.as_deref() {
-                Some(Object::PrivateKey(private_key)) => private_key,
-                Some(_) | None => return Err(MError::KeyHandleInvalid(hKey)),
+            let Some(Object::PrivateKey(private_key)) = object.as_deref() else {
+                return Err(MError::KeyHandleInvalid(hKey))
             };
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
             session.sign_ctx = Some(SignContext {
@@ -1112,7 +1108,7 @@ cryptoki_fn!(
         not_null!(pData, "C_Sign: pData");
         not_null!(pulSignatureLen, "C_Sign: pulSignatureLen");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let data = unsafe { slice::from_raw_parts(pData, ulDataLen as usize) };
+            let data = unsafe { slice::from_raw_parts(pData, usize::try_from(ulDataLen)?) };
             unsafe { session.sign(Some(data), pSignature, pulSignatureLen) }?;
             Ok(())
         })
@@ -1132,7 +1128,9 @@ cryptoki_fn!(
             sign_ctx
                 .payload
                 .get_or_insert(vec![])
-                .extend_from_slice(unsafe { slice::from_raw_parts(pPart, ulPartLen as usize) });
+                .extend_from_slice(unsafe {
+                    slice::from_raw_parts(pPart, usize::try_from(ulPartLen)?)
+                });
             Ok(())
         })
     }
@@ -1273,11 +1271,11 @@ cryptoki_fn!(
         let attributes = Attributes::try_from((pTemplate, ulCount))
             .context("C_GenerateKey: attributes conversion failed")?;
 
-        sessions::session(hSession, |session| -> ModuleResult<()> {
+        sessions::session(hSession, |_session| -> ModuleResult<()> {
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
 
             unsafe {
-                *phKey = session.generate_key(mechanism, attributes)?;
+                *phKey = Session::generate_key(mechanism, &attributes)?;
             };
 
             Ok(())
@@ -1300,11 +1298,11 @@ cryptoki_fn_not_supported!(
 cryptoki_fn_not_supported!(
     C_WrapKey,
     hSession: CK_SESSION_HANDLE,
-    _pMechanism: CK_MECHANISM_PTR,
-    _hWrappingKey: CK_OBJECT_HANDLE,
-    _hKey: CK_OBJECT_HANDLE,
-    _pWrappedKey: CK_BYTE_PTR,
-    _pulWrappedKeyLen: CK_ULONG_PTR
+    pMechanism: CK_MECHANISM_PTR,
+    hWrappingKey: CK_OBJECT_HANDLE,
+    hKey: CK_OBJECT_HANDLE,
+    pWrappedKey: CK_BYTE_PTR,
+    pulWrappedKeyLen: CK_ULONG_PTR
 );
 
 cryptoki_fn_not_supported!(
@@ -1330,7 +1328,7 @@ cryptoki_fn_not_supported!(
 );
 
 cryptoki_fn!(
-    fn C_SeedRandom(hSession: CK_SESSION_HANDLE, pSeed: CK_BYTE_PTR, _ulSeedLen: CK_ULONG) {
+    fn C_SeedRandom(hSession: CK_SESSION_HANDLE, pSeed: CK_BYTE_PTR, ulSeedLen: CK_ULONG) {
         initialized!();
         valid_session!(hSession);
         not_null!(pSeed, "C_SeedRandom: pSeed");
@@ -1347,10 +1345,10 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pRandomData, "C_GenerateRandom: pRandomData");
-        let mut bytes = vec![0; ulRandomLen as usize];
+        let mut bytes = vec![0; usize::try_from(ulRandomLen)?];
         let mut rng = rand::rng();
         rng.fill_bytes(&mut bytes);
-        unsafe { slice::from_raw_parts_mut(pRandomData, ulRandomLen as usize) }
+        unsafe { slice::from_raw_parts_mut(pRandomData, usize::try_from(ulRandomLen)?) }
             .copy_from_slice(&bytes);
         trace!("Generated random: {}", hex::encode(&bytes));
         Ok(())

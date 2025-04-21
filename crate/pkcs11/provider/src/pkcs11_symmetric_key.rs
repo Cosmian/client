@@ -9,30 +9,30 @@ use zeroize::Zeroizing;
 
 use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 
-/// A PKCS11 Private Key implementation that may only hold remote
-/// references to the actual private key
+/// A PKCS11 Symmetric Key implementation that may only hold remote
+/// references to the actual symmetric key
 #[derive(Debug)]
 pub(crate) struct Pkcs11SymmetricKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
     key_size: i32,
-    /// DER bytes of the private key - those are lazy loaded
-    /// when the private key is used
-    der_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
+    /// Raw bytes of the symmetric key - those are lazy loaded
+    /// when the symmetric key is used
+    raw_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
 impl Pkcs11SymmetricKey {
     pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: i32) -> Self {
         Self {
             remote_id,
-            der_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
+            raw_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
             algorithm,
             key_size,
         }
     }
 
     pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> ModuleResult<Self> {
-        let der_bytes = Arc::new(RwLock::new(
+        let raw_bytes = Arc::new(RwLock::new(
             kms_object
                 .object
                 .key_block()
@@ -49,7 +49,7 @@ impl Pkcs11SymmetricKey {
             remote_id: kms_object.remote_id,
             algorithm,
             key_size,
-            der_bytes,
+            raw_bytes,
         })
     }
 }
@@ -67,28 +67,29 @@ impl SymmetricKey for Pkcs11SymmetricKey {
         self.key_size
     }
 
-    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
-        let der_bytes = self
-            .der_bytes
+    fn raw_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
+        let raw_bytes = self
+            .raw_bytes
             .read()
             .map_err(|e| {
-                error!("Failed to read DER bytes: {:?}", e);
-                MError::Cryptography("Failed to read DER bytes".to_owned())
+                error!("Failed to read raw bytes: {:?}", e);
+                MError::Cryptography("Failed to read raw bytes".to_owned())
             })?
             .clone();
-        if !der_bytes.is_empty() {
-            return Ok(der_bytes);
+        if !raw_bytes.is_empty() {
+            return Ok(raw_bytes);
         }
         let sk =
-            backend().find_private_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
-        let mut der_bytes = self.der_bytes.write().map_err(|e| {
-            error!("Failed to write DER bytes: {:?}", e);
-            MError::Cryptography("Failed to write DER bytes".to_owned())
+            backend().find_symmetric_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
+
+        let mut raw_bytes = self.raw_bytes.write().map_err(|e| {
+            error!("Failed to write raw bytes: {:?}", e);
+            MError::Cryptography("Failed to write raw bytes".to_owned())
         })?;
-        *der_bytes = sk.pkcs8_der_bytes().map_err(|e| {
-            error!("Failed to fetch the PKCS8 DER bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
+        *raw_bytes = sk.raw_bytes().map_err(|e| {
+            error!("Failed to fetch the PKCS8 raw bytes: {:?}", e);
+            MError::Cryptography("Failed to fetch the PKCS8 raw bytes".to_owned())
         })?;
-        Ok(der_bytes.clone())
+        Ok(raw_bytes.clone())
     }
 }

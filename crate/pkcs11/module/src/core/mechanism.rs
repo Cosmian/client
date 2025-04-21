@@ -32,6 +32,8 @@ use crate::{
     traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
+pub(crate) const AES_IV_SIZE: usize = 16;
+
 pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
     CKM_RSA_PKCS,
     CKM_SHA1_RSA_PKCS,
@@ -46,7 +48,7 @@ pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
 pub enum Mechanism {
     AesKeyGen,
     AesCbcPad {
-        iv: Vec<u8>,
+        iv: [u8; AES_IV_SIZE],
     },
     Ecdsa,
     RsaPkcs,
@@ -67,14 +69,21 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
     match mechanism.mechanism {
         CKM_AES_KEY_GEN => Ok(Mechanism::AesKeyGen),
         CKM_AES_CBC_PAD => {
-            let iv = unsafe {
+            let iv_slice = unsafe {
                 slice::from_raw_parts(
                     mechanism.pParameter.cast::<u8>(),
-                    mechanism.ulParameterLen as usize,
+                    usize::try_from(mechanism.ulParameterLen)?,
                 )
             };
+            if iv_slice.len() != AES_IV_SIZE {
+                return Err(MError::BadArguments(format!(
+                    "AES IV size incorrect. {AES_IV_SIZE} bytes expected"
+                )));
+            }
+            let mut iv = [0_u8; AES_IV_SIZE];
+            iv.copy_from_slice(iv_slice);
             debug!("parse_mechanism: iv: {iv:?}");
-            Ok(Mechanism::AesCbcPad { iv: iv.to_vec() })
+            Ok(Mechanism::AesCbcPad { iv })
         }
         CKM_ECDSA => Ok(Mechanism::Ecdsa),
         CKM_RSA_PKCS => Ok(Mechanism::RsaPkcs),
@@ -88,7 +97,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
             let parameter_ptr = mechanism.pParameter;
             let parameter_len = mechanism.ulParameterLen;
             not_null!(parameter_ptr, "parse_mechanism: parameter_ptr");
-            if (parameter_len as usize) != std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>() {
+            if (usize::try_from(parameter_len)?) != std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>() {
                 error!(
                     "pParameter incorrect: {} != {}",
                     parameter_len,
@@ -139,8 +148,8 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
     }
 }
 
-impl From<Mechanism> for CK_MECHANISM_TYPE {
-    fn from(mechanism: Mechanism) -> Self {
+impl From<&Mechanism> for CK_MECHANISM_TYPE {
+    fn from(mechanism: &Mechanism) -> Self {
         match mechanism {
             Mechanism::AesKeyGen => CKM_AES_KEY_GEN,
             Mechanism::AesCbcPad { .. } => CKM_AES_CBC_PAD,
