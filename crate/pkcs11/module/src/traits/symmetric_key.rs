@@ -16,7 +16,7 @@ pub trait SymmetricKey: Send + Sync {
     fn algorithm(&self) -> KeyAlgorithm;
 
     /// Return the key size in bits
-    fn key_size(&self) -> i32;
+    fn key_size(&self) -> usize;
 
     /// Return raw bytes
     fn raw_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>>;

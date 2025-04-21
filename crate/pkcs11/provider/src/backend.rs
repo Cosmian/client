@@ -52,6 +52,7 @@ impl Backend for CliBackend {
         *b"software        "
     }
 
+    #[expect(clippy::indexing_slicing)]
     fn token_serial_number(&self) -> [u8; 16] {
         let version = env!("CARGO_PKG_VERSION").as_bytes();
         let len = version.len().min(16);
@@ -124,14 +125,15 @@ impl Backend for CliBackend {
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let mut private_keys = vec![];
-        for id in locate_kms_objects(&self.kms_rest_client, &[
+        let ids = locate_kms_objects(&self.kms_rest_client, &[
             disk_encryption_tag,
             "_sk".to_owned(),
-        ])? {
+        ])?;
+        for id in ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
-                "find_all_private_keys: missing key size".to_owned(),
-            ))?;
+            let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
+                MError::Cryptography("find_all_private_keys: missing key size".to_owned()),
+            )?)?;
             let sk: Arc<dyn PrivateKey> = Arc::new(Pkcs11PrivateKey::new(
                 id,
                 key_algorithm_from_attributes(&attributes)?,
@@ -194,11 +196,12 @@ impl Backend for CliBackend {
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {
         trace!("find_all_symmetric_keys");
         let mut symmetric_keys = vec![];
-        for id in locate_kms_objects(&self.kms_rest_client, &[])? {
+        let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
+        for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = attributes.cryptographic_length.ok_or(MError::Cryptography(
-                "find_all_symmetric_keys: missing key size".to_owned(),
-            ))?;
+            let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
+                MError::Cryptography("find_all_symmetric_keys: missing key size".to_owned()),
+            )?)?;
             let sk: Arc<dyn SymmetricKey> = Arc::new(Pkcs11SymmetricKey::new(
                 id,
                 key_algorithm_from_attributes(&attributes)?,
@@ -210,23 +213,22 @@ impl Backend for CliBackend {
         Ok(symmetric_keys)
     }
 
+    #[expect(clippy::cognitive_complexity)]
     fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>> {
         trace!("find_all_keys");
         let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
         let mut objects = Vec::with_capacity(kms_ids.len());
         for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = if let Some(key_size) = attributes.cryptographic_length {
-                key_size
-            } else {
+            let Some(key_size) = attributes.cryptographic_length else {
                 warn!("find_all_keys: missing key size, skipping {id}");
                 continue;
             };
-
+            let key_size = usize::try_from(key_size)?;
             let key_algorithm = key_algorithm_from_attributes(&attributes)?;
             let object =
-                match attributes.object_type {
-                    Some(object_type) => match object_type {
+                if let Some(object_type) = attributes.object_type {
+                    match object_type {
                         ObjectType::SymmetricKey => Object::SymmetricKey(Arc::new(
                             Pkcs11SymmetricKey::new(id, key_algorithm, key_size),
                         )),
@@ -240,11 +242,10 @@ impl Backend for CliBackend {
                             warn!("find_all_keys: unsupported object type: {other}, skipping {id}");
                             continue;
                         }
-                    },
-                    None => {
-                        warn!("find_all_keys: missing object type: skipping {id}");
-                        continue;
                     }
+                } else {
+                    warn!("find_all_keys: missing object type: skipping {id}");
+                    continue;
                 };
             objects.push(Arc::new(object));
         }

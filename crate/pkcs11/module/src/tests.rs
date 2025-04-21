@@ -32,12 +32,12 @@ impl SymmetricKey for DummySymKey {
         KeyAlgorithm::Aes256
     }
 
-    fn key_size(&self) -> i32 {
+    fn key_size(&self) -> usize {
         32
     }
 
     fn raw_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
-        Ok(Zeroizing::new(vec![0; usize::try_from(self.key_size())?]))
+        Ok(Zeroizing::new(vec![0; self.key_size()]))
     }
 }
 

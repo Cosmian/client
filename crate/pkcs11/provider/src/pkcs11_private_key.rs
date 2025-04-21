@@ -16,14 +16,14 @@ use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 pub(crate) struct Pkcs11PrivateKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
-    key_size: i32,
+    key_size: usize,
     /// DER bytes of the private key - those are lazy loaded
     /// when the private key is used
     der_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
 impl Pkcs11PrivateKey {
-    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: i32) -> Self {
+    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: usize) -> Self {
         Self {
             remote_id,
             der_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
@@ -41,9 +41,10 @@ impl Pkcs11PrivateKey {
                 .key_bytes()
                 .map_err(|e| MError::Cryptography(e.to_string()))?,
         ));
-        let key_size = kms_object.attributes.cryptographic_length.ok_or_else(|| {
-            MError::Cryptography("try_from_kms_object: missing key size".to_owned())
-        })?;
+        let key_size =
+            usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
+                MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+            })?)?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
         Ok(Self {
@@ -75,7 +76,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.algorithm
     }
 
-    fn key_size(&self) -> i32 {
+    fn key_size(&self) -> usize {
         self.key_size
     }
 

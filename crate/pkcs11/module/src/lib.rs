@@ -60,8 +60,6 @@
     non_snake_case, // case come from C
     clippy::missing_safety_doc,
     clippy::missing_errors_doc,
-    // clippy::multiple_crate_versions,
-    clippy::redundant_pub_crate,
 )]
 
 use core::{

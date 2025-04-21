@@ -15,14 +15,14 @@ use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
 pub(crate) struct Pkcs11SymmetricKey {
     remote_id: String,
     algorithm: KeyAlgorithm,
-    key_size: i32,
+    key_size: usize,
     /// Raw bytes of the symmetric key - those are lazy loaded
     /// when the symmetric key is used
     raw_bytes: Arc<RwLock<Zeroizing<Vec<u8>>>>,
 }
 
 impl Pkcs11SymmetricKey {
-    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: i32) -> Self {
+    pub(crate) fn new(remote_id: String, algorithm: KeyAlgorithm, key_size: usize) -> Self {
         Self {
             remote_id,
             raw_bytes: Arc::new(RwLock::new(Zeroizing::new(vec![]))),
@@ -40,9 +40,10 @@ impl Pkcs11SymmetricKey {
                 .key_bytes()
                 .map_err(|e| MError::Cryptography(e.to_string()))?,
         ));
-        let key_size = kms_object.attributes.cryptographic_length.ok_or_else(|| {
-            MError::Cryptography("try_from_kms_object: missing key size".to_owned())
-        })?;
+        let key_size =
+            usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
+                MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+            })?)?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
         Ok(Self {
@@ -63,7 +64,7 @@ impl SymmetricKey for Pkcs11SymmetricKey {
         self.algorithm
     }
 
-    fn key_size(&self) -> i32 {
+    fn key_size(&self) -> usize {
         self.key_size
     }
 
