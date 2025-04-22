@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use cosmian_pkcs11_module::{
-    MError, ModuleResult,
+    ModuleError, ModuleResult,
     traits::{KeyAlgorithm, PublicKey, SignatureAlgorithm},
 };
 use p256::pkcs8::DecodePublicKey;
@@ -33,8 +33,9 @@ impl Pkcs11PublicKey {
 
     pub(crate) fn try_from_spki(spki: &SubjectPublicKeyInfoOwned) -> ModuleResult<Self> {
         let algorithm = &spki.algorithm;
-        let algorithm = KeyAlgorithm::from_oid(&algorithm.oid)
-            .ok_or_else(|| MError::BadArguments(format!("OID not found: {}", algorithm.oid)))?;
+        let algorithm = KeyAlgorithm::from_oid(&algorithm.oid).ok_or_else(|| {
+            ModuleError::BadArguments(format!("OID not found: {}", algorithm.oid))
+        })?;
         let der_bytes = Zeroizing::new(spki.to_der()?);
         let fingerprint = sha3::Sha3_256::digest(&der_bytes).to_vec();
         Ok(Self {
@@ -75,11 +76,11 @@ impl PublicKey for Pkcs11PublicKey {
         if self.algorithm == KeyAlgorithm::Rsa {
             RsaPublicKey::from_der(&self.der_bytes).map_err(|e| {
                 error!("Failed to parse RSA public key: {:?}", e);
-                MError::Cryptography("Failed to parse RSA public key".to_owned())
+                ModuleError::Cryptography("Failed to parse RSA public key".to_owned())
             })
         } else {
             error!("Public key is not an RSA key");
-            Err(MError::Cryptography(
+            Err(ModuleError::Cryptography(
                 "Public key is not an RSA key".to_owned(),
             ))
         }
@@ -88,12 +89,12 @@ impl PublicKey for Pkcs11PublicKey {
     fn ec_p256_public_key(&self) -> ModuleResult<p256::PublicKey> {
         if self.algorithm == KeyAlgorithm::EccP256 {
             let ec_p256 = p256::PublicKey::from_public_key_der(&self.der_bytes).map_err(|e| {
-                MError::Cryptography(format!("Failed to parse EC P256 public key: {e:?}"))
+                ModuleError::Cryptography(format!("Failed to parse EC P256 public key: {e:?}"))
             })?;
             Ok(ec_p256)
         } else {
             error!("Public key is not an EC P256 key");
-            Err(MError::Cryptography(
+            Err(ModuleError::Cryptography(
                 "Public key is not an EC P256 key".to_owned(),
             ))
         }

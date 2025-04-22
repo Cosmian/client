@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
-    MError, ModuleResult,
+    ModuleError, ModuleResult,
     traits::{KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend},
 };
 use pkcs1::{RsaPrivateKey, der::Decode};
@@ -37,13 +37,13 @@ impl Pkcs11PrivateKey {
             kms_object
                 .object
                 .key_block()
-                .map_err(|e| MError::Cryptography(e.to_string()))?
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?
                 .key_bytes()
-                .map_err(|e| MError::Cryptography(e.to_string()))?,
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?,
         ));
         let key_size =
             usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
-                MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+                ModuleError::Cryptography("try_from_kms_object: missing key size".to_owned())
             })?)?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
@@ -86,7 +86,7 @@ impl PrivateKey for Pkcs11PrivateKey {
             .read()
             .map_err(|e| {
                 error!("Failed to read DER bytes: {:?}", e);
-                MError::Cryptography("Failed to read DER bytes".to_owned())
+                ModuleError::Cryptography("Failed to read DER bytes".to_owned())
             })?
             .clone();
         if !der_bytes.is_empty() {
@@ -96,11 +96,11 @@ impl PrivateKey for Pkcs11PrivateKey {
             backend().find_private_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
         let mut der_bytes = self.der_bytes.write().map_err(|e| {
             error!("Failed to write DER bytes: {:?}", e);
-            MError::Cryptography("Failed to write DER bytes".to_owned())
+            ModuleError::Cryptography("Failed to write DER bytes".to_owned())
         })?;
         *der_bytes = sk.pkcs8_der_bytes().map_err(|e| {
             error!("Failed to fetch the PKCS8 DER bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
+            ModuleError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
         })?;
         Ok(der_bytes.clone())
     }
@@ -108,16 +108,16 @@ impl PrivateKey for Pkcs11PrivateKey {
     fn rsa_public_exponent(&self) -> ModuleResult<Vec<u8>> {
         let pkcs8_der_bytes = self.der_bytes.read().map_err(|e| {
             error!("Failed to read DER bytes: {:?}", e);
-            MError::Cryptography("Failed to read DER bytes".to_owned())
+            ModuleError::Cryptography("Failed to read DER bytes".to_owned())
         })?;
         let res = if pkcs8_der_bytes.is_empty() {
-            //TODO: not great but very little chance that 1/ it is different and 2/ it has any effect
-            // we do not want to fetch the key bytes just for this
-            65537_u32.to_be_bytes().to_vec()
+            return Err(ModuleError::Cryptography(
+                "Failed to obtain public exponent for unloaded private key".to_owned(),
+            ));
         } else {
             let rsa_key = RsaPrivateKey::from_der(pkcs8_der_bytes.as_ref()).map_err(|e| {
                 error!("Failed to parse RSA public key: {:?}", e);
-                MError::Cryptography("Failed to parse RSA public key".to_owned())
+                ModuleError::Cryptography("Failed to parse RSA public key".to_owned())
             })?;
             rsa_key.public_exponent.as_bytes().to_vec()
         };
@@ -130,7 +130,7 @@ impl PrivateKey for Pkcs11PrivateKey {
     //         KeyAlgorithm::EccP256 => {
     //             let ec_p256 = p256::SecretKey::from_pkcs8_der(self.pkcs8_der_bytes()?.as_ref())
     //                 .map_err(|e| {
-    //                     MError::Cryptography(format!(
+    //                     ModuleError::Cryptography(format!(
     //                         "Failed to parse EC P256 private key: {:?}",
     //                         e
     //                     ))
@@ -139,7 +139,7 @@ impl PrivateKey for Pkcs11PrivateKey {
     //         }
     //         _ => {
     //             error!("Public key is not an EC P256 key");
-    //             Err(MError::Cryptography(
+    //             Err(ModuleError::Cryptography(
     //                 "Public key is not an EC P256 key".to_string(),
     //             ))
     //         }

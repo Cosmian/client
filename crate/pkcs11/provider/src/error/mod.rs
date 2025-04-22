@@ -68,13 +68,13 @@ impl From<KmipError> for Pkcs11Error {
     }
 }
 
-impl From<cosmian_pkcs11_module::MError> for Pkcs11Error {
-    fn from(e: cosmian_pkcs11_module::MError) -> Self {
+impl From<cosmian_pkcs11_module::ModuleError> for Pkcs11Error {
+    fn from(e: cosmian_pkcs11_module::ModuleError) -> Self {
         Self::Pkcs11(e.to_string())
     }
 }
 
-impl From<Pkcs11Error> for cosmian_pkcs11_module::MError {
+impl From<Pkcs11Error> for cosmian_pkcs11_module::ModuleError {
     fn from(e: Pkcs11Error) -> Self {
         Self::Backend(Box::new(e))
     }

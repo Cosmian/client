@@ -80,11 +80,11 @@ impl Backend for TestBackend {
     }
 
     fn find_private_key(&self, _query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>> {
-        Err(MError::FunctionNotSupported)
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn find_public_key(&self, _query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
-        Err(MError::FunctionNotSupported)
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>> {
@@ -104,7 +104,7 @@ impl Backend for TestBackend {
     }
 
     fn find_symmetric_key(&self, _query: SearchOptions) -> ModuleResult<Arc<dyn SymmetricKey>> {
-        Err(MError::FunctionNotSupported)
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {

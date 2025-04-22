@@ -28,7 +28,7 @@ use pkcs11_sys::{
 use tracing::{debug, error};
 
 use crate::{
-    MError, ModuleResult, not_null,
+    ModuleError, ModuleResult, not_null,
     traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
@@ -64,7 +64,7 @@ pub enum Mechanism {
 }
 
 #[expect(clippy::missing_safety_doc)]
-pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MError> {
+pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, ModuleError> {
     debug!("parse_mechanism: {mechanism:?}");
     match mechanism.mechanism {
         CKM_AES_KEY_GEN => Ok(Mechanism::AesKeyGen),
@@ -76,7 +76,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 )
             };
             if iv_slice.len() != AES_IV_SIZE {
-                return Err(MError::BadArguments(format!(
+                return Err(ModuleError::BadArguments(format!(
                     "AES IV size incorrect. {AES_IV_SIZE} bytes expected"
                 )));
             }
@@ -103,7 +103,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                     parameter_len,
                     std::mem::size_of::<CK_RSA_PKCS_PSS_PARAMS>()
                 );
-                return Err(MError::MechanismInvalid(mechanism_type));
+                return Err(ModuleError::MechanismInvalid(mechanism_type));
             }
             //  TODO(kcking): check alignment as well?
             let params: CK_RSA_PKCS_PSS_PARAMS =
@@ -120,7 +120,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 CKG_MGF1_SHA512 => DigestType::Sha512,
                 _ => {
                     error!("Unsupported mgf: {}", mgf);
-                    return Err(MError::MechanismInvalid(mechanism_type));
+                    return Err(ModuleError::MechanismInvalid(mechanism_type));
                 }
             };
 
@@ -132,7 +132,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 CKM_SHA512 => DigestType::Sha512,
                 _ => {
                     error!("Unsupported hashAlg: {}", hash_alg);
-                    return Err(MError::MechanismInvalid(mechanism_type));
+                    return Err(ModuleError::MechanismInvalid(mechanism_type));
                 }
             };
 
@@ -144,7 +144,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, MErr
                 salt_length: salt_len as u64,
             })
         }
-        _ => Err(MError::MechanismInvalid(mechanism.mechanism)),
+        _ => Err(ModuleError::MechanismInvalid(mechanism.mechanism)),
     }
 }
 
@@ -165,7 +165,7 @@ impl From<&Mechanism> for CK_MECHANISM_TYPE {
 }
 
 impl TryFrom<Mechanism> for SignatureAlgorithm {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
@@ -184,30 +184,31 @@ impl TryFrom<Mechanism> for SignatureAlgorithm {
                 mask_generation_function,
                 salt_length,
             }),
-            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
+            x => Err(ModuleError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }
 
 impl TryFrom<Mechanism> for EncryptionAlgorithm {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
             Mechanism::RsaPkcs => Ok(Self::RsaPkcs1v15),
             Mechanism::AesCbcPad { .. } => Ok(Self::AesCbcPad),
-            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
+            x => Err(ModuleError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }
 
 impl TryFrom<Mechanism> for KeyAlgorithm {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(mechanism: Mechanism) -> ModuleResult<Self> {
         match mechanism {
+            // When generating AES key where `CKM_AES_KEY_GEN` is given as `Mechanism`, we assume an AES-256 key is required
             Mechanism::AesKeyGen => Ok(Self::Aes256),
-            x => Err(MError::AlgorithmNotSupported(format!("{x:?}"))),
+            x => Err(ModuleError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }
 }

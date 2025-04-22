@@ -3,7 +3,7 @@ use std::sync::Arc;
 use cosmian_cli::reexport::cosmian_kms_client::KmsClient;
 use cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType};
 use cosmian_pkcs11_module::{
-    MError, ModuleResult,
+    ModuleError, ModuleResult,
     core::object::Object,
     traits::{
         Backend, Certificate, DataObject, DecryptContext, EncryptContext, KeyAlgorithm, PrivateKey,
@@ -16,7 +16,7 @@ use zeroize::Zeroizing;
 use crate::{
     kms_object::{
         get_kms_object, get_kms_object_attributes, get_kms_objects, key_algorithm_from_attributes,
-        kms_create, kms_decrypt, kms_encrypt, locate_kms_objects,
+        kms_decrypt, kms_encrypt, kms_import_symmetric_key, locate_kms_objects,
     },
     pkcs11_certificate::Pkcs11Certificate,
     pkcs11_data_object::Pkcs11DataObject,
@@ -103,7 +103,7 @@ impl Backend for CliBackend {
         let id = match query {
             SearchOptions::Id(id) => id,
             SearchOptions::All => {
-                return Err(MError::Backend(Box::new(pkcs11_error!(
+                return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_private_key: find must be made using an ID"
                 ))))
             }
@@ -115,7 +115,7 @@ impl Backend for CliBackend {
 
     fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
         trace!("find_public_key: {:?}", query);
-        Err(MError::Backend(Box::new(pkcs11_error!(
+        Err(ModuleError::Backend(Box::new(pkcs11_error!(
             "find_public_key: not implemented"
         ))))
     }
@@ -132,7 +132,7 @@ impl Backend for CliBackend {
         for id in ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
             let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
-                MError::Cryptography("find_all_private_keys: missing key size".to_owned()),
+                ModuleError::Cryptography("find_all_private_keys: missing key size".to_owned()),
             )?)?;
             let sk: Arc<dyn PrivateKey> = Arc::new(Pkcs11PrivateKey::new(
                 id,
@@ -177,7 +177,7 @@ impl Backend for CliBackend {
         let id = match query {
             SearchOptions::Id(id) => id,
             SearchOptions::All => {
-                return Err(MError::Backend(Box::new(pkcs11_error!(
+                return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_symmetric_key: find must be made using an ID"
                 ))))
             }
@@ -200,7 +200,7 @@ impl Backend for CliBackend {
         for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
             let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
-                MError::Cryptography("find_all_symmetric_keys: missing key size".to_owned()),
+                ModuleError::Cryptography("find_all_symmetric_keys: missing key size".to_owned()),
             )?)?;
             let sk: Arc<dyn SymmetricKey> = Arc::new(Pkcs11SymmetricKey::new(
                 id,
@@ -264,12 +264,12 @@ impl Backend for CliBackend {
         trace!("generate_key: {algorithm:?}-{key_length}, {label:?}");
 
         if algorithm != KeyAlgorithm::Aes256 {
-            return Err(MError::Backend(Box::new(pkcs11_error!(
+            return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                 "generate_key: only support AES-256 algorithm"
             ))));
         }
 
-        let kms_object = kms_create(
+        let kms_object = kms_import_symmetric_key(
             &self.kms_rest_client,
             algorithm,
             key_length,

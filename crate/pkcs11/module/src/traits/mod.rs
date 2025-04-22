@@ -31,7 +31,7 @@ pub use signature_algorithm::SignatureAlgorithm;
 pub use symmetric_key::SymmetricKey;
 
 use crate::{
-    MError,
+    ModuleError,
     core::attribute::{Attribute, AttributeType, Attributes},
 };
 
@@ -76,7 +76,7 @@ pub enum SearchOptions {
 }
 
 impl TryFrom<&Attributes> for SearchOptions {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(attributes: &Attributes) -> Result<Self, Self::Error> {
         if attributes.is_empty() {

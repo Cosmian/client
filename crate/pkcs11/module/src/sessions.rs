@@ -29,7 +29,7 @@ use pkcs11_sys::{
 use tracing::debug;
 
 use crate::{
-    MError, MResultHelper, ModuleResult,
+    MResultHelper, ModuleError, ModuleResult,
     core::{
         attribute::Attributes,
         mechanism::Mechanism,
@@ -66,11 +66,7 @@ impl Session {
         &mut self,
         object: Arc<Object>,
     ) -> ModuleResult<CK_OBJECT_HANDLE> {
-        let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            MError::BadArguments(format!(
-                "insert_in_find_context: failed to lock objects store: {e}"
-            ))
-        })?;
+        let mut objects_store = OBJECTS_STORE.write()?;
         let handle = objects_store.upsert(object);
         self.find_objects_ctx.push(handle);
         Ok(handle)
@@ -78,7 +74,7 @@ impl Session {
 
     pub(crate) fn load_find_context(&mut self, attributes: &Attributes) -> ModuleResult<()> {
         if attributes.is_empty() {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "load_find_context: empty attributes".to_owned(),
             ));
         }
@@ -95,17 +91,13 @@ impl Session {
             self.load_find_context_by_class(attributes, search_class)
         } else {
             let label = attributes.get_label()?;
-            let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                MError::BadArguments(format!(
-                    "load_find_context: failed to lock find context: {e}"
-                ))
-            })?;
+            let find_ctx = OBJECTS_STORE.read()?;
             debug!(
                 "load_find_context: loading for label: {label:?} and attributes: {attributes:?}"
             );
             debug!("load_find_context: display current store: {find_ctx}");
             let (object, handle) = find_ctx.get_using_id(&label).ok_or_else(|| {
-                MError::BadArguments(format!(
+                ModuleError::BadArguments(format!(
                     "load_find_context: failed to get id from label: {label}"
                 ))
             })?;
@@ -130,7 +122,7 @@ impl Session {
         search_class: CK_OBJECT_CLASS,
     ) -> ModuleResult<()> {
         if attributes.is_empty() {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "load_find_context_by_class: empty attributes".to_owned(),
             ));
         }
@@ -200,18 +192,14 @@ impl Session {
                             res
                         );
                     }
-                    o => return Err(MError::Todo(format!("Object not supported: {o}"))),
+                    o => return Err(ModuleError::Todo(format!("Object not supported: {o}"))),
                 }
             }
             SearchOptions::Id(cka_id) => {
                 if search_class == pkcs11_sys::CKO_CERTIFICATE {
                     let id = String::from_utf8(cka_id)?;
                     // Find certificates which have this CKA_ID as private key ID
-                    let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        MError::BadArguments(format!(
-                            "load_find_context_by_class: failed to lock find context: {e}"
-                        ))
-                    })?;
+                    let find_ctx = OBJECTS_STORE.read()?;
                     let certificates = find_ctx.get_using_type(&ObjectType::Certificate);
                     for (object, handle) in certificates {
                         match &*object {
@@ -231,7 +219,7 @@ impl Session {
                             }
                             //TODO may be we should treat Public Keys the same as Certificates
                             o => {
-                                return Err(MError::Todo(format!(
+                                return Err(ModuleError::Todo(format!(
                                     "This should not happen, returning: {:?}",
                                     o.object_type()
                                 )))
@@ -241,13 +229,9 @@ impl Session {
                 } else {
                     let id = String::from_utf8(cka_id)?;
 
-                    let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        MError::BadArguments(format!(
-                            "load_find_context_by_class: failed to lock find context: {e}",
-                        ))
-                    })?;
+                    let find_ctx = OBJECTS_STORE.read()?;
                     let (object, handle) = find_ctx.get_using_id(&id).ok_or_else(|| {
-                        MError::BadArguments(format!(
+                        ModuleError::BadArguments(format!(
                             "load_find_context_by_class: id {id} not found in store"
                         ))
                     })?;
@@ -285,15 +269,17 @@ impl Session {
         pulSignatureLen: CK_ULONG_PTR,
     ) -> ModuleResult<()> {
         let Some(sign_ctx) = self.sign_ctx.as_mut() else {
-            return Err(MError::OperationNotInitialized(0))
+            return Err(ModuleError::OperationNotInitialized(0))
         };
         let data = data
             .or(sign_ctx.payload.as_deref())
-            .ok_or(MError::OperationNotInitialized(0))?;
+            .ok_or(ModuleError::OperationNotInitialized(0))?;
         let signature = match sign_ctx.private_key.sign(&sign_ctx.algorithm, data) {
             Ok(sig) => sig,
             Err(e) => {
-                return Err(MError::BadArguments(format!("signature failed: {e:?}")));
+                return Err(ModuleError::BadArguments(format!(
+                    "signature failed: {e:?}"
+                )));
             }
         };
         if !pSignature.is_null() {
@@ -302,7 +288,7 @@ impl Session {
             // sign twice for ECDSA? Consider storing the signature in the ctx for the next
             // call.
             if (unsafe { usize::try_from(*pulSignatureLen)? }) < signature.len() {
-                return Err(MError::BufferTooSmall);
+                return Err(ModuleError::BufferTooSmall);
             }
             unsafe { std::slice::from_raw_parts_mut(pSignature, signature.len()) }
                 .copy_from_slice(&signature);
@@ -323,14 +309,14 @@ impl Session {
         let decrypt_ctx = self
             .decrypt_ctx
             .as_ref()
-            .ok_or_else(|| MError::OperationNotInitialized(0))?;
+            .ok_or_else(|| ModuleError::OperationNotInitialized(0))?;
         let cleartext = backend().decrypt(decrypt_ctx, ciphertext)?;
         unsafe {
             if pData.is_null() {
                 *pulDataLen = cleartext.len() as CK_ULONG;
             } else {
                 if (usize::try_from(*pulDataLen)?) < cleartext.len() {
-                    return Err(MError::BufferTooSmall);
+                    return Err(ModuleError::BufferTooSmall);
                 }
                 std::slice::from_raw_parts_mut(pData, cleartext.len()).copy_from_slice(&cleartext);
                 *pulDataLen = cleartext.len() as CK_ULONG;
@@ -349,13 +335,13 @@ impl Session {
         let encrypt_ctx = self
             .encrypt_ctx
             .as_ref()
-            .ok_or_else(|| MError::OperationNotInitialized(0))?;
+            .ok_or_else(|| ModuleError::OperationNotInitialized(0))?;
         let ciphertext = backend().encrypt(encrypt_ctx, cleartext)?;
         unsafe {
             *pulEncryptedDataLen = ciphertext.len() as CK_ULONG;
             if !pEncryptedData.is_null() {
                 if (usize::try_from(*pulEncryptedDataLen)?) < ciphertext.len() {
-                    return Err(MError::BufferTooSmall);
+                    return Err(ModuleError::BufferTooSmall);
                 }
                 std::slice::from_raw_parts_mut(pEncryptedData, ciphertext.len())
                     .copy_from_slice(&ciphertext);
@@ -370,7 +356,7 @@ impl Session {
         attributes: &Attributes,
     ) -> ModuleResult<CK_OBJECT_HANDLE> {
         if attributes.is_empty() {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "generate_key: empty attributes".to_owned(),
             ));
         }
@@ -380,9 +366,7 @@ impl Session {
             mechanism, attributes
         );
 
-        let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            MError::BadArguments(format!("generate_key: failed to lock objects store: {e}"))
-        })?;
+        let mut objects_store = OBJECTS_STORE.write()?;
 
         let key_length = attributes.get_value_len()?;
         let sensitive = attributes.get_sensitive()?;
@@ -446,7 +430,7 @@ pub(crate) fn flags(handle: CK_SESSION_HANDLE) -> ModuleResult<CK_FLAGS> {
         .lock()
         .context("failed locking the sessions map")?
         .get(&handle)
-        .ok_or_else(|| MError::SessionHandleInvalid(handle))?
+        .ok_or_else(|| ModuleError::SessionHandleInvalid(handle))?
         .flags)
 }
 
@@ -457,7 +441,7 @@ where
     let mut session_map = SESSIONS.lock().context("failed locking the sessions map")?;
     let session = session_map
         .get_mut(&h)
-        .ok_or(MError::SessionHandleInvalid(h))?;
+        .ok_or(ModuleError::SessionHandleInvalid(h))?;
     debug!("session: {h} found");
     callback(session)
 }

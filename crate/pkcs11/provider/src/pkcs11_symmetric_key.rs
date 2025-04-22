@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
-    MError, ModuleResult,
+    ModuleError, ModuleResult,
     traits::{KeyAlgorithm, SearchOptions, SymmetricKey, backend},
 };
 use tracing::error;
@@ -36,13 +36,13 @@ impl Pkcs11SymmetricKey {
             kms_object
                 .object
                 .key_block()
-                .map_err(|e| MError::Cryptography(e.to_string()))?
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?
                 .key_bytes()
-                .map_err(|e| MError::Cryptography(e.to_string()))?,
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?,
         ));
         let key_size =
             usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
-                MError::Cryptography("try_from_kms_object: missing key size".to_owned())
+                ModuleError::Cryptography("try_from_kms_object: missing key size".to_owned())
             })?)?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
@@ -74,7 +74,7 @@ impl SymmetricKey for Pkcs11SymmetricKey {
             .read()
             .map_err(|e| {
                 error!("Failed to read raw bytes: {:?}", e);
-                MError::Cryptography("Failed to read raw bytes".to_owned())
+                ModuleError::Cryptography("Failed to read raw bytes".to_owned())
             })?
             .clone();
         if !raw_bytes.is_empty() {
@@ -85,11 +85,11 @@ impl SymmetricKey for Pkcs11SymmetricKey {
 
         let mut raw_bytes = self.raw_bytes.write().map_err(|e| {
             error!("Failed to write raw bytes: {:?}", e);
-            MError::Cryptography("Failed to write raw bytes".to_owned())
+            ModuleError::Cryptography("Failed to write raw bytes".to_owned())
         })?;
         *raw_bytes = sk.raw_bytes().map_err(|e| {
             error!("Failed to fetch the PKCS8 raw bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 raw bytes".to_owned())
+            ModuleError::Cryptography("Failed to fetch the PKCS8 raw bytes".to_owned())
         })?;
         Ok(raw_bytes.clone())
     }

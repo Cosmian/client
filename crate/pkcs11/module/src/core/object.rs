@@ -30,7 +30,7 @@ use rsa::{RsaPrivateKey, pkcs8::DecodePrivateKey, traits::PublicKeyParts};
 use tracing::debug;
 
 use crate::{
-    MError, ModuleResult,
+    ModuleError, ModuleResult,
     core::attribute::{Attribute, AttributeType},
     traits::{Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SymmetricKey},
 };
@@ -192,7 +192,7 @@ impl Object {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
                         error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
+                        ModuleError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::Modulus(sk.n().to_bytes_be()))
                 }
@@ -202,7 +202,7 @@ impl Object {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
                     let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
                         error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                        MError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
+                        ModuleError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
                     })?;
                     Some(Attribute::PublicExponent(sk.e().to_bytes_be()))
                 }
@@ -218,7 +218,7 @@ impl Object {
                             .map(|sk| sk.to_pkcs1_der())
                             .map_err(|e| {
                                 error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                                MError::Cryptography(
+                                ModuleError::Cryptography(
                                     "Failed to fetch the PKCS1 DER bytes".to_owned(),
                                 )
                             })?

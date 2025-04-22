@@ -97,7 +97,7 @@ use crate::traits::backend;
 pub mod core;
 mod error;
 
-pub use error::{MError, ModuleResult};
+pub use error::{ModuleError, ModuleResult};
 
 use crate::{core::attribute::AttributeType, objects_store::OBJECTS_STORE};
 
@@ -153,7 +153,7 @@ macro_rules! cryptoki_fn {
 
 macro_rules! cryptoki_fn_not_supported {
     ($name:ident, $($arg:ident: $type:ty),*) => {
-        cryptoki_fn!(fn $name($($arg: $type),*) {Err(MError::FunctionNotSupported)});
+        cryptoki_fn!(fn $name($($arg: $type),*) {Err(ModuleError::FunctionNotSupported)});
     };
 }
 
@@ -161,7 +161,7 @@ macro_rules! cryptoki_fn_not_supported {
 macro_rules! not_null {
     ($ptr:expr, $variable_name:expr) => {
         if $ptr.is_null() {
-            return Err(MError::BadArguments(format!(
+            return Err(ModuleError::BadArguments(format!(
                 "{} is a null pointer",
                 $variable_name
             )));
@@ -172,7 +172,7 @@ macro_rules! not_null {
 macro_rules! initialized {
     () => {
         if INITIALIZED.load(Ordering::SeqCst) == false {
-            return Err(MError::CryptokiNotInitialized);
+            return Err(ModuleError::CryptokiNotInitialized);
         }
     };
 }
@@ -180,7 +180,7 @@ macro_rules! initialized {
 macro_rules! valid_session {
     ($handle:expr) => {
         if !sessions::exists($handle)? {
-            return Err(MError::SessionHandleInvalid($handle));
+            return Err(ModuleError::SessionHandleInvalid($handle));
         }
     };
 }
@@ -188,7 +188,7 @@ macro_rules! valid_session {
 macro_rules! valid_slot {
     ($id:expr) => {
         if $id != SLOT_ID {
-            return Err(MError::SlotIdInvalid($id));
+            return Err(ModuleError::SlotIdInvalid($id));
         }
     };
 }
@@ -272,13 +272,13 @@ cryptoki_fn!(
         if !pInitArgs.is_null() {
             let args = unsafe { *(pInitArgs as CK_C_INITIALIZE_ARGS_PTR) };
             if !args.pReserved.is_null() {
-                return Err(MError::BadArguments(
+                return Err(ModuleError::BadArguments(
                     "C_Initialize: pReserved is null".to_owned(),
                 ));
             }
         }
         if INITIALIZED.swap(true, Ordering::SeqCst) {
-            return Err(MError::CryptokiAlreadyInitialized);
+            return Err(ModuleError::CryptokiAlreadyInitialized);
         }
         Ok(())
     }
@@ -288,7 +288,7 @@ cryptoki_fn!(
     fn C_Finalize(pReserved: CK_VOID_PTR) {
         initialized!();
         if !pReserved.is_null() {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "C_Finalize: pReserved is null".to_owned(),
             ));
         }
@@ -333,7 +333,7 @@ cryptoki_fn!(
         unsafe {
             if !pSlotList.is_null() {
                 if *pulCount < 1 {
-                    return Err(MError::BufferTooSmall);
+                    return Err(ModuleError::BufferTooSmall);
                 }
                 // TODO: this should be an array.
                 *pSlotList = SLOT_ID;
@@ -421,7 +421,7 @@ cryptoki_fn!(
             if !pMechanismList.is_null() {
                 if (usize::try_from(*pulCount)?) < SUPPORTED_SIGNATURE_MECHANISMS.len() {
                     *pulCount = SUPPORTED_SIGNATURE_MECHANISMS.len() as CK_ULONG;
-                    return Err(MError::BufferTooSmall);
+                    return Err(ModuleError::BufferTooSmall);
                 }
                 slice::from_raw_parts_mut(pMechanismList, SUPPORTED_SIGNATURE_MECHANISMS.len())
                     .copy_from_slice(SUPPORTED_SIGNATURE_MECHANISMS);
@@ -442,7 +442,7 @@ cryptoki_fn!(
         valid_slot!(slotID);
         not_null!(pInfo, "C_GetMechanismInfo: pInfo");
         if !SUPPORTED_SIGNATURE_MECHANISMS.contains(&mechType) {
-            return Err(MError::MechanismInvalid(mechType));
+            return Err(ModuleError::MechanismInvalid(mechType));
         }
         let info = CK_MECHANISM_INFO {
             flags: CKF_SIGN,
@@ -464,7 +464,7 @@ cryptoki_fn!(
     ) {
         initialized!();
         valid_slot!(slotID);
-        Err(MError::TokenWriteProtected)
+        Err(ModuleError::TokenWriteProtected)
     }
 );
 
@@ -472,7 +472,7 @@ cryptoki_fn!(
     fn C_InitPIN(hSession: CK_SESSION_HANDLE, pPin: CK_UTF8CHAR_PTR, ulPinLen: CK_ULONG) {
         initialized!();
         valid_session!(hSession);
-        Err(MError::TokenWriteProtected)
+        Err(ModuleError::TokenWriteProtected)
     }
 );
 
@@ -486,7 +486,7 @@ cryptoki_fn!(
     ) {
         initialized!();
         valid_session!(hSession);
-        Err(MError::TokenWriteProtected)
+        Err(ModuleError::TokenWriteProtected)
     }
 );
 
@@ -502,7 +502,7 @@ cryptoki_fn!(
         valid_slot!(slotID);
         not_null!(phSession, "C_OpenSession: phSession");
         if flags & CKF_SERIAL_SESSION == 0 {
-            return Err(MError::SessionParallelNotSupported);
+            return Err(ModuleError::SessionParallelNotSupported);
         }
         unsafe {
             *phSession = sessions::create(flags);
@@ -524,7 +524,7 @@ cryptoki_fn!(
         if sessions::close(hSession)? {
             return Ok(());
         }
-        Err(MError::SessionHandleInvalid(hSession))
+        Err(ModuleError::SessionHandleInvalid(hSession))
     }
 );
 
@@ -651,11 +651,11 @@ cryptoki_fn!(
         sessions::session(hSession, |_session| -> ModuleResult<()> {
             let find_ctx = OBJECTS_STORE.read()?;
             let Some(object) = find_ctx.get_using_handle(hObject) else {
-                return Err(MError::ObjectHandleInvalid(hObject));
+                return Err(ModuleError::ObjectHandleInvalid(hObject));
             };
             let template = if ulCount > 0 {
                 if pTemplate.is_null() {
-                    return Err(MError::BadArguments(
+                    return Err(ModuleError::BadArguments(
                         "C_GetAttributeValue: pTemplate is null".to_owned(),
                     ));
                 }
@@ -671,7 +671,7 @@ cryptoki_fn!(
                         object.remote_id(),
                         attribute.type_
                     );
-                    MError::AttributeTypeInvalid(attribute.type_)
+                    ModuleError::AttributeTypeInvalid(attribute.type_)
                 })?;
                 info!(
                     "C_GetAttributeValue: session: {:?}, object: {:?} [handle: {}], type: {:?}",
@@ -826,7 +826,9 @@ cryptoki_fn!(
                     );
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
-                        mech => return Err(MError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech))),
+                        mech => {
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                        }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
                         remote_object_id: sk.remote_id(),
@@ -835,7 +837,7 @@ cryptoki_fn!(
                     });
                     Ok(())
                 }
-                Some(_) | None => Err(MError::KeyHandleInvalid(hKey)),
+                Some(_) | None => Err(ModuleError::KeyHandleInvalid(hKey)),
             }
         })
     }
@@ -856,7 +858,9 @@ cryptoki_fn!(
              {pEncryptedData:?}, pulEncryptedDataLen: {pulEncryptedDataLen:?}"
         );
         if ulDataLen == 0 {
-            return Err(MError::BadArguments("C_Encrypt: ulDataLen is 0".to_owned()));
+            return Err(ModuleError::BadArguments(
+                "C_Encrypt: ulDataLen is 0".to_owned(),
+            ));
         }
         not_null!(pData, "C_Encrypt: pData");
         not_null!(pulEncryptedDataLen, "C_Encrypt: pulEncryptedDataLen");
@@ -934,7 +938,9 @@ cryptoki_fn!(
                     );
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
-                        mech => return Err(MError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech))),
+                        mech => {
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                        }
                     };
 
                     session.decrypt_ctx = Some(DecryptContext {
@@ -944,7 +950,7 @@ cryptoki_fn!(
                     });
                     Ok(())
                 }
-                Some(_) | None => Err(MError::KeyHandleInvalid(hKey)),
+                Some(_) | None => Err(ModuleError::KeyHandleInvalid(hKey)),
             }
         })
     }
@@ -966,7 +972,7 @@ cryptoki_fn!(
         );
 
         if ulEncryptedDataLen == 0 {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "C_Decrypt: ulEncryptedDataLen is 0".to_owned(),
             ));
         }
@@ -1003,14 +1009,14 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         if ulEncryptedPartLen == 0 {
-            return Err(MError::BadArguments(
+            return Err(ModuleError::BadArguments(
                 "C_DecryptUpdate: ulEncryptedPartLen is 0".to_owned(),
             ));
         }
         not_null!(pEncryptedPart, "C_DecryptUpdate: pEncryptedPart");
         not_null!(pPart, "C_DecryptUpdate: pPart");
         not_null!(pulPartLen, "C_DecryptUpdate: pulPartLen");
-        Err(MError::FunctionNotSupported)
+        Err(ModuleError::FunctionNotSupported)
     }
 );
 
@@ -1024,7 +1030,7 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pLastPart, "C_DecryptFinal: pLastPart");
         not_null!(pulLastPartLen, "C_DecryptFinal: pulLastPartLen");
-        Err(MError::FunctionNotSupported)
+        Err(ModuleError::FunctionNotSupported)
     }
 );
 
@@ -1074,10 +1080,10 @@ cryptoki_fn!(
         not_null!(pMechanism, "C_SignInit: pMechanism");
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let find_ctx = OBJECTS_STORE.read()?;
-            // .map_err(|_| MError::OperationNotInitialized(hSession))?;
+            // .map_err(|_| ModuleError::OperationNotInitialized(hSession))?;
             let object = find_ctx.get_using_handle(hKey);
             let Some(Object::PrivateKey(private_key)) = object.as_deref() else {
-                return Err(MError::KeyHandleInvalid(hKey))
+                return Err(ModuleError::KeyHandleInvalid(hKey))
             };
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
             session.sign_ctx = Some(SignContext {
@@ -1117,7 +1123,7 @@ cryptoki_fn!(
         not_null!(pPart, "C_SignUpdate: pPart");
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let sign_ctx = match session.sign_ctx.as_mut() {
-                None => return Err(MError::OperationNotInitialized(hSession)),
+                None => return Err(ModuleError::OperationNotInitialized(hSession)),
                 Some(sign_ctx) => sign_ctx,
             };
             sign_ctx
@@ -1327,7 +1333,7 @@ cryptoki_fn!(
         initialized!();
         valid_session!(hSession);
         not_null!(pSeed, "C_SeedRandom: pSeed");
-        Err(MError::RandomNoRng)
+        Err(ModuleError::RandomNoRng)
     }
 );
 
@@ -1354,7 +1360,7 @@ cryptoki_fn!(
     fn C_GetFunctionStatus(hSession: CK_SESSION_HANDLE) {
         initialized!();
         valid_session!(hSession);
-        Err(MError::FunctionNotParallel)
+        Err(ModuleError::FunctionNotParallel)
     }
 );
 
@@ -1362,7 +1368,7 @@ cryptoki_fn!(
     fn C_CancelFunction(hSession: CK_SESSION_HANDLE) {
         initialized!();
         valid_session!(hSession);
-        Err(MError::FunctionNotParallel)
+        Err(ModuleError::FunctionNotParallel)
     }
 );
 

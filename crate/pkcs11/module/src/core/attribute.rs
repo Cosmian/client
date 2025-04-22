@@ -34,7 +34,7 @@ use pkcs11_sys::{
 use strum_macros::Display;
 use tracing::trace;
 
-use crate::{MError, ModuleResult, not_null};
+use crate::{ModuleError, ModuleResult, not_null};
 
 #[derive(Debug, Display, PartialEq, Eq, Clone, Copy)]
 pub enum AttributeType {
@@ -82,7 +82,7 @@ pub enum AttributeType {
 }
 
 impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(type_: CK_ATTRIBUTE_TYPE) -> ModuleResult<Self> {
         match type_ {
@@ -126,7 +126,7 @@ impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
             CKA_VERIFY => Ok(Self::Verify),
             CKA_VERIFY_RECOVER => Ok(Self::VerifyRecover),
             CKA_WRAP => Ok(Self::Wrap),
-            _ => Err(MError::AttributeTypeInvalid(type_)),
+            _ => Err(ModuleError::AttributeTypeInvalid(type_)),
         }
     }
 }
@@ -273,7 +273,7 @@ impl Attribute {
 }
 
 impl TryFrom<CK_ATTRIBUTE> for Attribute {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(attribute: CK_ATTRIBUTE) -> ModuleResult<Self> {
         trace!("Parsing attribute: {:?}", attribute);
@@ -370,7 +370,7 @@ macro_rules! get_attribute {
         pub(crate) fn $fn_name(&self) -> ModuleResult<$ret_type> {
             match self.get($attr_type) {
                 Some(Attribute::$enum_variant(val)) => Ok(val.clone()),
-                other => Err(MError::BadArguments(format!(
+                other => Err(ModuleError::BadArguments(format!(
                     "{}: unexpected attribute value: {:?}",
                     stringify!($fn_name),
                     other
@@ -401,12 +401,12 @@ impl Attributes {
         match self.get(AttributeType::CertificateType) {
             Some(Attribute::CertificateType(cert_type)) => match *cert_type {
                 CKC_X_509 => Ok(()),
-                _ => Err(MError::Todo(format!(
+                _ => Err(ModuleError::Todo(format!(
                     "ensure_X509_or_none: support for certificate type: {cert_type} is not \
                      implemented"
                 ))),
             },
-            Some(other_type) => Err(MError::BadArguments(format!(
+            Some(other_type) => Err(ModuleError::BadArguments(format!(
                 "ensure_X509_or_none: unexpected attribute value: {other_type:?}, on class \
                  attribute type"
             ))),
@@ -424,7 +424,7 @@ impl Deref for Attributes {
 }
 
 impl TryFrom<(CK_ATTRIBUTE_PTR, CK_ULONG)> for Attributes {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(
         (attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG),

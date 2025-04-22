@@ -158,14 +158,14 @@ async fn locate_objects(kms_rest_client: &KmsClient, tags: &[String]) -> Pkcs11R
     Ok(uniques_identifiers)
 }
 
-pub(crate) fn kms_create(
+pub(crate) fn kms_import_symmetric_key(
     kms_rest_client: &KmsClient,
     algorithm: KeyAlgorithm,
     key_length: usize,
     sensitive: bool,
     label: Option<&str>,
 ) -> Pkcs11Result<KmsObject> {
-    tokio::runtime::Runtime::new()?.block_on(kms_create_async(
+    tokio::runtime::Runtime::new()?.block_on(kms_import_symmetric_key_async(
         kms_rest_client,
         algorithm,
         key_length,
@@ -178,7 +178,7 @@ pub(crate) fn kms_create(
 /// At first, the key is locally created and then imported to the KMS. There are 2 reasons why:
 /// - 1/ a key with `sensitive` flag cannot be extracted and then cannot be exported afterwards
 /// - 2/ is that the content of the key must be kept in cache to be reused later.
-pub(crate) async fn kms_create_async(
+pub(crate) async fn kms_import_symmetric_key_async(
     kms_rest_client: &KmsClient,
     algorithm: KeyAlgorithm,
     key_length: usize,

@@ -1,4 +1,4 @@
-use std::sync::{PoisonError, RwLockReadGuard};
+use std::sync::{PoisonError, RwLockReadGuard, RwLockWriteGuard};
 
 // Copyright 2024 Cosmian Tech SAS
 // Changes made to the original code are
@@ -36,7 +36,7 @@ pub(crate) mod result;
 pub use result::ModuleResult;
 
 #[derive(Error, Debug)]
-pub enum MError {
+pub enum ModuleError {
     #[error("pkcs11 error: {0}")]
     Default(String),
     // Cryptoki errors.
@@ -97,7 +97,9 @@ pub enum MError {
     #[error(transparent)]
     Pkcs1DerError(#[from] pkcs1::der::Error),
     #[error(transparent)]
-    PoisonError(#[from] PoisonError<RwLockReadGuard<'static, ObjectsStore>>),
+    ReadGuardError(#[from] PoisonError<RwLockReadGuard<'static, ObjectsStore>>),
+    #[error(transparent)]
+    WriteGuardError(#[from] PoisonError<RwLockWriteGuard<'static, ObjectsStore>>),
     #[error("Oid: {0}")]
     Oid(String),
     #[error("{0}")]
@@ -106,48 +108,49 @@ pub enum MError {
     Cryptography(String),
 }
 
-impl From<const_oid::Error> for MError {
+impl From<const_oid::Error> for ModuleError {
     fn from(e: const_oid::Error) -> Self {
         Self::Oid(e.to_string())
     }
 }
 
-impl From<MError> for CK_RV {
-    fn from(e: MError) -> Self {
+impl From<ModuleError> for CK_RV {
+    fn from(e: ModuleError) -> Self {
         match e {
-            MError::BadArguments(_) => CKR_ARGUMENTS_BAD,
-            MError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
-            MError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
-            MError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
-            MError::CryptokiAlreadyInitialized => CKR_CRYPTOKI_ALREADY_INITIALIZED,
-            MError::CryptokiNotInitialized => CKR_CRYPTOKI_NOT_INITIALIZED,
-            MError::FunctionNotParallel => CKR_FUNCTION_NOT_PARALLEL,
-            MError::FunctionNotSupported => CKR_FUNCTION_NOT_SUPPORTED,
-            MError::KeyHandleInvalid(_) => CKR_KEY_HANDLE_INVALID,
-            MError::MechanismInvalid(_) => CKR_MECHANISM_INVALID,
-            MError::NeedToCreateThreads => CKR_NEED_TO_CREATE_THREADS,
-            MError::ObjectHandleInvalid(_) => CKR_OBJECT_HANDLE_INVALID,
-            MError::OperationNotInitialized(_) => CKR_OPERATION_NOT_INITIALIZED,
-            MError::RandomNoRng => CKR_RANDOM_NO_RNG,
-            MError::SessionHandleInvalid(_) => CKR_SESSION_HANDLE_INVALID,
-            MError::SessionParallelNotSupported => CKR_SESSION_PARALLEL_NOT_SUPPORTED,
-            MError::SlotIdInvalid(_) => CKR_SLOT_ID_INVALID,
-            MError::TokenWriteProtected => CKR_TOKEN_WRITE_PROTECTED,
+            ModuleError::BadArguments(_) => CKR_ARGUMENTS_BAD,
+            ModuleError::AttributeTypeInvalid(_) => CKR_ATTRIBUTE_TYPE_INVALID,
+            ModuleError::AttributeValueInvalid(_) => CKR_ATTRIBUTE_VALUE_INVALID,
+            ModuleError::BufferTooSmall => CKR_BUFFER_TOO_SMALL,
+            ModuleError::CryptokiAlreadyInitialized => CKR_CRYPTOKI_ALREADY_INITIALIZED,
+            ModuleError::CryptokiNotInitialized => CKR_CRYPTOKI_NOT_INITIALIZED,
+            ModuleError::FunctionNotParallel => CKR_FUNCTION_NOT_PARALLEL,
+            ModuleError::FunctionNotSupported => CKR_FUNCTION_NOT_SUPPORTED,
+            ModuleError::KeyHandleInvalid(_) => CKR_KEY_HANDLE_INVALID,
+            ModuleError::MechanismInvalid(_) => CKR_MECHANISM_INVALID,
+            ModuleError::NeedToCreateThreads => CKR_NEED_TO_CREATE_THREADS,
+            ModuleError::ObjectHandleInvalid(_) => CKR_OBJECT_HANDLE_INVALID,
+            ModuleError::OperationNotInitialized(_) => CKR_OPERATION_NOT_INITIALIZED,
+            ModuleError::RandomNoRng => CKR_RANDOM_NO_RNG,
+            ModuleError::SessionHandleInvalid(_) => CKR_SESSION_HANDLE_INVALID,
+            ModuleError::SessionParallelNotSupported => CKR_SESSION_PARALLEL_NOT_SUPPORTED,
+            ModuleError::SlotIdInvalid(_) => CKR_SLOT_ID_INVALID,
+            ModuleError::TokenWriteProtected => CKR_TOKEN_WRITE_PROTECTED,
 
-            MError::Backend(_)
-            | MError::AlgorithmNotSupported(_)
-            | MError::Default(_)
-            | MError::Bincode(_)
-            | MError::FromUtf8(_)
-            | MError::FromVecWithNul(_)
-            | MError::NullPtr(_)
-            | MError::Todo(_)
-            | MError::Cryptography(_)
-            | MError::TryFromInt(_)
-            | MError::Pkcs1DerError(_)
-            | MError::Oid(_)
-            | MError::PoisonError(_)
-            | MError::TryFromSlice(_) => CKR_GENERAL_ERROR,
+            ModuleError::Backend(_)
+            | ModuleError::AlgorithmNotSupported(_)
+            | ModuleError::Default(_)
+            | ModuleError::Bincode(_)
+            | ModuleError::FromUtf8(_)
+            | ModuleError::FromVecWithNul(_)
+            | ModuleError::NullPtr(_)
+            | ModuleError::Todo(_)
+            | ModuleError::Cryptography(_)
+            | ModuleError::TryFromInt(_)
+            | ModuleError::Pkcs1DerError(_)
+            | ModuleError::Oid(_)
+            | ModuleError::ReadGuardError(_)
+            | ModuleError::WriteGuardError(_)
+            | ModuleError::TryFromSlice(_) => CKR_GENERAL_ERROR,
         }
     }
 }

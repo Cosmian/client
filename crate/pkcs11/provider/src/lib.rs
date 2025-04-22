@@ -5,6 +5,7 @@
     keyword_idents,
     let_underscore,
     unreachable_pub,
+    unsafe_code,
     unused,
     clippy::all,
     clippy::suspicious,
@@ -70,7 +71,7 @@ mod pkcs11_symmetric_key;
 /// # Panics
 /// When KMS client cannot be instantiated.
 #[unsafe(no_mangle)]
-#[expect(clippy::expect_used)]
+#[expect(clippy::expect_used, unsafe_code)]
 pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PTR_PTR) -> CK_RV {
     let debug_level =
         std::env::var("COSMIAN_PKCS11_LOGGING_LEVEL").unwrap_or_else(|_| "info".to_owned());
