@@ -11,7 +11,6 @@ interface AccessRevokeFormData {
 }
 
 const KMIP_OPERATIONS = [
-    { label: "Create", value: "create" },
     { label: "Get", value: "get" },
     { label: "Encrypt", value: "encrypt" },
     { label: "Decrypt", value: "decrypt" },
