@@ -195,20 +195,23 @@ impl Backend for CliBackend {
 
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>> {
         trace!("find_all_symmetric_keys");
-        let mut symmetric_keys = vec![];
-        let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
-        for id in kms_ids {
+        let kms_ids = locate_kms_objects(&self.kms_rest_client, &["_kk".to_owned()])?;
+        let mut symmetric_keys = Vec::with_capacity(kms_ids.len());
+
+        kms_ids.into_iter().try_for_each(|id| -> ModuleResult<_> {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
             let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
                 ModuleError::Cryptography("find_all_symmetric_keys: missing key size".to_owned()),
             )?)?;
+
             let sk: Arc<dyn SymmetricKey> = Arc::new(Pkcs11SymmetricKey::new(
                 id,
                 key_algorithm_from_attributes(&attributes)?,
                 key_size,
             ));
             symmetric_keys.push(sk);
-        }
+            Ok(())
+        })?;
 
         Ok(symmetric_keys)
     }
