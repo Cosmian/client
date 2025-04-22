@@ -14,15 +14,15 @@ use crate::tests::kms::{
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
-    error::{CosmianError, result::CosmianResult},
+    error::{result::CosmianResult, CosmianError},
     tests::{
-        PROG_NAME,
         kms::{
-            KMS_SUBCOMMAND,
             elliptic_curve::create_key_pair::create_ec_key_pair,
             symmetric::create_key::create_symmetric_key,
             utils::{extract_uids::extract_locate_uids, recover_cmd_logs},
+            KMS_SUBCOMMAND,
         },
+        PROG_NAME,
     },
 };
 
@@ -315,10 +315,13 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
     // generate a new key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        tags: vec!["test_sym".to_string()],
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            tags: vec!["test_sym".to_string()],
+            ..Default::default()
+        },
+    )?;
 
     // Locate with Tags
     let ids = locate(
@@ -453,7 +456,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     // Grant access to the user decryption key
     grant_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;
@@ -472,7 +475,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     //revoke the access
     revoke_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;

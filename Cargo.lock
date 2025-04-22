@@ -1695,7 +1695,7 @@ dependencies = [
  "cosmian_findex_structs",
  "cosmian_kms_client",
  "cosmian_kms_crypto",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "csv",
  "der",
  "hex",
@@ -1851,7 +1851,7 @@ dependencies = [
  "cosmian_findex_structs",
  "cosmian_http_client",
  "cosmian_kms_client",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "reqwest 0.11.27",
  "serde",
  "test_kms_server",
@@ -1864,7 +1864,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.3.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#bdad80bbc61b006f16ce2d50dfdb5bf6d8344347"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#1d6343570e3041cf3322cdad500423a6d6ed408e"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1878,7 +1878,7 @@ dependencies = [
  "cosmian_crypto_core 10.1.0",
  "cosmian_findex 7.0.0",
  "cosmian_findex_structs",
- "cosmian_logger 0.1.0",
+ "cosmian_logger",
  "dotenvy",
  "futures",
  "openssl",
@@ -1898,7 +1898,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.3.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#bdad80bbc61b006f16ce2d50dfdb5bf6d8344347"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#1d6343570e3041cf3322cdad500423a6d6ed408e"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
@@ -1941,12 +1941,12 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "bitflags 2.9.0",
  "chrono",
- "cosmian_logger 0.1.0",
+ "cosmian_logger",
  "hex",
  "leb128",
  "num-bigint-dig",
@@ -1962,8 +1962,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1971,8 +1971,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -2040,8 +2040,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2049,7 +2049,7 @@ dependencies = [
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
- "cosmian_logger 0.1.0",
+ "cosmian_logger",
  "hex",
  "num-bigint-dig",
  "openssl",
@@ -2064,8 +2064,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2078,8 +2078,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2137,8 +2137,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "async-trait",
  "clap",
@@ -2168,15 +2168,6 @@ dependencies = [
 
 [[package]]
 name = "cosmian_logger"
-version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0#66c4e05ebbfa6d205ae16bacf99d197bab3a70a9"
-dependencies = [
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "cosmian_logger"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1653b919f4235dc2f5a5fbdc6a822f309e0a992a828411e6f0ae4bfb19d66f16"
@@ -2192,7 +2183,7 @@ dependencies = [
  "cosmian_cli",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "cosmian_pkcs11_module",
  "etcetera",
  "hex",
@@ -2219,7 +2210,7 @@ version = "0.3.1"
 dependencies = [
  "bincode",
  "const-oid",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "hex",
  "log",
  "once_cell",
@@ -5395,7 +5386,7 @@ dependencies = [
 [[package]]
 name = "pkcs11_sys"
 version = "0.2.17"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 
 [[package]]
 name = "pkcs5"
@@ -5595,8 +5586,8 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -7044,7 +7035,7 @@ dependencies = [
  "actix-server",
  "cosmian_findex_client",
  "cosmian_findex_server",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "criterion",
  "tokio",
  "tracing",
@@ -7060,7 +7051,7 @@ dependencies = [
  "cosmian_cli",
  "cosmian_kms_server",
  "cosmian_kms_server_database",
- "cosmian_logger 0.1.1",
+ "cosmian_logger",
  "criterion",
  "serde_json",
  "tempfile",
@@ -7711,8 +7702,8 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
+version = "4.24.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#465b6526f6256a00b100648f512abc40ddda349b"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",

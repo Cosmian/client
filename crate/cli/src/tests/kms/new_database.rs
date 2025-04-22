@@ -1,13 +1,13 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::{KmsClient, reexport::cosmian_config_utils::ConfigUtils};
+use cosmian_kms_client::{reexport::cosmian_config_utils::ConfigUtils, KmsClient};
 use cosmian_logger::log_init;
 use predicates::prelude::*;
 use tempfile::TempDir;
 use test_kms_server::{
-    AuthenticationOptions, DEFAULT_SQLITE_PATH, MainDBConfig, generate_invalid_conf,
-    start_default_test_kms_server, start_test_server_with_options,
+    generate_invalid_conf, start_default_test_kms_server, start_test_server_with_options,
+    AuthenticationOptions, MainDBConfig, DEFAULT_SQLITE_PATH,
 };
 use tracing::info;
 
@@ -16,13 +16,13 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::result::CosmianResult,
     tests::{
-        PROG_NAME,
         kms::{
-            KMS_SUBCOMMAND,
-            shared::{ExportKeyParams, export_key},
+            shared::{export_key, ExportKeyParams},
             symmetric::create_key::create_symmetric_key,
             utils::recover_cmd_logs,
+            KMS_SUBCOMMAND,
         },
+        PROG_NAME,
     },
 };
 
@@ -174,6 +174,7 @@ async fn test_multiple_databases() -> CosmianResult<()> {
             api_token_id: None,
             api_token: None,
         },
+        None,
         None,
         None,
     )

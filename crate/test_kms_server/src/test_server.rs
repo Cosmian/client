@@ -7,14 +7,14 @@ use std::{
 };
 
 use actix_server::ServerHandle;
-use base64::{Engine, engine::general_purpose::STANDARD as b64};
+use base64::{engine::general_purpose::STANDARD as b64, Engine};
 use cosmian_cli::{
     config::ClientConfig,
     reexport::{
         cosmian_kms_client::{
-            GmailApiConf, KmsClient, KmsClientConfig, KmsClientError, kms_client_bail,
-            kms_client_error,
+            kms_client_bail, kms_client_error,
             reexport::{cosmian_config_utils::ConfigUtils, cosmian_http_client::HttpClientConfig},
+            GmailApiConf, KmsClient, KmsClientConfig, KmsClientError,
         },
         cosmian_kms_crypto::crypto::{
             secret::Secret, symmetric::symmetric_ciphers::AES_256_GCM_KEY_LENGTH,
@@ -31,7 +31,7 @@ use tempfile::TempDir;
 use tokio::sync::OnceCell;
 use tracing::{info, trace};
 
-use crate::test_jwt::{AUTH0_TOKEN, get_auth0_jwt_config};
+use crate::test_jwt::{get_auth0_jwt_config, AUTH0_TOKEN, AUTH0_TOKEN_USER};
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N KMS servers (one per test)
@@ -43,6 +43,7 @@ pub(crate) static ONCE_SERVER_WITH_AUTH: OnceCell<TestsContext> = OnceCell::cons
 pub(crate) static ONCE_SERVER_WITH_NON_REVOCABLE_KEY: OnceCell<TestsContext> =
     OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_HSM: OnceCell<TestsContext> = OnceCell::const_new();
+pub(crate) static ONCE_SERVER_WITH_PRIVILEGED_USERS: OnceCell<TestsContext> = OnceCell::const_new();
 
 fn sqlite_db_config() -> MainDBConfig {
     trace!("TESTS: using sqlite");
@@ -147,6 +148,7 @@ pub async fn start_default_test_kms_server() -> &'static TestsContext {
             },
             None,
             None,
+            None,
         )
     })
     .await
@@ -167,6 +169,7 @@ pub async fn start_default_test_kms_server_with_cert_auth() -> &'static TestsCon
                     api_token_id: None,
                     api_token: None,
                 },
+                None,
                 None,
                 None,
             )
@@ -192,6 +195,7 @@ pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
                     api_token: None,
                 },
                 non_revocable_key_id,
+                None,
                 None,
             )
         })
@@ -221,6 +225,33 @@ pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsC
                     hsm_slot: vec![0],
                     hsm_password: vec!["12345678".to_owned()],
                 }),
+                None,
+            )
+        })
+        .await
+        .unwrap()
+}
+
+/// Privileged users
+pub async fn start_default_test_kms_server_with_privileged_users(
+    privileged_users: Vec<String>,
+) -> &'static TestsContext {
+    trace!("Starting test server with privileged users");
+    ONCE_SERVER_WITH_PRIVILEGED_USERS
+        .get_or_try_init(|| {
+            start_test_server_with_options(
+                get_db_config(),
+                9994,
+                AuthenticationOptions {
+                    use_jwt_token: true,
+                    use_https: false,
+                    use_client_cert: false,
+                    api_token_id: None,
+                    api_token: None,
+                },
+                None,
+                None,
+                Some(privileged_users),
             )
         })
         .await
@@ -284,6 +315,7 @@ pub async fn start_test_server_with_options(
     authentication_options: AuthenticationOptions,
     non_revocable_key_id: Option<Vec<String>>,
     hsm_options: Option<HsmOptions>,
+    privileged_users: Option<Vec<String>>,
 ) -> Result<TestsContext, KmsClientError> {
     log_init(None);
     let server_params = generate_server_params(
@@ -292,6 +324,7 @@ pub async fn start_test_server_with_options(
         &authentication_options,
         non_revocable_key_id,
         hsm_options,
+        privileged_users,
     )?;
 
     // Create a (object owner) conf
@@ -323,8 +356,12 @@ pub async fn start_test_server_with_options(
     }
 
     // generate a user conf
-    let user_client_conf_path =
-        generate_user_conf(port, &owner_client_conf).expect("Can't generate user conf");
+    let user_client_conf_path = generate_user_conf(
+        port,
+        &owner_client_conf,
+        authentication_options.use_jwt_token,
+    )
+    .expect("Can't generate user conf");
 
     Ok(TestsContext {
         owner_client_conf_path,
@@ -435,6 +472,7 @@ fn generate_server_params(
     authentication_options: &AuthenticationOptions,
     non_revocable_key_id: Option<Vec<String>>,
     hsm_options: Option<HsmOptions>,
+    privileged_users: Option<Vec<String>>,
 ) -> Result<ServerParams, KmsClientError> {
     // Configure the server
     let clap_config = ClapConfig {
@@ -464,16 +502,21 @@ fn generate_server_params(
         hsm_password: hsm_options
             .as_ref()
             .map_or_else(Vec::new, |h| h.hsm_password.clone()),
+        privileged_users,
         ..ClapConfig::default()
     };
     ServerParams::try_from(clap_config)
         .map_err(|e| KmsClientError::Default(format!("failed initializing the server config: {e}")))
 }
 
-fn set_access_token(server_params: &ServerParams, api_token: Option<String>) -> Option<String> {
-    if server_params.identity_provider_configurations.is_some() {
-        trace!("Setting access token for JWT: {AUTH0_TOKEN:?}");
-        Some(AUTH0_TOKEN.to_owned())
+fn set_access_token(
+    use_jwt_token: bool,
+    access_token: Option<String>,
+    api_token: Option<String>,
+) -> Option<String> {
+    if use_jwt_token {
+        trace!("Setting access token for JWT: {access_token:?}");
+        access_token
     } else if api_token.is_some() {
         trace!("Setting access token for API: {api_token:?}");
         api_token
@@ -507,6 +550,8 @@ fn generate_owner_conf(
         .ok()
         .and_then(|config| serde_json::from_str(&config).ok());
 
+    let use_jwt_token = server_params.identity_provider_configurations.is_some();
+
     let owner_client_conf = ClientConfig {
         kms_config: KmsClientConfig {
             http_config: HttpClientConfig {
@@ -520,7 +565,11 @@ fn generate_owner_conf(
                     server_params.port
                 ),
                 accept_invalid_certs: true,
-                access_token: set_access_token(server_params, api_token),
+                access_token: set_access_token(
+                    use_jwt_token,
+                    Some(AUTH0_TOKEN.to_owned()),
+                    api_token,
+                ),
                 ssl_client_pkcs12_path: get_owner_certificate(&root_dir, server_params),
                 ssl_client_pkcs12_password: server_params
                     .authority_cert_file
@@ -545,6 +594,7 @@ fn generate_owner_conf(
 fn generate_user_conf(
     port: u16,
     owner_client_conf: &ClientConfig,
+    use_jwt_token: bool,
 ) -> Result<String, KmsClientError> {
     // This create root dir
     let root_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -565,6 +615,8 @@ fn generate_user_conf(
         )
     };
     user_conf.kms_config.http_config.ssl_client_pkcs12_password = Some("password".to_owned());
+    user_conf.kms_config.http_config.access_token =
+        set_access_token(use_jwt_token, Some(AUTH0_TOKEN_USER.to_owned()), None);
 
     // write the user conf
     let user_conf_path = format!("/tmp/user_kms_{port}.toml");
@@ -622,6 +674,7 @@ async fn test_start_server() -> Result<(), KmsClientError> {
             api_token_id: None,
             api_token: None,
         },
+        None,
         None,
         None,
     )
