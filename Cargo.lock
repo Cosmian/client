@@ -112,7 +112,7 @@ checksum = "0346d8c1f762b41b458ed3145eea914966bb9ad20b9be0d6d463b20d45586370"
 dependencies = [
  "actix-utils",
  "actix-web",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "futures-util",
  "log",
  "once_cell",
@@ -131,7 +131,7 @@ dependencies = [
  "actix-web",
  "bitflags 2.9.0",
  "bytes",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "futures-core",
  "http-range",
  "log",
@@ -192,7 +192,7 @@ dependencies = [
  "actix-session",
  "actix-utils",
  "actix-web",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "futures-core",
  "serde",
  "tracing",
@@ -272,7 +272,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "async-trait",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "serde",
  "serde_json",
  "tracing",
@@ -435,7 +435,7 @@ version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "once_cell",
  "version_check",
 ]
@@ -1084,9 +1084,9 @@ dependencies = [
 
 [[package]]
 name = "binstring"
-version = "0.1.2"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed79c2a8151273c70956b5e3cdfdc1ff6c1a8b9779ba59c6807d281b32ee2f86"
+checksum = "9a3a3c2603413428303761fae99d4b6d936404208221a44eba47d7c1e6dd03a3"
 
 [[package]]
 name = "bitflags"
@@ -1305,9 +1305,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.19"
+version = "1.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e3a13707ac958681c13b39b458c073d0d9bc8a22cb1b2f4c8e55eb72c13f362"
+checksum = "04da6a0d40b948dfc4fa8f5bbf402b0fc1a64a28dbf7d12ffd683550f2c1b63a"
 dependencies = [
  "jobserver",
  "libc",
@@ -1602,7 +1602,7 @@ version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9d839f2a20b0aee515dc581a6172f2321f96cab76c1a38a4c584a194955390e"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "once_cell",
  "tiny-keccak",
 ]
@@ -1769,7 +1769,7 @@ dependencies = [
  "digest",
  "ed25519-dalek",
  "elliptic-curve",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "leb128",
  "p192",
  "p224",
@@ -1804,7 +1804,7 @@ dependencies = [
  "curve25519-dalek",
  "ed25519-dalek",
  "gensym",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "leb128",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
@@ -1926,7 +1926,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "58f76ac31d536d790fded13033cd27725ac3cbd382662659671131b13810bdf3"
 dependencies = [
  "actix-web",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "oauth2 4.4.2",
  "reqwest 0.11.27",
  "rustls 0.21.12",
@@ -1941,12 +1941,12 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "bitflags 2.9.0",
  "chrono",
- "cosmian_logger 0.1.1",
+ "cosmian_logger 0.1.0",
  "hex",
  "leb128",
  "num-bigint-dig",
@@ -1962,8 +1962,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1971,8 +1971,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -2027,7 +2027,7 @@ version = "0.3.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_kms_client_utils",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "js-sys",
  "pem",
  "serde",
@@ -2040,8 +2040,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2049,7 +2049,7 @@ dependencies = [
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
- "cosmian_logger 0.1.1",
+ "cosmian_logger 0.1.0",
  "hex",
  "num-bigint-dig",
  "openssl",
@@ -2064,8 +2064,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2078,8 +2078,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2137,8 +2137,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "async-trait",
  "clap",
@@ -2555,9 +2555,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.19"
+version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3da29a38df43d6f156149c9b43ded5e018ddff2a855cf2cfd62e8cd7d079c69f"
+checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -2638,7 +2638,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.7.4",
+ "libloading 0.8.6",
 ]
 
 [[package]]
@@ -2714,7 +2714,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9b3460f44bea8cd47f45a0c70892f1eff856d97cd55358b2f73f663789f6190"
 dependencies = [
  "ct-codecs",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
 ]
 
 [[package]]
@@ -3267,9 +3267,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.15"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
+checksum = "335ff9f135e4384c8150d6f27c6daed433577f86b4750418338c01a1a2528592"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -4792,7 +4792,7 @@ checksum = "c38841cdd844847e3e7c8d29cef9dcfed8877f8f56f9071f77843ecf3baf937f"
 dependencies = [
  "base64 0.13.1",
  "chrono",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "http 0.2.12",
  "rand 0.8.5",
  "reqwest 0.11.27",
@@ -4812,7 +4812,7 @@ checksum = "51e219e79014df21a225b1860a479e2dcd7cbd9130f4defd4bd0e191ea31d67d"
 dependencies = [
  "base64 0.22.1",
  "chrono",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "http 1.3.1",
  "rand 0.8.5",
  "reqwest 0.12.15",
@@ -5395,7 +5395,7 @@ dependencies = [
 [[package]]
 name = "pkcs11_sys"
 version = "0.2.17"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 
 [[package]]
 name = "pkcs5"
@@ -5595,8 +5595,8 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -5628,9 +5628,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.10"
+version = "0.11.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b820744eb4dc9b57a3398183639c511b5a26d2ed702cedd3febaa1393caa22cc"
+checksum = "bcbafbbdbb0f638fe3f35f3c56739f77a8a1d070cb25603226c83339b391472b"
 dependencies = [
  "bytes",
  "getrandom 0.3.2",
@@ -5722,7 +5722,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
 ]
 
 [[package]]
@@ -5992,7 +5992,7 @@ checksum = "a4689e6c2294d81e88dc6261c768b63bc4fcdb852be6d1352498b114f61383b7"
 dependencies = [
  "cc",
  "cfg-if",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
@@ -6923,7 +6923,7 @@ version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "515cce34a781d7250b8a65706e0f2a5b99236ea605cb235d4baed6685820478f"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "hmac-sha256",
  "hmac-sha512",
  "rand 0.8.5",
@@ -7346,9 +7346,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b9590b93e6fcc1739458317cccd391ad3955e2bde8913edf6f95f9e65a8f034"
+checksum = "66a539a9ad6d5d281510d5bd368c973d636c02dbf8a67300bfb6b950696ad7df"
 dependencies = [
  "bytes",
  "futures-core",
@@ -7399,7 +7399,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow 0.7.6",
+ "winnow 0.7.7",
 ]
 
 [[package]]
@@ -7711,8 +7711,8 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
+version = "4.23.0"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#66abefb9c7e5050ea50c2fb66d08860212a088f8"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -7728,7 +7728,7 @@ version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b913a3b5fe84142e269d63cc62b64319ccaf89b748fc31fe025177f767a756c4"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "serde",
 ]
 
@@ -8589,9 +8589,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63d3fcd9bba44b03821e7d699eeee959f3126dcc4aa8e4ae18ec617c2a5cea10"
+checksum = "6cb8234a863ea0e8cd7284fcdd4f145233eb00fee02bbdd9861aec44e6477bc5"
 dependencies = [
  "memchr",
 ]
