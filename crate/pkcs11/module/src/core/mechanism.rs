@@ -32,7 +32,7 @@ use crate::{
     traits::{DigestType, EncryptionAlgorithm, KeyAlgorithm, SignatureAlgorithm},
 };
 
-pub(crate) const AES_IV_SIZE: usize = 16;
+pub const AES_IV_SIZE: usize = 16;
 
 pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
     CKM_RSA_PKCS,

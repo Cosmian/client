@@ -78,15 +78,12 @@ impl Session {
                 "load_find_context: empty attributes".to_owned(),
             ));
         }
-        // Refresh store
-        backend()
-            .find_all_keys()?
-            .into_iter()
-            .map(|o| self.update_find_objects_context(o))
-            .collect::<ModuleResult<Vec<_>>>()?;
+        // Find all keys, all certificates
+        for object in backend().find_all_keys()? {
+            self.update_find_objects_context(object)?;
+        }
 
         let search_class = attributes.get_class();
-
         if let Ok(search_class) = search_class {
             self.load_find_context_by_class(attributes, search_class)
         } else {
@@ -134,67 +131,48 @@ impl Session {
         match search_options {
             SearchOptions::All => {
                 self.clear_find_objects_ctx();
-                match search_class {
+                let res = match search_class {
                     pkcs11_sys::CKO_CERTIFICATE => {
                         attributes.ensure_X509_or_none()?;
-                        let res = backend()
+                        backend()
                             .find_all_certificates()?
                             .into_iter()
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::Certificate(c)))
                             })
-                            .collect::<ModuleResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context_by_class: added {} certificates with handles: {:?}",
-                            res.len(),
-                            res
-                        );
+                            .collect::<ModuleResult<Vec<_>>>()?
                     }
-                    pkcs11_sys::CKO_PUBLIC_KEY => {
-                        let res = backend()
-                            .find_all_public_keys()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::PublicKey(c)))
-                            })
-                            .collect::<ModuleResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context_by_class: added {} public keys with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
-                    pkcs11_sys::CKO_PRIVATE_KEY => {
-                        let res = backend()
-                            .find_all_private_keys()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::PrivateKey(c)))
-                            })
-                            .collect::<ModuleResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context_by_class: added {} private keys with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
-                    pkcs11_sys::CKO_DATA => {
-                        let res = backend()
-                            .find_all_data_objects()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::DataObject(c)))
-                            })
-                            .collect::<ModuleResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context_by_class: added {} data objects with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
+                    pkcs11_sys::CKO_PUBLIC_KEY => backend()
+                        .find_all_public_keys()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::PublicKey(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_PRIVATE_KEY => backend()
+                        .find_all_private_keys()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::PrivateKey(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_SECRET_KEY => backend()
+                        .find_all_symmetric_keys()?
+                        .into_iter()
+                        .map(|c| {
+                            self.update_find_objects_context(Arc::new(Object::SymmetricKey(c)))
+                        })
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_DATA => backend()
+                        .find_all_data_objects()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::DataObject(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
                     o => return Err(ModuleError::Todo(format!("Object not supported: {o}"))),
-                }
+                };
+                debug!(
+                    "load_find_context_by_class: added {} objects with handles: {:?}",
+                    res.len(),
+                    res
+                );
             }
+
             SearchOptions::Id(cka_id) => {
                 if search_class == pkcs11_sys::CKO_CERTIFICATE {
                     let id = String::from_utf8(cka_id)?;
