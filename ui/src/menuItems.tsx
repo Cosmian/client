@@ -8,6 +8,7 @@ export interface MenuItem {
     collapsedlabel?: string;
     children?: MenuItem[];
     component?: React.ComponentType;
+    disabled?: boolean;
 }
 
 export const menuItems: MenuItem[] = [

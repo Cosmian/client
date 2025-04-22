@@ -1,7 +1,7 @@
 import { Button, Card, Checkbox, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
-import { postNoTTLVRequest } from "./utils";
+import { getNoTTLVRequest, postNoTTLVRequest } from "./utils";
 
 interface AccessGrantFormData {
     user_id: string;
@@ -26,8 +26,23 @@ const AccessGrantForm: React.FC = () => {
     const [res, setRes] = useState<undefined | string>(undefined);
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
+    const [isPrivilegedUser, setIsPrivilegedUser] = useState<boolean | undefined>(undefined);
 
     const responseRef = useRef<HTMLDivElement>(null);
+
+    const fetchPrivilegedAccess = async () => {
+        setIsPrivilegedUser(undefined);
+        try {
+            const response = await getNoTTLVRequest("/access/privileged", idToken, serverUrl);
+            setIsPrivilegedUser(response.has_privileged_access);
+        } catch (e) {
+            console.error("Error fetching create permission:", e);
+        }
+    };
+
+    useEffect(() => {
+        fetchPrivilegedAccess();
+    }, []);
 
     useEffect(() => {
         if (res && responseRef.current) {
@@ -113,13 +128,15 @@ const AccessGrantForm: React.FC = () => {
                             }}
                         </Form.Item>
 
-                        <Form.Item
-                            name="grant_create_access_right"
-                            valuePropName="checked"
-                            help="If set, the user will have the right to create Kms objects."
-                        >
-                            <Checkbox>Grant create access right to user</Checkbox>
-                        </Form.Item>
+                        {isPrivilegedUser && (
+                            <Form.Item
+                                name="grant_create_access_right"
+                                valuePropName="checked"
+                                help="If set, the user will have the right to create Kms objects."
+                            >
+                                <Checkbox>Grant create access right to user</Checkbox>
+                            </Form.Item>
+                        )}
                     </Card>
 
                     <Form.Item>

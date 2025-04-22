@@ -1,7 +1,7 @@
 import { Button, Card, Checkbox, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
-import { postNoTTLVRequest } from "./utils";
+import { getNoTTLVRequest, postNoTTLVRequest } from "./utils";
 
 interface AccessRevokeFormData {
     user_id: string;
@@ -27,6 +27,22 @@ const AccessRevokeForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
+    const [isPrivilegedUser, setIsPrivilegedUser] = useState<boolean | undefined>(undefined);
+
+    const fetchPrivilegedAccess = async () => {
+        setIsPrivilegedUser(undefined);
+        try {
+            const response = await getNoTTLVRequest("/access/privileged", idToken, serverUrl);
+            setIsPrivilegedUser(response.has_privileged_access);
+        } catch (e) {
+            console.error("Error fetching create permission:", e);
+        }
+    };
+
+    useEffect(() => {
+        fetchPrivilegedAccess();
+    }, []);
+
     useEffect(() => {
         if (res && responseRef.current) {
             responseRef.current.scrollIntoView({ behavior: "smooth" });
@@ -111,14 +127,15 @@ const AccessRevokeForm: React.FC = () => {
                                 );
                             }}
                         </Form.Item>
-
-                        <Form.Item
-                            name="revoke_create_access_right"
-                            valuePropName="checked"
-                            help="If set, the user will no longer have the right to create Kms objects."
-                        >
-                            <Checkbox>Revoke create access right to user</Checkbox>
-                        </Form.Item>
+                        {isPrivilegedUser && (
+                            <Form.Item
+                                name="revoke_create_access_right"
+                                valuePropName="checked"
+                                help="If set, the user will no longer have the right to create Kms objects."
+                            >
+                                <Checkbox>Revoke create access right to user</Checkbox>
+                            </Form.Item>
+                        )}
                     </Card>
                     <Form.Item>
                         <Button type="primary" danger htmlType="submit" loading={isLoading} className="w-full text-white font-medium">
