@@ -35,8 +35,7 @@ use crate::{
     traits::{Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SymmetricKey},
 };
 
-#[allow(clippy::derived_hash_with_manual_eq)]
-#[derive(Hash, Eq, Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Object {
     Certificate(Arc<dyn Certificate>),
     PrivateKey(Arc<dyn PrivateKey>),
@@ -53,31 +52,6 @@ pub enum ObjectType {
     Profile,
     PublicKey,
     DataObject,
-}
-
-//  #[derive(PartialEq)] fails to compile because it tries to move the Box<_>ed
-//  values.
-//  https://github.com/rust-lang/rust/issues/78808#issuecomment-723304465
-impl PartialEq for Object {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Certificate(l0), Self::Certificate(r0)) => l0 == r0,
-            (Self::PrivateKey(l0), Self::PrivateKey(r0)) => l0 == r0,
-            (Self::Profile(l0), Self::Profile(r0)) => l0 == r0,
-            (Self::PublicKey(l0), Self::PublicKey(r0)) => l0 == r0,
-            (Self::DataObject(l0), Self::DataObject(r0)) => l0 == r0,
-            (Self::SymmetricKey(l0), Self::SymmetricKey(r0)) => l0 == r0,
-            (
-                Self::Certificate(_)
-                | Self::PrivateKey(_)
-                | Self::Profile(_)
-                | Self::PublicKey(_)
-                | Self::DataObject(_)
-                | Self::SymmetricKey(_),
-                _,
-            ) => false,
-        }
-    }
 }
 
 impl Object {

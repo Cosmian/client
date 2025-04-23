@@ -1,3 +1,5 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use cosmian_cli::reexport::cosmian_kms_client::KmsClient;
 use cosmian_kmip::kmip_2_1::{
     kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
@@ -6,13 +8,20 @@ use cosmian_kmip::kmip_2_1::{
     requests::{self, create_symmetric_key_kmip_object, import_object_request},
 };
 use cosmian_logger::log_init;
-use cosmian_pkcs11_module::traits::Backend;
+use cosmian_pkcs11_module::{
+    pkcs11::{C_CloseSession, C_Finalize, C_Initialize, C_OpenSession, SLOT_ID},
+    test_decrypt, test_encrypt, test_generate_key,
+    traits::Backend,
+};
+use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
+use serial_test::serial;
 use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
 use crate::{
+    C_GetFunctionList,
     backend::{COSMIAN_PKCS11_DISK_ENCRYPTION_TAG, CliBackend},
-    error::Pkcs11Error,
+    error::{Pkcs11Error, result::Pkcs11Result},
     kms_object::get_kms_objects_async,
 };
 
@@ -159,5 +168,59 @@ fn test_kms_client_and_backend() -> Result<(), Pkcs11Error> {
     let private_keys = backend.find_all_private_keys()?;
     assert_eq!(private_keys.len(), 1);
 
+    Ok(())
+}
+
+static INITIALIZED: AtomicBool = AtomicBool::new(false);
+
+#[expect(unsafe_code)]
+fn test_init() {
+    // export RUST_LOG="cosmian_pkcs11=trace,cosmian_cli=trace,cosmian_config_utils=trace"
+    log_init(None);
+
+    if !INITIALIZED.load(Ordering::SeqCst) {
+        let func_list = &mut CK_FUNCTION_LIST::default();
+        // Update the function list with this PKCS#11 entry function
+        func_list.C_GetFunctionList = Some(C_GetFunctionList);
+        unsafe {
+            C_GetFunctionList(&mut std::ptr::from_mut(func_list));
+        }
+    }
+}
+
+#[test]
+#[serial]
+#[expect(unsafe_code)]
+fn test_generate_key_encrypt_decrypt() -> Pkcs11Result<()> {
+    tokio::runtime::Runtime::new()?.block_on(async {
+        start_default_test_kms_server().await;
+    });
+
+    test_init();
+    assert_eq!(C_Initialize(std::ptr::null_mut()), CKR_OK);
+    let mut handle = CK_INVALID_HANDLE;
+    assert_eq!(
+        unsafe {
+            C_OpenSession(
+                SLOT_ID,
+                CKF_SERIAL_SESSION,
+                std::ptr::null_mut(),
+                None,
+                &mut handle,
+            )
+        },
+        CKR_OK
+    );
+
+    let key_handle = test_generate_key(handle);
+    // call to encrypt() test function
+    let plaintext = vec![0_u8; 32];
+    let encrypted_data = test_encrypt(handle, key_handle, plaintext.clone());
+    // call to decrypt() test function
+    let decrypted_data = test_decrypt(handle, key_handle, encrypted_data);
+    assert_eq!(decrypted_data, plaintext);
+
+    assert_eq!(C_CloseSession(handle), CKR_OK);
+    assert_eq!(C_Finalize(std::ptr::null_mut()), CKR_OK);
     Ok(())
 }

@@ -48,9 +48,8 @@
 
 use std::{ptr::addr_of_mut, str::FromStr};
 
-use cosmian_pkcs11_module::{
-    CK_FUNCTION_LIST_PTR_PTR, CK_RV, CKR_OK, FUNC_LIST, traits::register_backend,
-};
+use cosmian_pkcs11_module::{pkcs11::FUNC_LIST, traits::register_backend};
+use pkcs11_sys::{CK_FUNCTION_LIST_PTR_PTR, CK_RV, CKR_OK};
 use tracing::Level;
 
 use crate::{kms_object::get_kms_client, logging::initialize_logging};
@@ -76,7 +75,7 @@ pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PT
     let debug_level =
         std::env::var("COSMIAN_PKCS11_LOGGING_LEVEL").unwrap_or_else(|_| "info".to_owned());
     initialize_logging("cosmian-pkcs11", Level::from_str(&debug_level).ok(), None);
-    // Instantiate a backend with a kms client using the `kms.toml` file in the local default directory.
+    // Instantiate a backend with a kms client using the `cosmian.toml` file in the local default directory.
     register_backend(Box::new(backend::CliBackend::instantiate(
         get_kms_client().expect("failed getting the KMS client from the current configuration"),
     )));

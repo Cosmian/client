@@ -117,12 +117,20 @@ vcpkg integrate install
 $env:OPENSSL_DIR = "$env:VCPKG_INSTALLATION_ROOT\packages\openssl_x64-windows-static"
 ```
 
-### Build the CLI
+### Finally build the CLI
 
 Use `cargo`:
 
 ```sh
 cargo build --release
+```
+
+## Building the User Interface (UI)
+
+Use the script `build_ui.sh` to build the UI:
+
+```sh
+bash .github/scripts/build_ui.sh
 ```
 
 ## Running the unit and integration tests

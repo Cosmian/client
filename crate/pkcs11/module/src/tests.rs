@@ -1,12 +1,16 @@
-use std::{ptr, ptr::addr_of_mut, sync::Arc};
+use std::{
+    ptr::{self, addr_of_mut},
+    sync::{Arc, atomic::Ordering},
+};
 
 use cosmian_logger::log_init;
 use pkcs11_sys::{
-    CK_ATTRIBUTE, CK_C_INITIALIZE_ARGS, CK_FALSE, CK_INVALID_HANDLE, CK_KEY_TYPE, CK_MECHANISM,
-    CK_TRUE, CKA_CLASS, CKA_EXTRACTABLE, CKA_KEY_TYPE, CKA_LABEL, CKA_SENSITIVE, CKA_VALUE_LEN,
-    CKK_AES, CKM_AES_CBC_PAD, CKM_AES_KEY_GEN, CKM_DSA, CKO_PRIVATE_KEY, CKR_ARGUMENTS_BAD,
+    CK_ATTRIBUTE, CK_C_INITIALIZE_ARGS, CK_C_INITIALIZE_ARGS_PTR, CK_FALSE, CK_FUNCTION_LIST,
+    CK_FUNCTION_LIST_PTR_PTR, CK_INFO, CK_INVALID_HANDLE, CK_MECHANISM_INFO, CK_MECHANISM_TYPE,
+    CK_OBJECT_HANDLE, CK_SESSION_INFO, CK_SLOT_INFO, CK_TOKEN_INFO, CK_ULONG, CK_VOID_PTR,
+    CKA_CLASS, CKF_SERIAL_SESSION, CKM_DSA, CKO_PRIVATE_KEY, CKR_ARGUMENTS_BAD,
     CKR_BUFFER_TOO_SMALL, CKR_CRYPTOKI_ALREADY_INITIALIZED, CKR_CRYPTOKI_NOT_INITIALIZED,
-    CKR_FUNCTION_NOT_PARALLEL, CKR_MECHANISM_INVALID, CKR_OBJECT_HANDLE_INVALID,
+    CKR_FUNCTION_NOT_PARALLEL, CKR_MECHANISM_INVALID, CKR_OBJECT_HANDLE_INVALID, CKR_OK,
     CKR_SESSION_HANDLE_INVALID, CKR_SESSION_PARALLEL_NOT_SUPPORTED, CKR_SLOT_ID_INVALID,
 };
 use serial_test::serial;
@@ -14,10 +18,19 @@ use zeroize::Zeroizing;
 
 use super::*;
 use crate::{
-    core::mechanism::AES_IV_SIZE,
+    core::{
+        mechanism::{AES_IV_SIZE, SUPPORTED_SIGNATURE_MECHANISMS},
+        object::Object,
+    },
+    pkcs11::{
+        C_CloseSession, C_Finalize, C_FindObjects, C_FindObjectsFinal, C_FindObjectsInit,
+        C_GetAttributeValue, C_GetFunctionStatus, C_GetInfo, C_GetMechanismInfo,
+        C_GetMechanismList, C_GetSessionInfo, C_GetSlotInfo, C_GetSlotList, C_GetTokenInfo,
+        C_Initialize, C_OpenSession, FUNC_LIST, INITIALIZED, SLOT_ID,
+    },
     traits::{
-        Backend, Certificate, DataObject, KeyAlgorithm, PrivateKey, PublicKey, SearchOptions,
-        SymmetricKey, Version, register_backend,
+        Backend, Certificate, DataObject, DecryptContext, EncryptContext, KeyAlgorithm, PrivateKey,
+        PublicKey, SearchOptions, SymmetricKey, Version, register_backend,
     },
 };
 
@@ -668,134 +681,6 @@ fn cancel_function() {
     assert_eq!(C_Finalize(ptr::null_mut()), CKR_OK);
 }
 
-fn generate_key(session_h: CK_ULONG) -> CK_OBJECT_HANDLE {
-    let mut mechanism = CK_MECHANISM {
-        mechanism: CKM_AES_KEY_GEN,
-        pParameter: [0_u8; 16].as_mut_ptr().cast::<std::ffi::c_void>(),
-        ulParameterLen: 16,
-    };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
-
-    let mut sym_key_template = vec![
-        CK_ATTRIBUTE {
-            type_: CKA_KEY_TYPE,
-            pValue: std::ptr::from_ref(&CKK_AES) as CK_VOID_PTR,
-            ulValueLen: size_of::<CK_KEY_TYPE>() as CK_ULONG,
-        },
-        CK_ATTRIBUTE {
-            type_: CKA_LABEL,
-            pValue: "sk_id".as_ptr() as CK_VOID_PTR,
-            ulValueLen: "sk_id".len() as CK_ULONG,
-        },
-        CK_ATTRIBUTE {
-            type_: CKA_SENSITIVE,
-            pValue: std::ptr::from_ref(&CK_TRUE) as CK_VOID_PTR,
-            ulValueLen: size_of::<CK_BBOOL>() as CK_ULONG,
-        },
-        CK_ATTRIBUTE {
-            type_: CKA_EXTRACTABLE,
-            pValue: std::ptr::from_ref(&CK_TRUE) as CK_VOID_PTR,
-            ulValueLen: size_of::<CK_BBOOL>() as CK_ULONG,
-        },
-        CK_ATTRIBUTE {
-            type_: CKA_VALUE_LEN,
-            pValue: std::ptr::from_ref(&(16 as CK_ULONG)) as CK_VOID_PTR,
-            ulValueLen: size_of::<CK_ULONG>() as CK_ULONG,
-        },
-    ];
-
-    let mut key_handle = CK_INVALID_HANDLE;
-    assert_eq!(
-        unsafe {
-            C_GenerateKey(
-                session_h,
-                pMechanism,
-                sym_key_template.as_mut_ptr(),
-                sym_key_template.len() as CK_ULONG,
-                &mut key_handle,
-            )
-        },
-        CKR_OK
-    );
-
-    // Expect key_handle to be a valid handle.
-    assert_ne!(key_handle, CK_INVALID_HANDLE);
-    key_handle
-}
-
-/// Encryption test: call to `C_EncryptInit` and `C_Encrypt`
-fn encrypt(session_h: CK_ULONG, key_handle: CK_OBJECT_HANDLE, plaintext: Vec<u8>) -> Vec<u8> {
-    let mut mechanism = CK_MECHANISM {
-        mechanism: CKM_AES_CBC_PAD,
-        pParameter: [0_u8; AES_IV_SIZE].as_mut_ptr().cast::<std::ffi::c_void>(),
-        ulParameterLen: AES_IV_SIZE as CK_ULONG,
-    };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
-
-    let mut encrypted_data = vec![0_u8; plaintext.len() + AES_IV_SIZE];
-    let mut encrypted_data_len = encrypted_data.len() as CK_ULONG;
-    let mut pt = plaintext;
-
-    assert_eq!(
-        unsafe { C_EncryptInit(session_h, pMechanism, key_handle) },
-        CKR_OK
-    );
-
-    assert_eq!(
-        unsafe {
-            C_Encrypt(
-                session_h,
-                pt.as_mut_ptr(),
-                pt.len() as CK_ULONG,
-                encrypted_data.as_mut_ptr(),
-                &mut encrypted_data_len,
-            )
-        },
-        CKR_OK
-    );
-
-    // Expect encrypted_data_len to be the length of the encrypted data.
-    assert_ne!(encrypted_data_len, 0);
-    encrypted_data
-}
-
-/// Decryption test: call to `C_DecryptInit` and `C_Decrypt`
-#[expect(clippy::cast_possible_truncation)]
-fn decrypt(session_h: CK_ULONG, key_handle: CK_OBJECT_HANDLE, encrypted_data: Vec<u8>) -> Vec<u8> {
-    let mut mechanism = CK_MECHANISM {
-        mechanism: CKM_AES_CBC_PAD,
-        pParameter: [0_u8; AES_IV_SIZE].as_mut_ptr().cast::<std::ffi::c_void>(),
-        ulParameterLen: AES_IV_SIZE as CK_ULONG,
-    };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
-
-    let mut encrypted_data = encrypted_data;
-    let mut decrypted_data = vec![0_u8; encrypted_data.len()];
-    let mut decrypted_data_len = decrypted_data.len() as CK_ULONG;
-
-    assert_eq!(
-        unsafe { C_DecryptInit(session_h, pMechanism, key_handle) },
-        CKR_OK
-    );
-
-    assert_eq!(
-        unsafe {
-            C_Decrypt(
-                session_h,
-                encrypted_data.as_mut_ptr(),
-                encrypted_data.len() as CK_ULONG,
-                decrypted_data.as_mut_ptr(),
-                &mut decrypted_data_len,
-            )
-        },
-        CKR_OK
-    );
-
-    // Expect decrypted_data_len to be the length of the decrypted data.
-    assert_ne!(decrypted_data_len, 0);
-    decrypted_data[..decrypted_data_len as usize].to_vec()
-}
-
 #[test]
 #[serial]
 fn test_generate_key_encrypt_decrypt() -> ModuleResult<()> {
@@ -815,12 +700,12 @@ fn test_generate_key_encrypt_decrypt() -> ModuleResult<()> {
         CKR_OK
     );
 
-    let key_handle = generate_key(handle);
+    let key_handle = test_generate_key(handle);
     // call to encrypt() test function
     let plaintext = vec![0_u8; 32];
-    let encrypted_data = encrypt(handle, key_handle, plaintext.clone());
+    let encrypted_data = test_encrypt(handle, key_handle, plaintext.clone());
     // call to decrypt() test function
-    let decrypted_data = decrypt(handle, key_handle, encrypted_data);
+    let decrypted_data = test_decrypt(handle, key_handle, encrypted_data);
     assert_eq!(decrypted_data, plaintext);
 
     assert_eq!(C_CloseSession(handle), CKR_OK);

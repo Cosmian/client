@@ -30,6 +30,7 @@ p256 = { version = "0.13.2", default-features = false, features = [
   "std",
 ] }
 pkcs1 = "0.7.5"
+pkcs11_sys = { workspace = true }
 serde_json = { workspace = true }
 sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }
@@ -45,4 +46,5 @@ tracing-journald = "0.3.1"
 
 [dev-dependencies]
 cosmian_logger = { workspace = true }
+serial_test = { version = "3.2.0", default-features = true }
 test_kms_server = { path = "../../test_kms_server" }
