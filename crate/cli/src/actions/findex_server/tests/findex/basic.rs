@@ -273,7 +273,6 @@ async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
 // #[ignore = "stack overflow"]
 #[tokio::test]
 async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
-    unsafe { backtrace_on_stack_overflow::enable() };
     test_guarded_write_concurrent(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
         gen_seed(),
