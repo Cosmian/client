@@ -22,26 +22,21 @@ use std::{
     sync::{self, Arc, atomic::Ordering},
 };
 
-use log::trace;
-use once_cell::sync::Lazy;
 use pkcs11_sys::{
-    CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG, CK_ULONG_PTR,
+    CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
+    CK_ULONG_PTR,
 };
-use tracing::{debug, error};
+use tracing::debug;
 
 use crate::{
-    MError,
-    MResult,
-    // object_store::ObjectStore,
-    traits::{PrivateKey, SignatureAlgorithm},
-};
-use crate::{
+    MResultHelper, ModuleError, ModuleResult,
     core::{
         attribute::Attributes,
+        mechanism::Mechanism,
         object::{Object, ObjectType},
     },
     objects_store::OBJECTS_STORE,
-    traits::{EncryptionAlgorithm, SearchOptions, backend},
+    traits::{DecryptContext, EncryptContext, KeyAlgorithm, SearchOptions, SignContext, backend},
 };
 
 // "Valid session handles in Cryptoki always have nonzero values."
@@ -52,141 +47,146 @@ static NEXT_SESSION_HANDLE: sync::atomic::AtomicU32 = sync::atomic::AtomicU32::n
 
 type SessionMap = HashMap<CK_SESSION_HANDLE, Session>;
 
-static SESSIONS: Lazy<sync::Mutex<SessionMap>> = Lazy::new(Default::default);
-
-#[derive(Debug)]
-pub(crate) struct SignContext {
-    pub algorithm: SignatureAlgorithm,
-    pub private_key: Arc<dyn PrivateKey>,
-    /// Payload stored for multipart `C_SignUpdate` operations.
-    pub payload: Option<Vec<u8>>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug)]
-pub(crate) struct DecryptContext {
-    pub remote_object_id: String,
-    pub algorithm: EncryptionAlgorithm,
-    /// Ciphertext stored for multipart `C_DecryptUpdate` operations.
-    pub ciphertext: Option<Vec<u8>>,
-}
+static SESSIONS: std::sync::LazyLock<sync::Mutex<SessionMap>> =
+    std::sync::LazyLock::new(Default::default);
 
 #[derive(Default)]
 pub(crate) struct Session {
     flags: CK_FLAGS,
-    /// The objects found by C_FindObjectsInit
-    /// and that have not yet been read by C_FindObjects
+    /// The objects found by `C_FindObjectsInit`
+    /// and that have not yet been read by `C_FindObjects`
     pub find_objects_ctx: Vec<CK_OBJECT_HANDLE>,
     pub sign_ctx: Option<SignContext>,
     pub decrypt_ctx: Option<DecryptContext>,
+    pub encrypt_ctx: Option<EncryptContext>,
 }
 
 impl Session {
     pub(crate) fn update_find_objects_context(
         &mut self,
         object: Arc<Object>,
-    ) -> MResult<CK_OBJECT_HANDLE> {
-        let mut objects_store = OBJECTS_STORE.write().map_err(|e| {
-            error!("insert_in_find_context: failed to lock objects store: {e}");
-            MError::ArgumentsBad
-        })?;
-        let handle = objects_store.upsert(object)?;
-        trace!("inserted object with id");
+    ) -> ModuleResult<CK_OBJECT_HANDLE> {
+        let mut objects_store = OBJECTS_STORE.write()?;
+        let handle = objects_store.upsert(object);
         self.find_objects_ctx.push(handle);
         Ok(handle)
     }
 
-    pub(crate) fn load_find_context(&mut self, template: Attributes) -> MResult<()> {
-        if template.is_empty() {
-            error!("load_find_context: empty template");
-            return Err(MError::ArgumentsBad);
+    pub(crate) fn load_find_context(&mut self, attributes: &Attributes) -> ModuleResult<()> {
+        if attributes.is_empty() {
+            return Err(ModuleError::BadArguments(
+                "load_find_context: empty attributes".to_owned(),
+            ));
         }
-        let search_class = template.get_class()?;
-        let search_options = SearchOptions::try_from(&template)?;
+        // Find all keys, all certificates
+        for object in backend().find_all_keys()? {
+            self.update_find_objects_context(object)?;
+        }
+
+        let search_class = attributes.get_class();
+        if let Ok(search_class) = search_class {
+            self.load_find_context_by_class(attributes, search_class)
+        } else {
+            let label = attributes.get_label()?;
+            let find_ctx = OBJECTS_STORE.read()?;
+            debug!(
+                "load_find_context: loading for label: {label:?} and attributes: {attributes:?}"
+            );
+            debug!("load_find_context: display current store: {find_ctx}");
+            let (object, handle) = find_ctx.get_using_id(&label).ok_or_else(|| {
+                ModuleError::BadArguments(format!(
+                    "load_find_context: failed to get id from label: {label}"
+                ))
+            })?;
+            debug!(
+                "load_find_context: search by id: {label} -> handle: {} -> object: {}: {}",
+                handle,
+                object.name(),
+                object.remote_id()
+            );
+            self.clear_find_objects_ctx();
+            self.add_to_find_objects_ctx(handle);
+            Ok(())
+        }?;
+
+        Ok(())
+    }
+
+    #[expect(clippy::too_many_lines)]
+    pub(crate) fn load_find_context_by_class(
+        &mut self,
+        attributes: &Attributes,
+        search_class: CK_OBJECT_CLASS,
+    ) -> ModuleResult<()> {
+        if attributes.is_empty() {
+            return Err(ModuleError::BadArguments(
+                "load_find_context_by_class: empty attributes".to_owned(),
+            ));
+        }
+        let search_options = SearchOptions::try_from(attributes)?;
         debug!(
-            "load_find_context: loading for class: {:?} and options: {:?}, from template {:?}",
-            search_class, search_options, template
+            "load_find_context_by_class: loading for class: {search_class:?} and options: \
+             {search_options:?}, attributes: {attributes:?}",
         );
         match search_options {
             SearchOptions::All => {
                 self.clear_find_objects_ctx();
-                match search_class {
+                let res = match search_class {
                     pkcs11_sys::CKO_CERTIFICATE => {
-                        template.ensure_X509_or_none()?;
-                        let res = backend()
+                        attributes.ensure_X509_or_none()?;
+                        backend()
                             .find_all_certificates()?
                             .into_iter()
                             .map(|c| {
                                 self.update_find_objects_context(Arc::new(Object::Certificate(c)))
                             })
-                            .collect::<MResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context: added {} certificates with handles: {:?}",
-                            res.len(),
-                            res
-                        );
+                            .collect::<ModuleResult<Vec<_>>>()?
                     }
-                    pkcs11_sys::CKO_PUBLIC_KEY => {
-                        let res = backend()
-                            .find_all_public_keys()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::PublicKey(c)))
-                            })
-                            .collect::<MResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context: added {} public keys with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
-                    pkcs11_sys::CKO_PRIVATE_KEY => {
-                        let res = backend()
-                            .find_all_private_keys()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::PrivateKey(c)))
-                            })
-                            .collect::<MResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context: added {} private keys with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
-                    pkcs11_sys::CKO_DATA => {
-                        let res = backend()
-                            .find_all_data_objects()?
-                            .into_iter()
-                            .map(|c| {
-                                self.update_find_objects_context(Arc::new(Object::DataObject(c)))
-                            })
-                            .collect::<MResult<Vec<_>>>()?;
-                        debug!(
-                            "load_find_context: added {} data objects with handles: {:?}",
-                            res.len(),
-                            res
-                        );
-                    }
-                    o => return Err(MError::Todo(format!("Object not supported: {o}"))),
-                }
+                    pkcs11_sys::CKO_PUBLIC_KEY => backend()
+                        .find_all_public_keys()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::PublicKey(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_PRIVATE_KEY => backend()
+                        .find_all_private_keys()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::PrivateKey(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_SECRET_KEY => backend()
+                        .find_all_symmetric_keys()?
+                        .into_iter()
+                        .map(|c| {
+                            self.update_find_objects_context(Arc::new(Object::SymmetricKey(c)))
+                        })
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    pkcs11_sys::CKO_DATA => backend()
+                        .find_all_data_objects()?
+                        .into_iter()
+                        .map(|c| self.update_find_objects_context(Arc::new(Object::DataObject(c))))
+                        .collect::<ModuleResult<Vec<_>>>()?,
+                    o => return Err(ModuleError::Todo(format!("Object not supported: {o}"))),
+                };
+                debug!(
+                    "load_find_context_by_class: added {} objects with handles: {:?}",
+                    res.len(),
+                    res
+                );
             }
-            SearchOptions::Id(cka_id) => match search_class {
-                pkcs11_sys::CKO_CERTIFICATE => {
+
+            SearchOptions::Id(cka_id) => {
+                if search_class == pkcs11_sys::CKO_CERTIFICATE {
+                    let id = String::from_utf8(cka_id)?;
                     // Find certificates which have this CKA_ID as private key ID
-                    let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        error!("load_find_context: failed to lock find context: {e}");
-                        MError::ArgumentsBad
-                    })?;
-                    let certificates = find_ctx.get_using_type(ObjectType::Certificate);
+                    let find_ctx = OBJECTS_STORE.read()?;
+                    let certificates = find_ctx.get_using_type(&ObjectType::Certificate);
                     for (object, handle) in certificates {
                         match &*object {
                             Object::Certificate(c) => {
-                                if c.private_key_id() == cka_id {
+                                if c.private_key_id() == id {
                                     debug!(
-                                        "load_find_context: search by id: {} -> handle: {} -> \
-                                         certificate: {}:{}",
-                                        cka_id,
+                                        "load_find_context_by_class: search by id: {} -> handle: \
+                                         {} -> certificate: {}:{}",
+                                        id,
                                         handle,
                                         object.name(),
                                         object.remote_id()
@@ -197,25 +197,26 @@ impl Session {
                             }
                             //TODO may be we should treat Public Keys the same as Certificates
                             o => {
-                                return Err(MError::Todo(format!(
+                                return Err(ModuleError::Todo(format!(
                                     "This should not happen, returning: {:?}",
                                     o.object_type()
                                 )))
                             }
                         }
                     }
-                }
-                _ => {
-                    let find_ctx = OBJECTS_STORE.read().map_err(|e| {
-                        error!("load_find_context: failed to lock find context: {e}");
-                        MError::ArgumentsBad
+                } else {
+                    let id = String::from_utf8(cka_id)?;
+
+                    let find_ctx = OBJECTS_STORE.read()?;
+                    let (object, handle) = find_ctx.get_using_id(&id).ok_or_else(|| {
+                        ModuleError::BadArguments(format!(
+                            "load_find_context_by_class: id {id} not found in store"
+                        ))
                     })?;
-                    let (object, handle) = find_ctx
-                        .get_using_id(&cka_id)
-                        .ok_or_else(|| MError::ArgumentsBad)?;
                     debug!(
-                        "load_find_context: search by id: {} -> handle: {} -> object: {}:{}",
-                        cka_id,
+                        "load_find_context_by_class: search by id: {} -> handle: {} -> object: \
+                         {}:{}",
+                        id,
                         handle,
                         object.name(),
                         object.remote_id()
@@ -223,7 +224,7 @@ impl Session {
                     self.clear_find_objects_ctx();
                     self.add_to_find_objects_ctx(handle);
                 }
-            },
+            }
         }
         Ok(())
     }
@@ -244,19 +245,19 @@ impl Session {
         data: Option<&[u8]>,
         pSignature: CK_BYTE_PTR,
         pulSignatureLen: CK_ULONG_PTR,
-    ) -> MResult<()> {
-        let sign_ctx = match self.sign_ctx.as_mut() {
-            Some(sign_ctx) => sign_ctx,
-            None => return Err(MError::OperationNotInitialized(0)),
+    ) -> ModuleResult<()> {
+        let Some(sign_ctx) = self.sign_ctx.as_mut() else {
+            return Err(ModuleError::OperationNotInitialized(0))
         };
         let data = data
             .or(sign_ctx.payload.as_deref())
-            .ok_or(MError::OperationNotInitialized(0))?;
+            .ok_or(ModuleError::OperationNotInitialized(0))?;
         let signature = match sign_ctx.private_key.sign(&sign_ctx.algorithm, data) {
             Ok(sig) => sig,
             Err(e) => {
-                error!("signature failed: {e:?}");
-                return Err(MError::ArgumentsBad);
+                return Err(ModuleError::BadArguments(format!(
+                    "signature failed: {e:?}"
+                )));
             }
         };
         if !pSignature.is_null() {
@@ -264,14 +265,16 @@ impl Session {
             // called again with an appropriately-sized buffer. Do we really need to
             // sign twice for ECDSA? Consider storing the signature in the ctx for the next
             // call.
-            if (unsafe { *pulSignatureLen } as usize) < signature.len() {
-                return Err(MError::BufferTooSmall);
+            if (unsafe { usize::try_from(*pulSignatureLen)? }) < signature.len() {
+                return Err(ModuleError::BufferTooSmall);
             }
             unsafe { std::slice::from_raw_parts_mut(pSignature, signature.len()) }
                 .copy_from_slice(&signature);
             self.sign_ctx = None;
         }
-        unsafe { *pulSignatureLen = signature.len().try_into().unwrap() };
+        unsafe {
+            *pulSignatureLen = signature.len().try_into()?;
+        }
         Ok(())
     }
 
@@ -280,36 +283,94 @@ impl Session {
         ciphertext: Vec<u8>,
         pData: CK_BYTE_PTR,
         pulDataLen: CK_ULONG_PTR,
-    ) -> MResult<()> {
-        let decrypt_ctx = match self.decrypt_ctx.as_mut() {
-            Some(decrypt_ctx) => decrypt_ctx,
-            None => return Err(MError::OperationNotInitialized(0)),
-        };
-        let cleartext = backend().decrypt(
-            decrypt_ctx.remote_object_id.clone(),
-            decrypt_ctx.algorithm,
-            ciphertext,
-        )?;
-        if !pData.is_null() {
-            if (unsafe { *pulDataLen } as usize) < cleartext.len() {
-                return Err(MError::BufferTooSmall);
+    ) -> ModuleResult<()> {
+        let decrypt_ctx = self
+            .decrypt_ctx
+            .as_ref()
+            .ok_or_else(|| ModuleError::OperationNotInitialized(0))?;
+        let cleartext = backend().decrypt(decrypt_ctx, ciphertext)?;
+        unsafe {
+            if pData.is_null() {
+                *pulDataLen = cleartext.len() as CK_ULONG;
+            } else {
+                if (usize::try_from(*pulDataLen)?) < cleartext.len() {
+                    return Err(ModuleError::BufferTooSmall);
+                }
+                std::slice::from_raw_parts_mut(pData, cleartext.len()).copy_from_slice(&cleartext);
+                *pulDataLen = cleartext.len() as CK_ULONG;
+                self.decrypt_ctx = None;
             }
-            unsafe { std::slice::from_raw_parts_mut(pData, cleartext.len()) }
-                .copy_from_slice(&cleartext);
-            unsafe { *pulDataLen = cleartext.len() as CK_ULONG };
-            self.decrypt_ctx = None;
         }
         Ok(())
+    }
+
+    pub(crate) unsafe fn encrypt(
+        &mut self,
+        cleartext: Vec<u8>,
+        pEncryptedData: CK_BYTE_PTR,
+        pulEncryptedDataLen: CK_ULONG_PTR,
+    ) -> ModuleResult<()> {
+        let encrypt_ctx = self
+            .encrypt_ctx
+            .as_ref()
+            .ok_or_else(|| ModuleError::OperationNotInitialized(0))?;
+        let ciphertext = backend().encrypt(encrypt_ctx, cleartext)?;
+        unsafe {
+            *pulEncryptedDataLen = ciphertext.len() as CK_ULONG;
+            if !pEncryptedData.is_null() {
+                if (usize::try_from(*pulEncryptedDataLen)?) < ciphertext.len() {
+                    return Err(ModuleError::BufferTooSmall);
+                }
+                std::slice::from_raw_parts_mut(pEncryptedData, ciphertext.len())
+                    .copy_from_slice(&ciphertext);
+                self.encrypt_ctx = None;
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) unsafe fn generate_key(
+        mechanism: Mechanism,
+        attributes: &Attributes,
+    ) -> ModuleResult<CK_OBJECT_HANDLE> {
+        if attributes.is_empty() {
+            return Err(ModuleError::BadArguments(
+                "generate_key: empty attributes".to_owned(),
+            ));
+        }
+
+        debug!(
+            "generate_key: generating key with mechanism: {:?} and attributes: {:?}",
+            mechanism, attributes
+        );
+
+        let mut objects_store = OBJECTS_STORE.write()?;
+
+        let key_length = attributes.get_value_len()?;
+        let sensitive = attributes.get_sensitive()?;
+        let label = attributes.get_label()?;
+
+        let object = backend().generate_key(
+            KeyAlgorithm::try_from(mechanism)?,
+            key_length.try_into()?,
+            sensitive,
+            Some(&label),
+        )?;
+        let handle = objects_store.upsert(Arc::new(Object::SymmetricKey(object)));
+
+        debug!("generate_key: generated key with handle: {handle}");
+        Ok(handle)
     }
 }
 
 fn ignore_sessions() -> bool {
     std::env::var("COSMIAN_PKCS11_IGNORE_SESSIONS")
-        .unwrap_or("false".to_string())
+        .unwrap_or("false".to_owned())
         .to_lowercase()
         == "true"
 }
 
+#[expect(clippy::expect_used)]
 pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
     if ignore_sessions() {
         {
@@ -335,48 +396,49 @@ pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
     }
 }
 
-pub(crate) fn exists(handle: CK_SESSION_HANDLE) -> bool {
-    SESSIONS
+pub(crate) fn exists(handle: CK_SESSION_HANDLE) -> ModuleResult<bool> {
+    Ok(SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
-        .contains_key(&handle)
+        .context("failed locking the sessions map")?
+        .contains_key(&handle))
 }
 
-pub(crate) fn flags(handle: CK_SESSION_HANDLE) -> CK_FLAGS {
-    SESSIONS
+pub(crate) fn flags(handle: CK_SESSION_HANDLE) -> ModuleResult<CK_FLAGS> {
+    Ok(SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
+        .context("failed locking the sessions map")?
         .get(&handle)
-        .unwrap()
-        .flags
+        .ok_or_else(|| ModuleError::SessionHandleInvalid(handle))?
+        .flags)
 }
 
-pub(crate) fn session<F>(h: CK_SESSION_HANDLE, callback: F) -> MResult<()>
+pub(crate) fn session<F>(h: CK_SESSION_HANDLE, callback: F) -> ModuleResult<()>
 where
-    F: FnOnce(&mut Session) -> MResult<()>,
+    F: FnOnce(&mut Session) -> ModuleResult<()>,
 {
-    let mut session_map = SESSIONS.lock().expect("failed locking the sessions map");
-    let session = &mut session_map
+    let mut session_map = SESSIONS.lock().context("failed locking the sessions map")?;
+    let session = session_map
         .get_mut(&h)
-        .ok_or(MError::SessionHandleInvalid(h))?;
+        .ok_or(ModuleError::SessionHandleInvalid(h))?;
     debug!("session: {h} found");
     callback(session)
 }
 
-pub(crate) fn close(handle: CK_SESSION_HANDLE) -> bool {
+pub(crate) fn close(handle: CK_SESSION_HANDLE) -> ModuleResult<bool> {
     if !ignore_sessions() {
-        return SESSIONS
+        return Ok(SESSIONS
             .lock()
-            .expect("failed locking the sessions map")
+            .context("failed locking the sessions map")?
             .remove(&handle)
-            .is_some();
+            .is_some());
     }
-    true
+    Ok(true)
 }
 
-pub(crate) fn close_all() {
+pub(crate) fn close_all() -> ModuleResult<()> {
     SESSIONS
         .lock()
-        .expect("failed locking the sessions map")
+        .context("failed locking the sessions map")?
         .clear();
+    Ok(())
 }

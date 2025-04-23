@@ -539,9 +539,11 @@ pub fn build_selected_attribute(
             linked_object_identifier: LinkedObjectIdentifier::TextString(attribute_value),
         }]),
 
-        _ => Err(UtilsError::Default(format!(
-            "Unknown attribute name: {attribute_name}"
-        )))?,
+        _ => {
+            return Err(UtilsError::Default(format!(
+                "Unknown attribute name: {attribute_name}"
+            )))
+        }
     };
     Ok(attribute)
 }

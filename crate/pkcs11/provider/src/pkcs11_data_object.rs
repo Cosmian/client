@@ -17,7 +17,7 @@ impl TryFrom<KmsObject> for Pkcs11DataObject {
     type Error = Pkcs11Error;
 
     fn try_from(kms_object: KmsObject) -> Result<Self, Self::Error> {
-        Ok(Pkcs11DataObject {
+        Ok(Self {
             remote_id: kms_object.remote_id.clone(),
             value: kms_object.object.key_block()?.key_bytes()?,
         })

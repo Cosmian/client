@@ -1,24 +1,21 @@
 use std::{
     collections::HashMap,
-    sync,
-    sync::{Arc, Weak},
+    fmt::Display,
+    sync::{self, Arc, Weak},
 };
 
-use once_cell::sync::Lazy;
 use pkcs11_sys::CK_OBJECT_HANDLE;
 use tracing::debug;
 
-use crate::{
-    MResult,
-    core::object::{Object, ObjectType},
-};
+use crate::core::object::{Object, ObjectType};
 
 /// The objects store is a global store for all the objects that are fetched by the PKCS#11 module.
 /// These objects are visible across all the sessions and are not session-specific.
-pub(crate) static OBJECTS_STORE: Lazy<sync::RwLock<ObjectsStore>> = Lazy::new(Default::default);
+pub(crate) static OBJECTS_STORE: std::sync::LazyLock<sync::RwLock<ObjectsStore>> =
+    std::sync::LazyLock::new(Default::default);
 
-#[derive(Default)]
-pub(crate) struct ObjectsStore {
+#[derive(Default, Debug)]
+pub struct ObjectsStore {
     /// The PKCS#11 objects manipulated by this store; the key is the remote id.
     pub objects: HashMap<String, (Arc<Object>, CK_OBJECT_HANDLE)>,
     pub ids: HashMap<CK_OBJECT_HANDLE, Weak<Object>>,
@@ -26,24 +23,29 @@ pub(crate) struct ObjectsStore {
 
 impl ObjectsStore {
     /// Insert the object
-    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> MResult<CK_OBJECT_HANDLE> {
+    pub(crate) fn upsert(&mut self, object: Arc<Object>) -> CK_OBJECT_HANDLE {
         // check if the object already exists in the store by searching it by ID
         let id = object.remote_id();
         if let Some((object, handle)) = self.objects.get_mut(&id) {
             debug!("STORE: updating object with remote id: {id} and handle: {handle}");
             *object = object.clone();
             self.ids.insert(*handle, Arc::downgrade(object));
-            return Ok(*handle);
+            return *handle;
         }
-        let handle = self.ids.len() as CK_OBJECT_HANDLE;
+        let handle = if self.ids.is_empty() {
+            1 // start from 1, 0 is reserved for invalid handle
+        } else {
+            self.ids.len() as CK_OBJECT_HANDLE
+        };
         debug!("STORE: inserting new object with remote id: {id} and handle: {handle}");
         self.ids.insert(handle, Arc::downgrade(&object));
         self.objects.insert(id, (object, handle));
-        Ok(handle)
+        handle
     }
 
     pub(crate) fn get_using_handle(&self, handle: CK_OBJECT_HANDLE) -> Option<Arc<Object>> {
-        self.ids.get(&handle).and_then(|weak| weak.upgrade())
+        let weak = self.ids.get(&handle)?;
+        weak.upgrade()
     }
 
     pub(crate) fn get_using_id(&self, id: &str) -> Option<(Arc<Object>, CK_OBJECT_HANDLE)> {
@@ -53,18 +55,24 @@ impl ObjectsStore {
     /// Get Using he Object Type
     pub(crate) fn get_using_type(
         &self,
-        object_type: ObjectType,
+        object_type: &ObjectType,
     ) -> Vec<(Arc<Object>, CK_OBJECT_HANDLE)> {
         self.objects
             .iter()
-            .filter(|(_, (object, _))| object.object_type() == object_type)
+            .filter(|(_, (object, _))| &object.object_type() == object_type)
             .map(|(_, (object, handle))| (object.clone(), *handle))
             .collect()
     }
 
     /// The number of objects in the store
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub(crate) fn len(&self) -> usize {
         self.objects.len()
+    }
+}
+
+impl Display for ObjectsStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ObjectsStore {{ objects: {:?} }}", self.objects)
     }
 }

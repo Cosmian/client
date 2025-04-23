@@ -1,12 +1,13 @@
 use std::str::FromStr;
 
 use pkcs1::ObjectIdentifier;
-use pkcs11_sys::{CK_KEY_TYPE, CKK_EC, CKK_RSA};
+use pkcs11_sys::{CK_KEY_TYPE, CKK_AES, CKK_EC, CKK_RSA};
 
-use crate::MResult;
+use crate::ModuleResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyAlgorithm {
+    Aes256,
     Rsa,
     EccP256,
     EccP384,
@@ -18,67 +19,76 @@ pub enum KeyAlgorithm {
 }
 
 impl KeyAlgorithm {
-    pub fn to_ck_key_type(&self) -> CK_KEY_TYPE {
+    #[must_use]
+    pub const fn to_ck_key_type(&self) -> CK_KEY_TYPE {
         match self {
-            KeyAlgorithm::Rsa => CKK_RSA,
-            KeyAlgorithm::EccP256
-            | KeyAlgorithm::EccP384
-            | KeyAlgorithm::EccP521
-            | KeyAlgorithm::Ed448
-            | KeyAlgorithm::Ed25519
-            | KeyAlgorithm::X448
-            | KeyAlgorithm::X25519 => CKK_EC,
+            Self::Aes256 => CKK_AES,
+            Self::Rsa => CKK_RSA,
+            Self::EccP256
+            | Self::EccP384
+            | Self::EccP521
+            | Self::Ed448
+            | Self::Ed25519
+            | Self::X448
+            | Self::X25519 => CKK_EC,
         }
     }
 
-    pub fn is_rsa(&self) -> bool {
-        matches!(self, KeyAlgorithm::Rsa)
+    #[must_use]
+    pub const fn is_rsa(&self) -> bool {
+        matches!(self, Self::Rsa)
     }
 
-    pub fn is_ecc(&self) -> bool {
+    #[must_use]
+    pub const fn is_ecc(&self) -> bool {
         matches!(
             self,
-            KeyAlgorithm::EccP256
-                | KeyAlgorithm::EccP384
-                | KeyAlgorithm::EccP521
-                | KeyAlgorithm::Ed448
-                | KeyAlgorithm::Ed25519
-                | KeyAlgorithm::X448
-                | KeyAlgorithm::X25519
+            Self::EccP256
+                | Self::EccP384
+                | Self::EccP521
+                | Self::Ed448
+                | Self::Ed25519
+                | Self::X448
+                | Self::X25519
         )
     }
 
-    pub fn to_oid_str(&self) -> &'static str {
+    #[must_use]
+    pub const fn to_oid_str(&self) -> &'static str {
         match self {
-            KeyAlgorithm::Rsa => "1.2.840.113549.1.1.1",
-            KeyAlgorithm::EccP256 => "1.2.840.10045.3.1.7",
-            KeyAlgorithm::EccP384 => "1.3.132.0.34",
-            KeyAlgorithm::EccP521 => "1.3.132.0.35",
-            KeyAlgorithm::Ed25519 => "1.3.101.112",
-            KeyAlgorithm::X25519 => "1.3.101.110",
-            KeyAlgorithm::X448 => "1.3.101.111",
-            KeyAlgorithm::Ed448 => "1.3.101.113",
+            Self::Aes256 => "2.16.840.1.101.3.4.1.41",
+            Self::Rsa => "1.2.840.113549.1.1.1",
+            Self::EccP256 => "1.2.840.10045.3.1.7",
+            Self::EccP384 => "1.3.132.0.34",
+            Self::EccP521 => "1.3.132.0.35",
+            Self::Ed25519 => "1.3.101.112",
+            Self::X25519 => "1.3.101.110",
+            Self::X448 => "1.3.101.111",
+            Self::Ed448 => "1.3.101.113",
         }
     }
 
-    pub fn to_oid(&self) -> MResult<ObjectIdentifier> {
-        ObjectIdentifier::from_str(self.to_oid_str()).map_err(Into::into)
+    pub fn to_oid(&self) -> ModuleResult<ObjectIdentifier> {
+        Ok(ObjectIdentifier::from_str(self.to_oid_str())?)
     }
 
+    #[must_use]
     pub fn from_oid_str(oid: &str) -> Option<Self> {
         match oid {
-            "1.2.840.113549.1.1.1" => Some(KeyAlgorithm::Rsa),
-            "1.2.840.10045.3.1.7" => Some(KeyAlgorithm::EccP256),
-            "1.3.132.0.34" => Some(KeyAlgorithm::EccP384),
-            "1.3.132.0.35" => Some(KeyAlgorithm::EccP521),
-            "1.3.101.112" => Some(KeyAlgorithm::Ed25519),
-            "1.3.101.110" => Some(KeyAlgorithm::X25519),
-            "1.3.101.111" => Some(KeyAlgorithm::X448),
-            "1.3.101.113" => Some(KeyAlgorithm::Ed448),
+            "2.16.840.1.101.3.4.1.41" => Some(Self::Aes256),
+            "1.2.840.113549.1.1.1" => Some(Self::Rsa),
+            "1.2.840.10045.3.1.7" => Some(Self::EccP256),
+            "1.3.132.0.34" => Some(Self::EccP384),
+            "1.3.132.0.35" => Some(Self::EccP521),
+            "1.3.101.112" => Some(Self::Ed25519),
+            "1.3.101.110" => Some(Self::X25519),
+            "1.3.101.111" => Some(Self::X448),
+            "1.3.101.113" => Some(Self::Ed448),
             _ => None,
         }
     }
 
+    #[must_use]
     pub fn from_oid(oid: &ObjectIdentifier) -> Option<Self> {
         Self::from_oid_str(&oid.to_string())
     }

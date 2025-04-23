@@ -4,7 +4,7 @@ use super::Pkcs11Error;
 
 pub(crate) type Pkcs11Result<R> = Result<R, Pkcs11Error>;
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub(crate) trait Pkcs11ResultHelper<T> {
     fn context(self, context: &str) -> Pkcs11Result<T>;
     fn with_context<D, O>(self, op: O) -> Pkcs11Result<T>
@@ -32,7 +32,7 @@ where
 
 impl<T> Pkcs11ResultHelper<T> for Option<T> {
     fn context(self, context: &str) -> Pkcs11Result<T> {
-        self.ok_or_else(|| Pkcs11Error::Default(context.to_string()))
+        self.ok_or_else(|| Pkcs11Error::Default(context.to_owned()))
     }
 
     fn with_context<D, O>(self, op: O) -> Pkcs11Result<T>

@@ -1,25 +1,57 @@
 use std::sync::{Arc, RwLock};
 
-use once_cell::sync::Lazy;
 use zeroize::Zeroizing;
 
+use super::{SignatureAlgorithm, SymmetricKey};
 use crate::{
-    MResult,
+    ModuleResult,
+    core::object::Object,
     traits::{
         Certificate, DataObject, EncryptionAlgorithm, KeyAlgorithm, PrivateKey, PublicKey,
         SearchOptions, Version,
     },
 };
 
+#[derive(Debug)]
+pub struct SignContext {
+    pub algorithm: SignatureAlgorithm,
+    pub private_key: Arc<dyn PrivateKey>,
+    /// Payload stored for multipart `C_SignUpdate` operations.
+    pub payload: Option<Vec<u8>>,
+}
+
+#[derive(Debug)]
+pub struct DecryptContext {
+    pub remote_object_id: String,
+    pub algorithm: EncryptionAlgorithm,
+    pub iv: Option<Vec<u8>>,
+}
+
+#[derive(Debug)]
+pub struct EncryptContext {
+    pub remote_object_id: String,
+    pub algorithm: EncryptionAlgorithm,
+    pub iv: Option<Vec<u8>>,
+}
+
 //  The Backend is first staged so it can be stored in a Box<dyn Backend>. This
 //  allows the Backend to be reference with `&'static`.
 static STAGED_BACKEND: RwLock<Option<Box<dyn Backend>>> = RwLock::new(None);
-static BACKEND: Lazy<Box<dyn Backend>> =
-    Lazy::new(|| STAGED_BACKEND.write().unwrap().take().unwrap());
+#[expect(clippy::expect_used)]
+static BACKEND: std::sync::LazyLock<Box<dyn Backend>> = std::sync::LazyLock::new(|| {
+    STAGED_BACKEND
+        .write()
+        .expect("Failed to acquire write lock")
+        .take()
+        .expect("Backend not initialized")
+});
 
 /// Stores a backend to later be returned by all calls `crate::backend()`.
+#[expect(clippy::expect_used, clippy::missing_panics_doc)]
 pub fn register_backend(backend: Box<dyn Backend>) {
-    *STAGED_BACKEND.write().unwrap() = Some(backend);
+    *STAGED_BACKEND
+        .write()
+        .expect("Failed to acquire write lock") = Some(backend);
 }
 
 pub fn backend() -> &'static dyn Backend {
@@ -42,24 +74,31 @@ pub trait Backend: Send + Sync {
     /// The version of this library
     fn library_version(&self) -> Version;
 
-    fn find_certificate(&self, query: SearchOptions) -> MResult<Option<Arc<dyn Certificate>>>;
-    fn find_all_certificates(&self) -> MResult<Vec<Arc<dyn Certificate>>>;
-    fn find_private_key(&self, query: SearchOptions) -> MResult<Arc<dyn PrivateKey>>;
-    fn find_public_key(&self, query: SearchOptions) -> MResult<Arc<dyn PublicKey>>;
-    fn find_all_private_keys(&self) -> MResult<Vec<Arc<dyn PrivateKey>>>;
-    fn find_all_public_keys(&self) -> MResult<Vec<Arc<dyn PublicKey>>>;
-    fn find_data_object(&self, query: SearchOptions) -> MResult<Option<Arc<dyn DataObject>>>;
-    fn find_all_data_objects(&self) -> MResult<Vec<Arc<dyn DataObject>>>;
+    fn find_certificate(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn Certificate>>>;
+    fn find_all_certificates(&self) -> ModuleResult<Vec<Arc<dyn Certificate>>>;
+    fn find_private_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>>;
+    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>>;
+    fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>>;
+    fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>>;
+    fn find_symmetric_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn SymmetricKey>>;
+    fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>>;
+    fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>>;
+    fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>>;
+    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>>;
+
     fn generate_key(
         &self,
         algorithm: KeyAlgorithm,
+        key_length: usize,
+        sensitive: bool,
         label: Option<&str>,
-    ) -> MResult<Arc<dyn PrivateKey>>;
+    ) -> ModuleResult<Arc<dyn SymmetricKey>>;
+
+    fn encrypt(&self, ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>>;
 
     fn decrypt(
         &self,
-        remote_object_id: String,
-        algorithm: EncryptionAlgorithm,
+        ctx: &DecryptContext,
         ciphertext: Vec<u8>,
-    ) -> MResult<Zeroizing<Vec<u8>>>;
+    ) -> ModuleResult<Zeroizing<Vec<u8>>>;
 }

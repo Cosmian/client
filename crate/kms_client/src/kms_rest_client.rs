@@ -564,10 +564,9 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
-    #[allow(clippy::future_not_send)]
     pub async fn delete_no_ttlv<O, R>(&self, endpoint: &str, data: &O) -> Result<R, KmsClientError>
     where
-        O: Serialize,
+        O: Serialize + Sync,
         R: serde::de::DeserializeOwned + Sized + 'static,
     {
         let server_url = format!("{}{endpoint}", self.client.server_url);
@@ -589,14 +588,13 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
-    #[allow(clippy::future_not_send)]
     pub async fn post_no_ttlv<O, R>(
         &self,
         endpoint: &str,
         data: Option<&O>,
     ) -> Result<R, KmsClientError>
     where
-        O: Serialize,
+        O: Serialize + Sync,
         R: serde::de::DeserializeOwned + Sized + Serialize + 'static,
     {
         let server_url = format!("{}{endpoint}", self.client.server_url);
@@ -626,10 +624,10 @@ impl KmsClient {
         Err(KmsClientError::RequestFailed(p))
     }
 
-    #[allow(clippy::print_stdout, clippy::future_not_send)]
+    #[allow(clippy::print_stdout)]
     pub async fn post_ttlv<O, R>(&self, kmip_request: &O) -> Result<R, KmsClientError>
     where
-        O: Serialize,
+        O: Serialize + Sync,
         R: serde::de::DeserializeOwned + Sized + 'static,
     {
         let endpoint = "/kmip/2_1";

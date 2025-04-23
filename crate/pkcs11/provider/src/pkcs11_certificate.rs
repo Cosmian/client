@@ -1,4 +1,4 @@
-use cosmian_kms_client::reexport::cosmian_kmip::kmip_2_1::{
+use cosmian_cli::reexport::cosmian_kms_client::reexport::cosmian_kmip::kmip_2_1::{
     kmip_objects::Object,
     kmip_types::{CertificateType, LinkType},
 };
@@ -18,7 +18,7 @@ pub(crate) struct Pkcs11Certificate {
     /// The certificate
     pub certificate: X509Certificate,
     /// The private key ID
-    /// This is the CKA_ID of the private key associated with the certificate
+    /// This is the `CKA_ID` of the private key associated with the certificate
     pub private_key_id: String,
 }
 
@@ -66,29 +66,32 @@ impl Certificate for Pkcs11Certificate {
         self.remote_id.clone()
     }
 
-    fn to_der(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn to_der(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         self.certificate
             .to_der()
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn public_key(&self) -> cosmian_pkcs11_module::MResult<Box<dyn PublicKey>> {
-        Pkcs11PublicKey::try_from_spki(&self.certificate.tbs_certificate.subject_public_key_info)
-            .map_err(|e| Pkcs11Error::from(e).into())
-            .map(|pk| Box::new(pk) as Box<dyn PublicKey>)
+    fn public_key(&self) -> cosmian_pkcs11_module::ModuleResult<Box<dyn PublicKey>> {
+        let res: Box<dyn PublicKey> = Pkcs11PublicKey::try_from_spki(
+            &self.certificate.tbs_certificate.subject_public_key_info,
+        )
+        .map_err(Pkcs11Error::from)
+        .map(Box::new)?;
+        Ok(res)
     }
 
-    fn issuer(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn issuer(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.issuer)
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn serial_number(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn serial_number(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.serial_number)
             .map_err(|e| Pkcs11Error::from(e).into())
     }
 
-    fn subject(&self) -> cosmian_pkcs11_module::MResult<Vec<u8>> {
+    fn subject(&self) -> cosmian_pkcs11_module::ModuleResult<Vec<u8>> {
         Encode::to_der(&self.certificate.tbs_certificate.subject)
             .map_err(|e| Pkcs11Error::from(e).into())
     }

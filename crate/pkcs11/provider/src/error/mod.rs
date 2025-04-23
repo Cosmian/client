@@ -1,9 +1,7 @@
 use std::{array::TryFromSliceError, str::Utf8Error};
 
-use cosmian_kms_client::{
-    KmsClientError,
-    reexport::cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason},
-};
+use cosmian_cli::reexport::cosmian_kms_client::KmsClientError;
+use cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason};
 use thiserror::Error;
 
 pub(crate) mod result;
@@ -14,30 +12,30 @@ pub enum Pkcs11Error {
     // Conversion errors
     #[error("Conversion error: {0}")]
     Conversion(String),
-
     // PKCS11 Module errors
     #[error("PKCS#11 error: {0}")]
     Pkcs11(String),
-
     // Any errors on KMIP format due to mistake of the user
     #[error("{0}: {1}")]
     KmipError(ErrorReason, String),
-
     // When the KMS client returns an error
     #[error("{0}")]
     KmsClientError(String),
-
     // When a user requests something not supported by the server
     #[error("Not Supported: {0}")]
     NotSupported(String),
-
     // Any errors related to a bad behavior of the server but not related to the user input
     #[error("Server error: {0}")]
     ServerError(String),
-
     // Other errors
     #[error("{0}")]
     Default(String),
+    #[error(transparent)]
+    CosmianError(#[from] cosmian_cli::error::CosmianError),
+    #[error(transparent)]
+    FromHexError(#[from] hex::FromHexError),
+    #[error(transparent)]
+    TryFromInt(#[from] std::num::TryFromIntError),
 }
 
 impl Pkcs11Error {}
@@ -64,19 +62,19 @@ impl From<KmipError> for Pkcs11Error {
             }
             KmipError::DeserializationSize(expected, actual) => Self::KmipError(
                 ErrorReason::Codec_Error,
-                format!("Expected size: {}, Actual size: {}", expected, actual),
+                format!("Expected size: {expected}, Actual size: {actual}"),
             ),
         }
     }
 }
 
-impl From<cosmian_pkcs11_module::MError> for Pkcs11Error {
-    fn from(e: cosmian_pkcs11_module::MError) -> Self {
+impl From<cosmian_pkcs11_module::ModuleError> for Pkcs11Error {
+    fn from(e: cosmian_pkcs11_module::ModuleError) -> Self {
         Self::Pkcs11(e.to_string())
     }
 }
 
-impl From<Pkcs11Error> for cosmian_pkcs11_module::MError {
+impl From<Pkcs11Error> for cosmian_pkcs11_module::ModuleError {
     fn from(e: Pkcs11Error) -> Self {
         Self::Backend(Box::new(e))
     }
