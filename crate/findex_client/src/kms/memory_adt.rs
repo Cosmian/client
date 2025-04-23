@@ -396,7 +396,7 @@ mod tests {
     #[allow(clippy::print_stdout)]
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
-        log_init(Some("info"));
+        log_init(Some("trace"));
         info!("start the test ... trying to start the server");
         println!("start the test ... trying to start the server");
         let ctx = start_default_test_kms_server().await;
@@ -405,7 +405,7 @@ mod tests {
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         info!("the kms layer is created");
         println!("the kms layer is created");
-        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(10)).await;
+        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(20)).await;
         info!("the test is done");
         println!("the test is done");
         Ok(())
