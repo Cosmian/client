@@ -257,7 +257,7 @@ Create a database:
 
 ```sql
 CONNECT SYS AS SYSDBA
-CREATE DATABASE manu
+CREATE DATABASE test_db
      DATAFILE 'test_system' SIZE 10M
      LOGFILE GROUP 1 ('test_log1a', 'test_log1b') SIZE 500K,
      GROUP 2 ('test_log2a', 'test_log2b') SIZE 500K;
@@ -274,7 +274,7 @@ docker exec -it oracle sqlplus C##u1/pwd1@FREE
 ```
 
 ```sql
-connect manu
+connect test_db
 create table infos_employes (prenom varchar2(40),  nom varchar2(40),
   address varchar2(40) encrypt using 'AES256',
   code_postal number(6) encrypt using 'AES256');

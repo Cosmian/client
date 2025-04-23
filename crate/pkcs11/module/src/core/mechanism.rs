@@ -173,8 +173,8 @@ impl TryFrom<Mechanism> for SignatureAlgorithm {
             Mechanism::RsaPkcs => Ok(Self::RsaPkcs1v15Raw),
             Mechanism::RsaPkcsSha1 => Ok(Self::RsaPkcs1v15Sha1),
             Mechanism::RsaPkcsSha256 => Ok(Self::RsaPkcs1v15Sha256),
-            Mechanism::RsaPkcsSha384 => Ok(Self::RsaPkcs1v15Sha512),
-            Mechanism::RsaPkcsSha512 => Ok(Self::RsaPkcs1v15Sha384),
+            Mechanism::RsaPkcsSha384 => Ok(Self::RsaPkcs1v15Sha384),
+            Mechanism::RsaPkcsSha512 => Ok(Self::RsaPkcs1v15Sha512),
             Mechanism::RsaPss {
                 digest_algorithm,
                 mask_generation_function,
