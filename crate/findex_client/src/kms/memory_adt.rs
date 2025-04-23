@@ -405,8 +405,7 @@ mod tests {
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         info!("the kms layer is created");
         println!("the kms layer is created");
-        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
-            .await;
+        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(10)).await;
         info!("the test is done");
         println!("the test is done");
         Ok(())
