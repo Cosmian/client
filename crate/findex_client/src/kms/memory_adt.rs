@@ -396,7 +396,7 @@ mod tests {
     #[allow(clippy::print_stdout)]
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
-        log_init(Some("trace"));
+        log_init(None);
         info!("start the test ... trying to start the server");
         println!("start the test ... trying to start the server");
         let ctx = start_default_test_kms_server().await;
