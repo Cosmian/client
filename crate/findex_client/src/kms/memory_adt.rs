@@ -396,6 +396,7 @@ mod tests {
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
         log_init(Some("trace"));
+        info!("start the test ... trying to start the server");
         let ctx = start_default_test_kms_server().await;
         info!("the kms server is started");
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
