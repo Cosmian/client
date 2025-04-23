@@ -393,7 +393,7 @@ mod tests {
     }
 
     // #[ignore = "stack overflow"]
-
+    #[allow(clippy::print_stdout)]
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
         log_init(Some("info"));
