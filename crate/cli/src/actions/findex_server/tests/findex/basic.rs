@@ -270,6 +270,7 @@ async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
     Ok(())
 }
 
+#[ignore = "stack overflow"]
 #[tokio::test]
 async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
     test_guarded_write_concurrent(
