@@ -2217,7 +2217,7 @@ version = "0.3.0"
 dependencies = [
  "bincode",
  "const-oid",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "hex",
  "log",
  "once_cell",
