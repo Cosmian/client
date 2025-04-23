@@ -133,7 +133,9 @@ fn get_db_config() -> MainDBConfig {
 /// Start a test KMS server in a thread with the default options:
 /// No TLS, no certificate authentication
 pub async fn start_default_test_kms_server() -> &'static TestsContext {
-    trace!("Starting default test server");
+    info!("Starting default test server");
+
+    print!("Starting default test server");
     ONCE.get_or_try_init(|| {
         start_test_server_with_options(
             get_db_config(),
