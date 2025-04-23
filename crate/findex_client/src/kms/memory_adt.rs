@@ -394,7 +394,9 @@ mod tests {
     // #[ignore = "stack overflow"]
     #[tokio::test]
     async fn test_concurrent_read_write() -> ClientResult<()> {
-        log_init(None);
+        log_init(Some("trace"));
+        unsafe { backtrace_on_stack_overflow::enable() };
+
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
         test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
