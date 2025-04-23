@@ -169,6 +169,7 @@ mod tests {
     use cosmian_logger::log_init;
     use test_kms_server::start_default_test_kms_server;
     use tokio::task;
+    use tracing::info;
 
     use super::*;
     use crate::ClientResult;
@@ -180,7 +181,7 @@ mod tests {
     > {
         let memory = InMemory::default();
         let kms_client = KmsClient::new_with_config(kms_config)?;
-
+        info!("KMS client created");
         let k_p = kms_client
             .create(symmetric_key_create_request(
                 None,
@@ -193,7 +194,7 @@ mod tests {
             .await?
             .unique_identifier
             .to_string();
-
+        info!("KMS key created");
         let k_xts = kms_client
             .create(symmetric_key_create_request(
                 None,
@@ -206,7 +207,7 @@ mod tests {
             .await?
             .unique_identifier
             .to_string();
-
+        info!("KMS key created part 2");
         Ok(KmsEncryptionLayer::<WORD_LENGTH, _>::new(
             kms_client, k_p, k_xts, memory,
         ))
@@ -396,9 +397,12 @@ mod tests {
     async fn test_concurrent_read_write() -> ClientResult<()> {
         log_init(Some("trace"));
         let ctx = start_default_test_kms_server().await;
+        info!("the kms server is started");
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
+        info!("the kms layer is created");
         test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
             .await;
+        info!("the test is done");
         Ok(())
     }
 }
