@@ -313,18 +313,23 @@ pub async fn start_test_server_with_options(
         .await
         .expect("server timeout");
 
+    info!("Checking that this line passes");
+
     if db_config.database_type.clone().unwrap() == "sqlite-enc" {
         // Configure a database and create the kms toml file
         let database_secret = kms_rest_client.new_database().await?;
+        info!("Checking that this line passes 2");
 
         // Rewrite the conf with the correct database secret
         owner_client_conf.kms_config.http_config.database_secret = Some(database_secret);
         owner_client_conf.to_toml(&owner_client_conf_path)?;
     }
+    info!("Checking that this line passes 3");
 
     // generate a user conf
     let user_client_conf_path =
         generate_user_conf(port, &owner_client_conf).expect("Can't generate user conf");
+    info!("Checking that this line passes 4");
 
     Ok(TestsContext {
         owner_client_conf_path,
