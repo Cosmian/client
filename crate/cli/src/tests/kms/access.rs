@@ -441,6 +441,7 @@ pub(crate) async fn test_list_access_rights_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
+    log_init(Some("info"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 

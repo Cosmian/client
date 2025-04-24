@@ -140,6 +140,7 @@ impl From<HttpClientError> for KmsClientError {
         Self::HttpClient(e.to_string())
     }
 }
+
 /// Construct a server error from a string.
 #[macro_export]
 macro_rules! kms_client_error {

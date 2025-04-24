@@ -1785,7 +1785,7 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "serde_json",
- "strum 0.25.0",
+ "strum",
  "tempfile",
  "test_findex_server",
  "test_kms_server",
@@ -2026,28 +2026,7 @@ dependencies = [
  "num-bigint-dig",
  "serde",
  "serde_json",
- "strum 0.27.1",
- "thiserror 2.0.12",
- "time",
- "tracing",
- "uuid",
- "zeroize",
-]
-
-[[package]]
-name = "cosmian_kmip"
-version = "4.23.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#337ea221c3aaa22f8b309af8995188957040c9b7"
-dependencies = [
- "bitflags 2.9.0",
- "chrono",
- "cosmian_logger 0.1.0",
- "hex",
- "leb128",
- "num-bigint-dig",
- "serde",
- "serde_json",
- "strum 0.25.0",
+ "strum",
  "thiserror 2.0.12",
  "time",
  "tracing",
@@ -2059,7 +2038,7 @@ dependencies = [
 name = "cosmian_kms_access"
 version = "4.23.0"
 dependencies = [
- "cosmian_kmip 4.23.0",
+ "cosmian_kmip",
  "serde",
 ]
 
@@ -2103,12 +2082,12 @@ dependencies = [
  "base64 0.22.1",
  "clap",
  "cosmian_config_utils",
- "cosmian_kmip 4.23.0 (git+https://www.github.com/Cosmian/kms?branch=develop)",
+ "cosmian_kmip",
  "cosmian_kms_access",
  "pem",
  "serde",
  "serde_json",
- "strum 0.25.0",
+ "strum",
  "thiserror 2.0.12",
  "tracing",
  "zeroize",
@@ -2140,7 +2119,7 @@ dependencies = [
  "base64 0.22.1",
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
- "cosmian_kmip 4.23.0",
+ "cosmian_kmip",
  "cosmian_logger 0.1.1",
  "hex",
  "num-bigint-dig",
@@ -2160,7 +2139,7 @@ name = "cosmian_kms_interfaces"
 version = "4.23.0"
 dependencies = [
  "async-trait",
- "cosmian_kmip 4.23.0",
+ "cosmian_kmip",
  "num-bigint-dig",
  "serde",
  "serde_json",
@@ -2190,7 +2169,7 @@ dependencies = [
  "cloudproof_findex",
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
- "cosmian_kmip 4.23.0",
+ "cosmian_kmip",
  "cosmian_kms_access",
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
@@ -2213,7 +2192,7 @@ dependencies = [
  "rustls 0.23.26",
  "serde",
  "serde_json",
- "strum 0.27.1",
+ "strum",
  "thiserror 2.0.12",
  "time",
  "tokio",
@@ -2236,7 +2215,7 @@ dependencies = [
  "clap",
  "cloudproof_findex",
  "cosmian_crypto_core 10.1.0",
- "cosmian_kmip 4.23.0",
+ "cosmian_kmip",
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
  "hex",
@@ -2284,7 +2263,7 @@ version = "0.3.0"
 dependencies = [
  "cosmian_cli",
  "cosmian_crypto_core 10.1.0",
- "cosmian_kmip 4.23.0 (git+https://www.github.com/Cosmian/kms?branch=develop)",
+ "cosmian_kmip",
  "cosmian_logger 0.1.1",
  "cosmian_pkcs11_module",
  "etcetera",
@@ -7018,33 +6997,11 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "strum"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
-dependencies = [
- "strum_macros 0.25.3",
-]
-
-[[package]]
-name = "strum"
 version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f64def088c51c9510a8579e3c5d67c65349dcf755e5479ad3d010aa6454e2c32"
 dependencies = [
  "strum_macros 0.27.1",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.25.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
-dependencies = [
- "heck 0.4.1",
- "proc-macro2",
- "quote",
- "rustversion",
- "syn 2.0.100",
 ]
 
 [[package]]
