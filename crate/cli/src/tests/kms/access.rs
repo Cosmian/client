@@ -471,7 +471,7 @@ pub(crate) async fn test_list_access_rights_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
-    log_init(Some("info"));
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
@@ -483,13 +483,13 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
         &["get"],
     )?;
 
-    // the owner should have the object in the list
-    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
-    assert!(owner_list.contains(&key_id));
-
     // The user is not the owner and thus should not have the object in the list
     let user_list = list_owned_objects(&ctx.user_client_conf_path)?;
     assert!(!user_list.contains(&key_id));
+
+    // the owner should have the object in the list
+    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
+    assert!(owner_list.contains(&key_id));
 
     // create a key using the user
     let user_key_id = gen_key(&ctx.user_client_conf_path)?;

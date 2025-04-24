@@ -109,40 +109,54 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
+    use tempfile::TempDir;
+
     let ctx = start_default_test_kms_server().await;
 
-    let import_params = ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
-        sub_command: "cc".to_string(),
-        key_file: "../../test_data/ttlv_public_key.json".to_string(),
-        ..Default::default()
-    };
+    // generate a new master key pair
+    let (_master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
+        &ctx.owner_client_conf_path,
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
+        &[],
+        false,
+    )?;
 
-    let uid: String = import_key(import_params)?;
-    assert_eq!(uid.len(), 36);
+    // create a temp dir
+    let tmp_dir = TempDir::new()?;
+    let tmp_path = tmp_dir.path();
+    let public_key_path = format!("{}", tmp_path.join("public_key.json").display());
+
+    export_key(ExportKeyParams {
+        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        sub_command: "cc".to_owned(),
+        key_id: master_public_key_id.clone(),
+        key_file: public_key_path.clone(),
+        ..Default::default()
+    })?;
 
     // reimporting the same key  with the same id should fail
     assert!(
         import_key(ImportKeyParams {
             cli_conf_path: ctx.owner_client_conf_path.clone(),
             sub_command: "cc".to_string(),
-            key_file: "../../test_data/ttlv_public_key.json".to_string(),
-            key_id: Some(uid.clone()),
+            key_file: public_key_path.clone(),
+            key_id: Some(master_public_key_id.clone()),
             ..Default::default()
         })
         .is_err()
     );
 
     //...unless we force it with replace_existing
-    let uid_: String = import_key(ImportKeyParams {
+    let master_public_key_id_: String = import_key(ImportKeyParams {
         cli_conf_path: ctx.owner_client_conf_path.clone(),
         sub_command: "cc".to_string(),
-        key_file: "../../test_data/ttlv_public_key.json".to_string(),
-        key_id: Some(uid.clone()),
+        key_file: public_key_path,
+        key_id: Some(master_public_key_id.clone()),
         replace_existing: true,
         ..Default::default()
     })?;
-    assert_eq!(uid_, uid);
+    assert_eq!(master_public_key_id_, master_public_key_id);
 
     Ok(())
 }

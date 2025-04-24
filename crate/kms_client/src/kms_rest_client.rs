@@ -488,12 +488,6 @@ impl KmsClient {
             .await
     }
 
-    /// This operation requests the server to create a new database.
-    /// The returned secrets could be shared between several users.
-    pub async fn new_database(&self) -> Result<String, KmsClientError> {
-        self.post_no_ttlv("/new_database", None::<&()>).await
-    }
-
     /// This operation requests the server to grant an access on an object to a user
     /// The user could be unknown from the database.
     /// The object uid must be known from the database.

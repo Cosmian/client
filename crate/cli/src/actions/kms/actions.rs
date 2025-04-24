@@ -10,8 +10,8 @@ use crate::{
         access::AccessAction, attributes::AttributesCommands, bench::BenchAction,
         certificates::CertificatesCommands, elliptic_curves::EllipticCurveCommands,
         google::GoogleCommands, hash::HashAction, login::LoginAction, logout::LogoutAction,
-        mac::MacAction, new_database::NewDatabaseAction, rsa::RsaCommands,
-        shared::LocateObjectsAction, symmetric::SymmetricCommands, version::ServerVersionAction,
+        mac::MacAction, rsa::RsaCommands, shared::LocateObjectsAction,
+        symmetric::SymmetricCommands, version::ServerVersionAction,
     },
     error::result::CosmianResult,
 };
@@ -38,7 +38,6 @@ pub enum KmsActions {
     Logout(LogoutAction),
     Hash(HashAction),
     Mac(MacAction),
-    NewDatabase(NewDatabaseAction),
     #[command(subcommand)]
     Rsa(RsaCommands),
     ServerVersion(ServerVersionAction),
@@ -66,7 +65,6 @@ impl KmsActions {
             Self::Logout(action) => action.process(&mut kms_rest_client.config),
             Self::Hash(action) => action.process(kms_rest_client).await,
             Self::Mac(action) => action.process(kms_rest_client).await,
-            Self::NewDatabase(action) => action.process(kms_rest_client).await,
             Self::Rsa(action) => action.process(kms_rest_client).await,
             Self::ServerVersion(action) => action.process(kms_rest_client).await,
             Self::Sym(action) => action.process(kms_rest_client).await,
