@@ -601,11 +601,12 @@ cryptoki_fn!(
             };
             for attribute in template.iter_mut() {
                 let type_: AttributeType = attribute.type_.try_into().map_err(|e| {
+                    let attribute_type = attribute.type_;
                     error!(
                         "C_GetAttributeValue: error: {e}, session: {:?}, object: {:?}, type: {:?}",
                         hSession,
                         object.remote_id(),
-                        attribute.type_
+                        attribute_type
                     );
                     ModuleError::AttributeTypeInvalid(attribute.type_)
                 })?;
