@@ -10,13 +10,17 @@ use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
-use cosmian_kmip::kmip_2_1::{
-    kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
-    kmip_objects::{Object, ObjectType},
-    kmip_operations::{Decrypt, Encrypt, GetAttributes, Import, Locate},
-    kmip_types::{
-        Attributes, BlockCipherMode, CryptographicAlgorithm, CryptographicParameters,
-        CryptographicUsageMask, KeyFormatType, PaddingMethod, RecommendedCurve, UniqueIdentifier,
+use cosmian_kmip::{
+    kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask, PaddingMethod},
+    kmip_2_1::{
+        kmip_attributes::Attributes,
+        kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
+        kmip_objects::{Object, ObjectType, SymmetricKey},
+        kmip_operations::{Decrypt, Encrypt, GetAttributes, Import, Locate},
+        kmip_types::{
+            CryptographicAlgorithm, CryptographicParameters, KeyFormatType, RecommendedCurve,
+            UniqueIdentifier,
+        },
     },
 };
 use cosmian_pkcs11_module::traits::{
@@ -215,25 +219,25 @@ pub(crate) async fn kms_import_symmetric_key_async(
         key_format_type: Some(KeyFormatType::TransparentSymmetricKey),
         object_type: Some(ObjectType::SymmetricKey),
         unique_identifier: label.map(|l| UniqueIdentifier::TextString(l.to_owned())),
-        sensitive,
+        sensitive: if sensitive { Some(true) } else { None },
         ..Attributes::default()
     };
     attributes.set_tags(tags.clone())?;
-    let object = Object::SymmetricKey {
+    let object = Object::SymmetricKey(SymmetricKey {
         key_block: KeyBlock {
             cryptographic_algorithm: Some(cryptographic_algorithm),
             key_format_type: KeyFormatType::TransparentSymmetricKey,
             key_compression_type: None,
-            key_value: KeyValue {
+            key_value: Some(KeyValue::Structure {
                 key_material: KeyMaterial::TransparentSymmetricKey {
                     key: Zeroizing::new(key),
                 },
                 attributes: Some(attributes.clone()),
-            },
+            }),
             cryptographic_length,
             key_wrapping_data: None,
         },
-    };
+    });
     let response = kms_rest_client
         .import(Import {
             unique_identifier: label
@@ -288,7 +292,7 @@ pub(crate) async fn kms_encrypt_async(
         )),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(Zeroizing::new(data)),
-        iv_counter_nonce: encrypt_ctx.iv.clone(),
+        i_v_counter_nonce: encrypt_ctx.iv.clone(),
         ..Default::default()
     };
     let response = kms_rest_client.encrypt(encryption_request).await?;
@@ -334,7 +338,7 @@ pub(crate) async fn kms_decrypt_async(
         )),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(data),
-        iv_counter_nonce: decrypt_ctx.iv.clone(),
+        i_v_counter_nonce: decrypt_ctx.iv.clone(),
         ..Default::default()
     };
     let response = kms_rest_client.decrypt(decryption_request).await?;
@@ -357,7 +361,7 @@ pub(crate) async fn get_kms_object_attributes_async(
     let response = kms_client
         .get_attributes(GetAttributes {
             unique_identifier: Some(UniqueIdentifier::TextString(object_id.to_owned())),
-            attribute_references: None,
+            attribute_reference: None,
         })
         .await?;
     Ok(response.attributes)

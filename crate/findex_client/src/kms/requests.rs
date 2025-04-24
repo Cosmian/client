@@ -1,12 +1,15 @@
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
-use cosmian_kms_client::kmip_2_1::{
-    kmip_messages::{Message, MessageBatchItem, MessageHeader},
-    kmip_operations::{Decrypt, Encrypt, Mac, Operation},
-    kmip_types::{
-        BlockCipherMode, CryptographicAlgorithm, CryptographicParameters, HashingAlgorithm,
-        ProtocolVersion, UniqueIdentifier,
+use cosmian_kms_client::{
+    cosmian_kmip::kmip_0::{
+        kmip_messages::{RequestMessage, RequestMessageBatchItemVersioned, RequestMessageHeader},
+        kmip_types::{BlockCipherMode, HashingAlgorithm, ProtocolVersion},
     },
-    requests::encrypt_request,
+    kmip_2_1::{
+        kmip_messages::RequestMessageBatchItem,
+        kmip_operations::{Decrypt, Encrypt, Mac, Operation},
+        kmip_types::{CryptographicAlgorithm, CryptographicParameters, UniqueIdentifier},
+        requests::encrypt_request,
+    },
 };
 
 use super::KmsEncryptionLayer;
@@ -17,19 +20,21 @@ impl<
     Memory: Send + Sync + Clone + MemoryADT<Address = Address<ADDRESS_LENGTH>, Word = [u8; WORD_LENGTH]>,
 > KmsEncryptionLayer<WORD_LENGTH, Memory>
 {
-    fn build_message_request(items: Vec<MessageBatchItem>) -> ClientResult<Message> {
-        let items_number = u32::try_from(items.len())?;
-        Ok(Message {
-            header: MessageHeader {
+    fn build_message_request(
+        items: Vec<RequestMessageBatchItemVersioned>,
+    ) -> ClientResult<RequestMessage> {
+        let items_number = i32::try_from(items.len())?;
+        Ok(RequestMessage {
+            request_header: RequestMessageHeader {
                 protocol_version: ProtocolVersion {
                     protocol_version_major: 1,
                     protocol_version_minor: 0,
                 },
                 maximum_response_size: Some(9999),
                 batch_count: items_number,
-                ..MessageHeader::default()
+                ..Default::default()
             },
-            items,
+            batch_item: items,
         })
     }
 
@@ -47,11 +52,13 @@ impl<
 
     pub(crate) fn build_mac_message_request<'a>(
         &self,
-        addresses: impl Iterator<Item = &'a Memory::Address>,
-    ) -> ClientResult<Message> {
+        addresses: &[Memory::Address],
+    ) -> ClientResult<RequestMessage> {
         let items = addresses
             .map(|address| {
-                MessageBatchItem::new(Operation::Mac(self.build_mac_request(address.to_vec())))
+                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(Operation::Mac(
+                    self.build_mac_request(address.to_vec()),
+                )))
             })
             .collect();
         Self::build_message_request(items)
@@ -74,13 +81,18 @@ impl<
 
     pub(crate) fn build_encrypt_message_request<'a>(
         &self,
-        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
-    ) -> ClientResult<Message> {
-        let items = bindings
-            .map(|(address, word)| {
+        words: &[[u8; WORD_LENGTH]],
+        tokens: &[Memory::Address],
+    ) -> ClientResult<RequestMessage> {
+        let items = words
+            .iter()
+            .zip(tokens)
+            .map(|(word, address)| {
                 self.build_encrypt_request(word.to_vec(), address.to_vec())
                     .map(|encrypt_request| {
-                        MessageBatchItem::new(Operation::Encrypt(encrypt_request))
+                        RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(
+                            Operation::Encrypt(encrypt_request),
+                        ))
                     })
             })
             .collect::<Result<Vec<_>, _>>()?;
@@ -96,19 +108,22 @@ impl<
                 ..CryptographicParameters::default()
             }),
             data: Some(ciphertext),
-            iv_counter_nonce: Some(nonce),
+            i_v_counter_nonce: Some(nonce),
             ..Default::default()
         }
     }
 
     pub(crate) fn build_decrypt_message_request<'a>(
         &self,
-        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
-    ) -> ClientResult<Message> {
-        let items = bindings
-            .map(|(address, word)| {
-                MessageBatchItem::new(Operation::Decrypt(
-                    self.build_decrypt_request(word.to_vec(), address.to_vec()),
+        words: &[[u8; WORD_LENGTH]],
+        tokens: &[Memory::Address],
+    ) -> ClientResult<RequestMessage> {
+        let items = words
+            .iter()
+            .zip(tokens)
+            .map(|(word, address)| {
+                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(
+                    Operation::Decrypt(self.build_decrypt_request(word.to_vec(), address.to_vec())),
                 ))
             })
             .collect::<Vec<_>>();

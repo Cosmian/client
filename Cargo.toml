@@ -1,13 +1,13 @@
 [workspace]
 members = [
-  "crate/cli",
-  "crate/findex_client",
-  "crate/kms_client",
-  "crate/gui",
-  "crate/pkcs11/module",
-  "crate/pkcs11/provider",
-  "crate/client_utils",
-  "crate/wasm",
+    "crate/cli",
+    #  "crate/findex_client",
+    "crate/kms_client",
+    "crate/gui",
+    "crate/pkcs11/module",
+    "crate/pkcs11/provider",
+    "crate/client_utils",
+    "crate/wasm",
 ]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
@@ -20,8 +20,8 @@ version = "0.3.1"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [
-  "Bruno Grieder <bruno.grieder@cosmian.com>",
-  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
+    "Bruno Grieder <bruno.grieder@cosmian.com>",
+    "Emmanuel Coste <emmanuel.coste@cosmian.com>",
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
@@ -56,7 +56,7 @@ cosmian_cli = { path = "crate/cli" }
 cosmian_kms_client_utils = { path = "crate/client_utils" }
 cosmian_kms_client_wasm = { path = "crate/wasm" }
 cosmian_crypto_core = { version = "10.1.0", default-features = false, features = [
-  "ser",
+    "ser",
 ] }
 cosmian_findex = { git = "https://github.com/Cosmian/findex", default-features = false, rev = "6329b6b2f2b64b033e40b05cd12ca1c9b5ee376f" }
 cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
