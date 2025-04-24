@@ -1,6 +1,6 @@
 use std::{
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, mpsc},
     thread::{self, JoinHandle},
     time::Duration,
@@ -24,7 +24,7 @@ use cosmian_cli::{
 use cosmian_kms_server::{
     config::{
         ClapConfig, HttpConfig, JwtAuthConfig, MainDBConfig, ServerParams, SocketServerConfig,
-        TlsConfig,
+        TlsConfig, TlsParams,
     },
     start_kms_server::start_kms_server,
 };
@@ -475,14 +475,21 @@ fn set_access_token(server_params: &ServerParams, api_token: Option<String>) -> 
 }
 
 fn get_owner_certificate(root_dir: &Path, server_params: &ServerParams) -> Option<String> {
-    server_params.authority_cert_file.is_some().then(|| {
+    if let Some(TlsParams {
+        client_ca_cert_pem, ..
+    }) = server_params.tls_params.as_ref()
+    {
+        if client_ca_cert_pem.is_none() {
+            return None;
+        }
         let path = if cfg!(target_os = "macos") {
             "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.format.p12"
         } else {
             "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12"
         };
-        root_dir.join(path).to_str().unwrap().to_owned()
-    })
+        return Some(root_dir.join(path).to_str().unwrap().to_owned())
+    }
+    None
 }
 
 fn generate_owner_conf(

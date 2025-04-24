@@ -1,7 +1,7 @@
 use std::{array::TryFromSliceError, str::Utf8Error};
 
 use cosmian_cli::reexport::cosmian_kms_client::KmsClientError;
-use cosmian_kmip::{KmipError, kmip_2_1::kmip_operations::ErrorReason};
+use cosmian_kmip::{KmipError, kmip_0::kmip_types::ErrorReason};
 use thiserror::Error;
 
 pub(crate) mod result;
@@ -43,11 +43,11 @@ impl Pkcs11Error {}
 impl From<KmipError> for Pkcs11Error {
     fn from(e: KmipError) -> Self {
         match e {
-            KmipError::InvalidKmipValue(r, s)
-            | KmipError::InvalidKmipObject(r, s)
-            | KmipError::Kmip(r, s) => Self::KmipError(r, s),
+            KmipError::InvalidKmip21Value(r, s)
+            | KmipError::InvalidKmip21Object(r, s)
+            | KmipError::Kmip21(r, s) => Self::KmipError(r, s),
             KmipError::NotSupported(s)
-            | KmipError::KmipNotSupported(_, s)
+            | KmipError::Kmip21NotSupported(_, s)
             | KmipError::Default(s)
             | KmipError::InvalidSize(s)
             | KmipError::InvalidTag(s)
@@ -64,6 +64,9 @@ impl From<KmipError> for Pkcs11Error {
                 ErrorReason::Codec_Error,
                 format!("Expected size: {expected}, Actual size: {actual}"),
             ),
+            KmipError::InvalidKmip14Value(r, s)
+            | KmipError::InvalidKmip14Object(r, s)
+            | KmipError::Kmip14(r, s) => Self::KmipError(r.into(), s),
         }
     }
 }
