@@ -9,8 +9,10 @@ use cosmian_kms_client::{
     ExportObjectParams, KmsClient, export_object,
     kmip_2_1::{
         kmip_attributes::Attributes,
-        kmip_data_structures::KeyWrappingData,
-        kmip_types::{CryptographicAlgorithm, CryptographicParameters, KeyFormatType},
+        kmip_data_structures::{KeyValue, KeyWrappingData},
+        kmip_types::{
+            CryptographicAlgorithm, CryptographicParameters, EncodingOption, KeyFormatType,
+        },
         requests::{create_symmetric_key_kmip_object, decrypt_request},
     },
     read_bytes_from_file,
@@ -367,13 +369,18 @@ impl DecryptAction {
 
         // Create the KMIP object corresponding to the DEK
         let mut dek_object = create_symmetric_key_kmip_object(
-            &encapsulation,
+            &[],
             &Attributes {
                 cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
                 ..Default::default()
             },
         )?;
-        dek_object.key_block_mut()?.key_wrapping_data = Some(KeyWrappingData::default());
+        let dek_key_block = dek_object.key_block_mut()?;
+        dek_key_block.key_value = Some(KeyValue::ByteString(Zeroizing::new(encapsulation)));
+        dek_key_block.key_wrapping_data = Some(KeyWrappingData {
+            encoding_option: Some(EncodingOption::NoEncoding),
+            ..Default::default()
+        });
 
         // recover the DEK
         unwrap_key_block(dek_object.key_block_mut()?, &unwrapping_key)?;

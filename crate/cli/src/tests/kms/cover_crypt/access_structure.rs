@@ -18,6 +18,7 @@ use crate::{
                 master_key_pair::create_cc_master_key_pair,
                 user_decryption_keys::create_user_decryption_key,
             },
+            shared::{ExportKeyParams, export_key},
             utils::recover_cmd_logs,
         },
     },
@@ -26,6 +27,32 @@ use crate::{
 #[tokio::test]
 async fn test_view_access_structure() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+
+    // generate a new master key pair
+    let (_master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
+        &ctx.owner_client_conf_path,
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
+        &[],
+        false,
+    )?;
+
+    // create a temp dir
+    let tmp_dir = TempDir::new()?;
+    let tmp_path = tmp_dir.path();
+    let public_key_path = tmp_path.join("public_key.json");
+
+    export_key(ExportKeyParams {
+        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        sub_command: "cc".to_owned(),
+        key_id: master_public_key_id,
+        key_file: format!("{}", public_key_path.display()),
+        ..Default::default()
+    })?;
+
+    // read the bytes from the exported file
+    // let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
+
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
 
@@ -33,14 +60,14 @@ async fn test_view_access_structure() -> CosmianResult<()> {
         "access-structure",
         "view",
         "-f",
-        "../../test_data/ttlv_public_key.json",
+        &format!("{}", public_key_path.display()),
     ]);
     recover_cmd_logs(&mut cmd);
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("Security Level"))
         .stdout(predicate::str::contains("Top Secret"))
-        .stdout(predicate::str::contains("R&D"));
+        .stdout(predicate::str::contains("RnD"));
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
@@ -49,7 +76,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
         "access-structure",
         "view",
         "-f",
-        "../../test_data/ttlv_public_key.json",
+        &format!("{}", public_key_path.display()),
     ]);
     recover_cmd_logs(&mut cmd);
     cmd.assert()

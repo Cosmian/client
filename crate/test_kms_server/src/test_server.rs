@@ -296,7 +296,7 @@ pub async fn start_test_server_with_options(
     )?;
 
     // Create a (object owner) conf
-    let (owner_client_conf_path, mut owner_client_conf) =
+    let (owner_client_conf_path, owner_client_conf) =
         generate_owner_conf(&server_params, authentication_options.api_token.clone())?;
     let kms_rest_client = KmsClient::new_with_config(owner_client_conf.kms_config.clone())?;
 
@@ -313,15 +313,6 @@ pub async fn start_test_server_with_options(
     wait_for_server_to_start(&kms_rest_client)
         .await
         .expect("server timeout");
-
-    if db_config.database_type.clone().unwrap() == "sqlite-enc" {
-        // Configure a database and create the kms toml file
-        let database_secret = kms_rest_client.new_database().await?;
-
-        // Rewrite the conf with the correct database secret
-        owner_client_conf.kms_config.http_config.database_secret = Some(database_secret);
-        owner_client_conf.to_toml(&owner_client_conf_path)?;
-    }
 
     // generate a user conf
     let user_client_conf_path =
@@ -511,7 +502,7 @@ fn generate_owner_conf(
                             .ok_or_else(|| {
                                 KmsClientError::Default("Can't convert path to string".to_owned())
                             })?
-                            .to_string(),
+                            .to_owned(),
                     )
                 } else {
                     None
@@ -546,8 +537,7 @@ fn generate_user_conf(
 
     let mut user_conf = owner_client_conf.clone();
     user_conf.kms_config.http_config.ssl_client_pkcs12_path = {
-        let p = root_dir
-            .join("../../test_data/certificates/client_server/user/user.client.acme.com.p12");
+        let p = root_dir.join("../../test_data/client_server/user/user.client.acme.com.p12");
         Some(
             p.to_str()
                 .ok_or_else(|| KmsClientError::Default("Can't convert path to string".to_owned()))?
