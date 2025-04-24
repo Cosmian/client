@@ -51,11 +51,15 @@ fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
 pub async fn start_default_test_findex_server() -> &'static TestsContext {
     trace!("Starting default test server");
     ONCE.get_or_try_init(|| {
-        start_test_server_with_options(redis_db_config("REDIS_URL"), 6668, AuthenticationOptions {
-            use_jwt_token: false,
-            use_https: false,
-            use_client_cert: false,
-        })
+        start_test_server_with_options(
+            redis_db_config("REDIS_URL"),
+            6668,
+            AuthenticationOptions {
+                use_jwt_token: false,
+                use_https: false,
+                use_client_cert: false,
+            },
+        )
     })
     .await
     .unwrap()
@@ -248,11 +252,7 @@ fn set_access_token(server_params: &ServerParams) -> Option<String> {
 }
 fn get_owner_certificate(root_dir: &Path, server_params: &ServerParams) -> Option<String> {
     server_params.authority_cert_file.is_some().then(|| {
-        let path = if cfg!(target_os = "macos") {
-            "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.format.p12"
-        } else {
-            "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12"
-        };
+        let path = "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12";
         root_dir.join(path).to_str().unwrap().to_owned()
     })
 }
@@ -296,13 +296,8 @@ fn generate_user_conf(
 
     let mut user_conf = owner_client_conf.clone();
     user_conf.http_config.ssl_client_pkcs12_path = {
-        #[cfg(not(target_os = "macos"))]
         let p = root_dir
             .join("../../test_data/certificates/client_server/user/user.client.acme.com.p12");
-        #[cfg(target_os = "macos")]
-        let p = root_dir.join(
-            "../../test_data/certificates/client_server/user/user.client.acme.com.old.format.p12",
-        );
         Some(
             p.to_str()
                 .ok_or_else(|| ClientError::Default("Can't convert path to string".to_owned()))?

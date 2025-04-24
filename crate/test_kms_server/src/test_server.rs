@@ -1,13 +1,12 @@
 use std::{
     env,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::{Arc, mpsc},
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use actix_server::ServerHandle;
-use base64::{Engine as _, engine::general_purpose::STANDARD as b64};
 use cosmian_cli::{
     config::ClientConfig,
     reexport::{
@@ -24,7 +23,7 @@ use cosmian_cli::{
 use cosmian_kms_server::{
     config::{
         ClapConfig, HttpConfig, JwtAuthConfig, MainDBConfig, ServerParams, SocketServerConfig,
-        TlsConfig, TlsParams,
+        TlsConfig,
     },
     start_kms_server::start_kms_server,
 };
@@ -515,24 +514,6 @@ fn set_access_token(
     } else {
         None
     }
-}
-
-fn get_owner_certificate(root_dir: &Path, server_params: &ServerParams) -> Option<String> {
-    if let Some(TlsParams {
-        client_ca_cert_pem, ..
-    }) = server_params.tls_params.as_ref()
-    {
-        if client_ca_cert_pem.is_none() {
-            return None;
-        }
-        let path = if cfg!(target_os = "macos") {
-            "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.format.p12"
-        } else {
-            "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12"
-        };
-        return Some(root_dir.join(path).to_str().unwrap().to_owned())
-    }
-    None
 }
 
 fn generate_owner_conf(
