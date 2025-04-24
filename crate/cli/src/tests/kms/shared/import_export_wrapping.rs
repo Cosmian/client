@@ -344,9 +344,19 @@ fn test_import_export_wrap_private_key(
             unwrap: true,
             ..Default::default()
         })?;
-        let exported_unwrapped_key = read_object_from_json_ttlv_file(&exported_unwrapped_key_file)?;
-        assert!(
-            exported_unwrapped_key.key_block()?.key_value == private_key.key_block()?.key_value
+        let mut exported_unwrapped_key =
+            read_object_from_json_ttlv_file(&exported_unwrapped_key_file)?;
+        // keys should be identical save for the UniqueIdentifier attribute
+        let exp_attrs = exported_unwrapped_key.key_block_mut()?.attributes_mut()?;
+        exp_attrs.unique_identifier = private_key
+            .key_block()?
+            .attributes()?
+            .unique_identifier
+            .clone();
+
+        assert_eq!(
+            exported_unwrapped_key.key_block()?.key_value,
+            private_key.key_block()?.key_value
         );
         assert!(exported_unwrapped_key.key_wrapping_data().is_none());
     }

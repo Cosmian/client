@@ -19,7 +19,7 @@ use cosmian_kms_client_utils::reexport::{
 };
 use reqwest::{Response, StatusCode};
 use serde::Serialize;
-use tracing::trace;
+use tracing::{info, trace};
 
 use crate::{
     KmsClientConfig,
@@ -551,6 +551,7 @@ impl KmsClient {
         O: Serialize + Sync,
     {
         let server_url = format!("{}{endpoint}", self.client.server_url);
+        info!("GET {server_url}");
         let response = match data {
             Some(d) => self.client.client.get(server_url).query(d).send().await?,
             None => self.client.client.get(server_url).send().await?,
