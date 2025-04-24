@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2025-04-24
+
+### 🚀 Features
+
+- Add Oracle Key Vault integration ([#24](https://github.com/Cosmian/client/pull/24))
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix missing attached assets on GH release
+- Use cosmian published crates
+
 ## [0.3.0] - 2025-04-10
 
 ### 🚀 Features
