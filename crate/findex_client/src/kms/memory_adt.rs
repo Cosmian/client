@@ -151,14 +151,14 @@ impl<
 #[cfg(test)]
 #[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
 mod tests {
-    use std::{env, fmt::Debug, sync::Arc};
+    use std::{fmt::Debug, sync::Arc};
 
     use cosmian_crypto_core::{
         CsRng, Sampling,
         reexport::rand_core::{RngCore, SeedableRng},
     };
     use cosmian_findex::{
-        RedisMemory,
+        InMemory,
         test_utils::{gen_seed, test_single_write_and_read, test_wrong_guard},
     };
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
@@ -177,19 +177,14 @@ mod tests {
     use super::*;
     use crate::ClientResult;
 
-    fn get_redis_url(redis_url_var_env: &str) -> String {
-        env::var(redis_url_var_env).unwrap_or_else(|_| "redis://localhost:6379".to_owned())
-    }
-
     #[allow(clippy::panic_in_result_fn, clippy::unwrap_used)]
     async fn create_test_layer<const WORD_LENGTH: usize>(
         kms_config: KmsClientConfig,
     ) -> ClientResult<
-        KmsEncryptionLayer<WORD_LENGTH, RedisMemory<Address<ADDRESS_LENGTH>, [u8; WORD_LENGTH]>>,
+        KmsEncryptionLayer<WORD_LENGTH, InMemory<Address<ADDRESS_LENGTH>, [u8; WORD_LENGTH]>>,
     > {
-        let memory = RedisMemory::connect(&get_redis_url("REDIS_URL"))
-            .await
-            .unwrap();
+        let memory = InMemory::default();
+
         // InMemory::default();
         let kms_client = KmsClient::new_with_config(kms_config)?;
         info!("KMS client created");
@@ -487,7 +482,9 @@ mod tests {
 
                     if attempts > 1 {
                         // Apply exponential backoff with no random jitter
-                        let sleep_time = std::time::Duration::from_millis(backoff_ms);
+                        let mut rng = CsRng::from_entropy();
+                        let jitter = rng.next_u64() % 10;
+                        let sleep_time = std::time::Duration::from_millis(backoff_ms + jitter);
                         tokio::time::sleep(sleep_time).await;
 
                         // Exponential increase with cap at 100ms
