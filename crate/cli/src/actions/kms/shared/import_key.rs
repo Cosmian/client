@@ -79,14 +79,6 @@ pub struct ImportKeyAction {
     /// For what operations should the key be used.
     #[clap(long)]
     key_usage: Option<Vec<KeyUsage>>,
-
-    /// Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
-    #[clap(
-        long,
-        short = 'd',
-        default_value = None,
-    )]
-    authenticated_additional_data: Option<String>,
 }
 
 impl ImportKeyAction {
@@ -109,6 +101,7 @@ impl ImportKeyAction {
     /// [`CosmianError`]: ../error/result/enum.CosmianError.html
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         let key_bytes = read_bytes_from_file(&self.key_file)?;
+
         let (object, import_attributes) = prepare_key_import_elements(
             &self.key_usage,
             &self.key_format,
@@ -116,8 +109,6 @@ impl ImportKeyAction {
             &self.certificate_id,
             &self.private_key_id,
             &self.public_key_id,
-            self.unwrap,
-            &self.authenticated_additional_data,
         )?;
         let object_type: ObjectType = object.object_type();
 
@@ -137,8 +128,10 @@ impl ImportKeyAction {
 
         // print the response
         let stdout = format!(
-            "The {:?} in file {:?} was imported with id: {}",
-            object_type, &self.key_file, unique_identifier,
+            "The {:?} in file {} was imported with id: {}",
+            object_type,
+            self.key_file.display(),
+            unique_identifier,
         );
         let mut stdout = console::Stdout::new(&stdout);
         stdout.set_tags(Some(&self.tags));

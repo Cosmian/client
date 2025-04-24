@@ -2,8 +2,10 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use cosmian_kms_client::{
-    ExportObjectParams, KmsClient, export_object,
-    kmip_2_1::{kmip_objects::Object, ttlv::serializer::to_ttlv},
+    ExportObjectParams, KmsClient,
+    cosmian_kmip::ttlv::to_ttlv,
+    export_object,
+    kmip_2_1::kmip_objects::{Certificate, Object, PrivateKey},
     reexport::cosmian_kms_client_utils::export_utils::{
         CertificateExportFormat, prepare_certificate_export_elements,
     },
@@ -27,9 +29,9 @@ use crate::{
 /// - in X509 PEM format (pem)
 /// - in PKCS12 format including private key, certificate and chain (pkcs12)
 /// - in legacy PKCS12 format (pkcs12-legacy), compatible with openssl 1.x,
-///    for keystores that do not support the new format
-///    (e.g. Java keystores, `macOS` Keychains,...)
-///    This format is not available in FIPS mode.
+///   for keystores that do not support the new format
+///   (e.g. Java keystores, `macOS` Keychains,...)
+///   This format is not available in FIPS mode.
 /// - in PKCS7 format including the entire certificates chain (pkcs7)
 ///
 /// When using tags to retrieve rather than the unique id,
@@ -97,19 +99,22 @@ impl ExportCertificateAction {
             prepare_certificate_export_elements(&self.output_format, self.pkcs12_password.clone());
 
         // export the object
-        let (id, object, export_attributes) =
-            export_object(client_connector, &id, ExportObjectParams {
+        let (id, object, export_attributes) = export_object(
+            client_connector,
+            &id,
+            ExportObjectParams {
                 wrapping_key_id: wrapping_key_id.as_deref(),
                 allow_revoked: self.allow_revoked,
                 key_format_type: Some(key_format_type),
                 ..ExportObjectParams::default()
-            })
-            .await?;
+            },
+        )
+        .await?;
 
         match &object {
-            Object::Certificate {
+            Object::Certificate(Certificate {
                 certificate_value, ..
-            } => {
+            }) => {
                 match self.output_format {
                     CertificateExportFormat::JsonTtlv => {
                         // save it to a file
@@ -138,7 +143,7 @@ impl ExportCertificateAction {
                 }
             }
             // PKCS12 is exported as a private key object
-            Object::PrivateKey { key_block } => {
+            Object::PrivateKey(PrivateKey { key_block }) => {
                 let p12_bytes = key_block.key_bytes()?.to_vec();
                 // save it to a file
                 write_bytes_to_file(&p12_bytes, &self.certificate_file)?;
@@ -153,8 +158,9 @@ impl ExportCertificateAction {
         }
 
         let mut stdout = format!(
-            "The certificate {} was exported to {:?}",
-            &id, &self.certificate_file
+            "The certificate {} was exported to {}",
+            &id,
+            self.certificate_file.display()
         );
 
         // write attributes to a file
@@ -162,8 +168,9 @@ impl ExportCertificateAction {
             let attributes_file = self.certificate_file.with_extension("attributes.json");
             write_json_object_to_file(&to_ttlv(&export_attributes)?, &attributes_file)?;
             let stdout_attributes = format!(
-                "The attributes of the certificate {} were exported to {:?}",
-                &id, &attributes_file
+                "The attributes of the certificate {} were exported to {}",
+                &id,
+                attributes_file.display()
             );
             stdout = format!("{stdout} - {stdout_attributes}");
         }

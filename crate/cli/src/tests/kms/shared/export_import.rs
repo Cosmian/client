@@ -1,7 +1,8 @@
 use cosmian_kms_client::reexport::cosmian_kms_client_utils::export_utils::WrappingAlgorithm;
+use cosmian_logger::log_init;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, trace};
+use tracing::debug;
 
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
@@ -14,6 +15,7 @@ use crate::{
 
 #[tokio::test]
 pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
+    log_init(Some("info"));
     // init the test server
     let ctx = start_default_test_kms_server().await;
     // create a temp dir
@@ -50,73 +52,8 @@ pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
             replace_existing: true,
             ..Default::default()
         })?;
-        trace!("imported key id: {imported_key_id}",);
+        debug!("imported key id: {imported_key_id}",);
     }
-
-    // Export/import using GCM block cipher mode and different authenticated additional data
-    for authenticated_additional_data in [None, Some("aad".to_string())] {
-        export_key(ExportKeyParams {
-            cli_conf_path: ctx.user_client_conf_path.clone(),
-            sub_command: "sym".to_owned(),
-            key_id: key_id.to_string(),
-            key_file: key_file.clone(),
-            wrap_key_id: Some(sym_wrapping_key_id.clone()),
-            wrapping_algorithm: Some(WrappingAlgorithm::AesGCM),
-            authenticated_additional_data: authenticated_additional_data.clone(),
-            ..Default::default()
-        })?;
-
-        let imported_key_id = import_key(ImportKeyParams {
-            cli_conf_path: ctx.user_client_conf_path.clone(),
-            sub_command: "sym".to_string(),
-            key_file: key_file.clone(),
-            key_id: Some(key_id.clone()),
-            unwrap: true,
-            authenticated_additional_data: authenticated_additional_data.clone(),
-            replace_existing: true,
-            ..Default::default()
-        })?;
-        trace!("imported key id: {imported_key_id}",);
-    }
-
-    // Export with GCM + AAD but incorrect AAD on import
-    export_key(ExportKeyParams {
-        cli_conf_path: ctx.user_client_conf_path.clone(),
-        sub_command: "sym".to_owned(),
-        key_id: key_id.to_string(),
-        key_file: key_file.clone(),
-        wrap_key_id: Some(sym_wrapping_key_id),
-        wrapping_algorithm: Some(WrappingAlgorithm::AesGCM),
-        authenticated_additional_data: Some("aad".to_string()),
-        ..Default::default()
-    })?;
-
-    assert!(
-        import_key(ImportKeyParams {
-            cli_conf_path: ctx.user_client_conf_path.clone(),
-            sub_command: "sym".to_string(),
-            key_file: key_file.clone(),
-            key_id: Some(key_id.clone()),
-            unwrap: true,
-            replace_existing: true,
-            ..Default::default()
-        })
-        .is_err()
-    );
-
-    assert!(
-        import_key(ImportKeyParams {
-            cli_conf_path: ctx.user_client_conf_path.clone(),
-            sub_command: "sym".to_string(),
-            key_file,
-            key_id: Some(key_id),
-            unwrap: true,
-            replace_existing: true,
-            authenticated_additional_data: Some("this is very bad".to_string()),
-            ..Default::default()
-        })
-        .is_err()
-    );
 
     Ok(())
 }
