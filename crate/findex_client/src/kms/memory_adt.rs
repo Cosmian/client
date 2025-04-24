@@ -149,11 +149,11 @@ impl<
 #[cfg(test)]
 #[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
 mod tests {
-    use std::sync::Arc;
+    use std::{env, sync::Arc};
 
     use cosmian_crypto_core::{CsRng, Sampling, reexport::rand_core::SeedableRng};
     use cosmian_findex::{
-        InMemory,
+        RedisMemory,
         test_utils::{
             gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
         },
@@ -174,12 +174,20 @@ mod tests {
     use super::*;
     use crate::ClientResult;
 
+    fn get_redis_url(redis_url_var_env: &str) -> String {
+        env::var(redis_url_var_env).unwrap_or_else(|_| "redis://localhost:6379".to_owned())
+    }
+
+    #[allow(clippy::panic_in_result_fn, clippy::unwrap_used)]
     async fn create_test_layer<const WORD_LENGTH: usize>(
         kms_config: KmsClientConfig,
     ) -> ClientResult<
-        KmsEncryptionLayer<WORD_LENGTH, InMemory<Address<ADDRESS_LENGTH>, [u8; WORD_LENGTH]>>,
+        KmsEncryptionLayer<WORD_LENGTH, RedisMemory<Address<ADDRESS_LENGTH>, [u8; WORD_LENGTH]>>,
     > {
-        let memory = InMemory::default();
+        let memory = RedisMemory::connect(&get_redis_url("REDIS_URL"))
+            .await
+            .unwrap();
+        // InMemory::default();
         let kms_client = KmsClient::new_with_config(kms_config)?;
         info!("KMS client created");
         let k_p = kms_client
