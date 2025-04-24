@@ -90,10 +90,12 @@ pub fn der_to_pem(
             let tag = match object_type {
                 ObjectType::PrivateKey => "RSA PRIVATE KEY",
                 ObjectType::PublicKey => "RSA PUBLIC KEY",
-                x => Err(UtilsError::Default(format!(
-                    "Object type {x:?} not supported for PKCS1. Must be a private key or public \
-                     key"
-                )))?,
+                x => {
+                    return Err(UtilsError::Default(format!(
+                        "Object type {x:?} not supported for PKCS1. Must be a private key or \
+                         public key"
+                    )))
+                }
             };
             pem::Pem::new(tag, bytes)
         }
@@ -101,24 +103,30 @@ pub fn der_to_pem(
             let tag = match object_type {
                 ObjectType::PrivateKey => "PRIVATE KEY",
                 ObjectType::PublicKey => "PUBLIC KEY",
-                x => Err(UtilsError::Default(format!(
-                    "Object type {x:?} not supported for PKCS#8. Must be a private key PKCS#8)"
-                )))?,
+                x => {
+                    return Err(UtilsError::Default(format!(
+                        "Object type {x:?} not supported for PKCS#8. Must be a private key PKCS#8)"
+                    )))
+                }
             };
             pem::Pem::new(tag, bytes)
         }
         KeyFormatType::ECPrivateKey => {
             let tag = match object_type {
                 ObjectType::PrivateKey => "EC PRIVATE KEY",
-                x => Err(UtilsError::Default(format!(
-                    "Object type {x:?} not supported for SEC1. Must be a private key."
-                )))?,
+                x => {
+                    return Err(UtilsError::Default(format!(
+                        "Object type {x:?} not supported for SEC1. Must be a private key."
+                    )))
+                }
             };
             pem::Pem::new(tag, bytes)
         }
-        _ => Err(UtilsError::Default(format!(
-            "Key format type {key_format_type:?} not supported for PEM conversion"
-        )))?,
+        _ => {
+            return Err(UtilsError::Default(format!(
+                "Key format type {key_format_type:?} not supported for PEM conversion"
+            )))
+        }
     };
     Ok(Zeroizing::new(
         pem::encode_config(&pem, EncodeConfig::new().set_line_ending(LineEnding::LF)).into_bytes(),

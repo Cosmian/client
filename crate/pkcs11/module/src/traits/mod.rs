@@ -17,7 +17,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use backend::{Backend, backend, register_backend};
+pub use backend::{
+    Backend, DecryptContext, EncryptContext, SignContext, backend, register_backend,
+};
 pub use certificate::Certificate;
 pub use data_object::DataObject;
 pub use encryption_algorithms::EncryptionAlgorithm;
@@ -26,9 +28,10 @@ pub use once_cell;
 pub use private_key::PrivateKey;
 pub use public_key::PublicKey;
 pub use signature_algorithm::SignatureAlgorithm;
+pub use symmetric_key::SymmetricKey;
 
 use crate::{
-    MError,
+    ModuleError,
     core::attribute::{Attribute, AttributeType, Attributes},
 };
 
@@ -40,6 +43,7 @@ mod key_algorithm;
 mod private_key;
 mod public_key;
 mod signature_algorithm;
+mod symmetric_key;
 
 pub type Digest = [u8; 20];
 
@@ -54,13 +58,13 @@ pub enum DigestType {
 
 impl DigestType {
     #[must_use]
-    pub fn digest_len(&self) -> usize {
+    pub const fn digest_len(&self) -> usize {
         match self {
-            DigestType::Sha1 => 20,
-            DigestType::Sha224 => 28,
-            DigestType::Sha256 => 32,
-            DigestType::Sha384 => 48,
-            DigestType::Sha512 => 64,
+            Self::Sha1 => 20,
+            Self::Sha224 => 28,
+            Self::Sha256 => 32,
+            Self::Sha384 => 48,
+            Self::Sha512 => 64,
         }
     }
 }
@@ -68,20 +72,20 @@ impl DigestType {
 #[derive(Debug)]
 pub enum SearchOptions {
     All,
-    Id(String),
+    Id(Vec<u8>),
 }
 
 impl TryFrom<&Attributes> for SearchOptions {
-    type Error = MError;
+    type Error = ModuleError;
 
     fn try_from(attributes: &Attributes) -> Result<Self, Self::Error> {
         if attributes.is_empty() {
-            return Ok(SearchOptions::All);
+            return Ok(Self::All);
         }
         if let Some(Attribute::Id(id)) = attributes.get(AttributeType::Id) {
-            Ok(SearchOptions::Id(id.to_owned()))
+            Ok(Self::Id(id.clone()))
         } else {
-            Ok(SearchOptions::All)
+            Ok(Self::All)
         }
     }
 }

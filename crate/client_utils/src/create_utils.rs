@@ -92,16 +92,20 @@ pub fn prepare_sym_key_elements(
             256 => CryptographicAlgorithm::SHA3256,
             384 => CryptographicAlgorithm::SHA3384,
             512 => CryptographicAlgorithm::SHA3512,
-            _ => Err(UtilsError::Default(format!(
-                "invalid number of bits for sha3 {number_of_bits}"
-            )))?,
+            _ => {
+                return Err(UtilsError::Default(format!(
+                    "invalid number of bits for sha3 {number_of_bits}"
+                )))
+            }
         },
         SymmetricAlgorithm::Shake => match number_of_bits {
             128 => CryptographicAlgorithm::SHAKE128,
             256 => CryptographicAlgorithm::SHAKE256,
-            _ => Err(UtilsError::Default(format!(
-                "invalid number of bits for shake {number_of_bits}"
-            )))?,
+            _ => {
+                return Err(UtilsError::Default(format!(
+                    "invalid number of bits for shake {number_of_bits}"
+                )))
+            }
         },
     };
     Ok((number_of_bits, key_bytes, algorithm))

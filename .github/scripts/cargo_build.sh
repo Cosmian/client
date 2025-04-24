@@ -16,12 +16,11 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # after this step `cosmian` and `cosmian_gui` are built with custom features flags (fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
+  cargo build --target "$TARGET" --release
   if [ -f /etc/redhat-release ]; then
-    cargo build --target "$TARGET" --release
     cargo install --version 0.16.0 cargo-generate-rpm --force
     cargo generate-rpm --target "$TARGET" -p crate/cli
   elif [ -f /etc/lsb-release ]; then
-    cargo build --target "$TARGET" --release
     cargo install --version 2.4.0 cargo-deb --force
     cargo deb --target "$TARGET" -p cosmian_cli
   fi
@@ -79,10 +78,10 @@ cargo build --target $TARGET $RELEASE
 cargo test --workspace --bins --target $TARGET $RELEASE
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
-  # INCLUDE_IGNORED="--include-ignored"
+  INCLUDE_IGNORED="--include-ignored"
   # shellcheck disable=SC2086
   cargo bench --target $TARGET --no-run
 fi
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 # shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE -- --nocapture $SKIP_SERVICES_TESTS
+cargo test --workspace --lib --target $TARGET $RELEASE -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED

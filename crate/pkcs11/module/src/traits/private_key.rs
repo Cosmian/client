@@ -22,7 +22,7 @@ use std::hash::Hash;
 use zeroize::Zeroizing;
 
 use crate::{
-    MResult,
+    ModuleResult,
     traits::{KeyAlgorithm, SignatureAlgorithm},
 };
 
@@ -30,7 +30,7 @@ pub trait PrivateKey: Send + Sync {
     /// The unique identifier of the key (in the KMS)
     fn remote_id(&self) -> String;
 
-    fn sign(&self, algorithm: &SignatureAlgorithm, data: &[u8]) -> MResult<Vec<u8>>;
+    fn sign(&self, algorithm: &SignatureAlgorithm, data: &[u8]) -> ModuleResult<Vec<u8>>;
 
     /// Returns the algorithm of the key; will fail if only the remote part is known
     fn algorithm(&self) -> KeyAlgorithm;
@@ -40,11 +40,11 @@ pub trait PrivateKey: Send + Sync {
 
     /// Return the DER bytes of the private key
     /// This is a lazy loaded value
-    fn pkcs8_der_bytes(&self) -> MResult<Zeroizing<Vec<u8>>>;
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>>;
 
     /// Return the RSA public exponent if the key is an RSA key
     /// In big endian
-    fn rsa_public_exponent(&self) -> MResult<Vec<u8>>;
+    fn rsa_public_exponent(&self) -> ModuleResult<Vec<u8>>;
 }
 
 impl std::fmt::Debug for dyn PrivateKey {

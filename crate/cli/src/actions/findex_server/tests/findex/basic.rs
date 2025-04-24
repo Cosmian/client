@@ -1,11 +1,10 @@
 use std::path::PathBuf;
 
-use cosmian_findex::{
-    Value,
-    test_utils::{test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard},
+use cosmian_findex::test_utils::{
+    gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
 };
 use cosmian_findex_client::RestClient;
-use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
+use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value};
 use cosmian_kms_client::KmsClient;
 use cosmian_logger::log_init;
 use test_findex_server::{
@@ -32,11 +31,7 @@ use crate::{
 };
 
 pub(crate) fn findex_number_of_threads() -> Option<usize> {
-    if std::env::var("GITHUB_ACTIONS").is_ok() {
-        Some(1)
-    } else {
-        None
-    }
+    std::env::var("GITHUB_ACTIONS").is_ok().then_some(1)
 }
 
 #[tokio::test]
@@ -255,7 +250,7 @@ pub(crate) async fn test_findex_sequential_read_write() -> CosmianResult<()> {
 
     test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
     )
     .await;
     Ok(())
@@ -265,18 +260,19 @@ pub(crate) async fn test_findex_sequential_read_write() -> CosmianResult<()> {
 async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
     test_wrong_guard(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
     )
     .await;
     Ok(())
 }
 
-#[ignore = "to be fixed"]
+#[ignore = "stack overflow"]
 #[tokio::test]
 async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
     test_guarded_write_concurrent(
         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        rand::random(),
+        gen_seed(),
+        Some(100),
     )
     .await;
     Ok(())

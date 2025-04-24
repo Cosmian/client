@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
-    MError, MResult,
+    ModuleError, ModuleResult,
     traits::{KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend},
 };
 use pkcs1::{RsaPrivateKey, der::Decode};
@@ -32,22 +32,23 @@ impl Pkcs11PrivateKey {
         }
     }
 
-    pub(crate) fn try_from_kms_object(remote_id: String, kms_object: KmsObject) -> MResult<Self> {
+    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> ModuleResult<Self> {
         let der_bytes = Arc::new(RwLock::new(
             kms_object
                 .object
                 .key_block()
-                .map_err(|e| MError::Cryptography(e.to_string()))?
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?
                 .key_bytes()
-                .map_err(|e| MError::Cryptography(e.to_string()))?,
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?,
         ));
-        let key_size = kms_object.attributes.cryptographic_length.ok_or_else(|| {
-            MError::Cryptography("try_from_kms_object: missing key size".to_string())
-        })? as usize;
+        let key_size =
+            usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
+                ModuleError::Cryptography("try_from_kms_object: missing key size".to_owned())
+            })?)?;
         let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
 
         Ok(Self {
-            remote_id,
+            remote_id: kms_object.remote_id,
             algorithm,
             key_size,
             der_bytes,
@@ -60,7 +61,7 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.remote_id.clone()
     }
 
-    fn sign(&self, _algorithm: &SignatureAlgorithm, _data: &[u8]) -> MResult<Vec<u8>> {
+    fn sign(&self, _algorithm: &SignatureAlgorithm, _data: &[u8]) -> ModuleResult<Vec<u8>> {
         error!(
             "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
             self.remote_id
@@ -79,46 +80,49 @@ impl PrivateKey for Pkcs11PrivateKey {
         self.key_size
     }
 
-    fn pkcs8_der_bytes(&self) -> MResult<Zeroizing<Vec<u8>>> {
+    fn pkcs8_der_bytes(&self) -> ModuleResult<Zeroizing<Vec<u8>>> {
         let der_bytes = self
             .der_bytes
             .read()
             .map_err(|e| {
                 error!("Failed to read DER bytes: {:?}", e);
-                MError::Cryptography("Failed to read DER bytes".to_string())
+                ModuleError::Cryptography("Failed to read DER bytes".to_owned())
             })?
             .clone();
         if !der_bytes.is_empty() {
             return Ok(der_bytes);
         }
-        let sk = backend().find_private_key(SearchOptions::Id(self.remote_id.clone()))?;
+        let sk =
+            backend().find_private_key(SearchOptions::Id(self.remote_id.clone().into_bytes()))?;
         let mut der_bytes = self.der_bytes.write().map_err(|e| {
             error!("Failed to write DER bytes: {:?}", e);
-            MError::Cryptography("Failed to write DER bytes".to_string())
+            ModuleError::Cryptography("Failed to write DER bytes".to_owned())
         })?;
         *der_bytes = sk.pkcs8_der_bytes().map_err(|e| {
             error!("Failed to fetch the PKCS8 DER bytes: {:?}", e);
-            MError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_string())
+            ModuleError::Cryptography("Failed to fetch the PKCS8 DER bytes".to_owned())
         })?;
         Ok(der_bytes.clone())
     }
 
-    fn rsa_public_exponent(&self) -> MResult<Vec<u8>> {
+    fn rsa_public_exponent(&self) -> ModuleResult<Vec<u8>> {
         let pkcs8_der_bytes = self.der_bytes.read().map_err(|e| {
             error!("Failed to read DER bytes: {:?}", e);
-            MError::Cryptography("Failed to read DER bytes".to_string())
+            ModuleError::Cryptography("Failed to read DER bytes".to_owned())
         })?;
-        Ok(if !pkcs8_der_bytes.is_empty() {
+        let res = if pkcs8_der_bytes.is_empty() {
+            return Err(ModuleError::Cryptography(
+                "Failed to obtain public exponent for unloaded private key".to_owned(),
+            ));
+        } else {
             let rsa_key = RsaPrivateKey::from_der(pkcs8_der_bytes.as_ref()).map_err(|e| {
                 error!("Failed to parse RSA public key: {:?}", e);
-                MError::Cryptography("Failed to parse RSA public key".to_string())
+                ModuleError::Cryptography("Failed to parse RSA public key".to_owned())
             })?;
             rsa_key.public_exponent.as_bytes().to_vec()
-        } else {
-            //TODO: not great but very little chance that 1/ it is different and 2/ it has any effect
-            // we do not want to fetch the key bytes just for this
-            65537_u32.to_be_bytes().to_vec()
-        })
+        };
+        drop(pkcs8_der_bytes);
+        Ok(res)
     }
 
     // fn ec_p256_private_key(&self) -> MResult<p256::SecretKey> {
@@ -126,7 +130,7 @@ impl PrivateKey for Pkcs11PrivateKey {
     //         KeyAlgorithm::EccP256 => {
     //             let ec_p256 = p256::SecretKey::from_pkcs8_der(self.pkcs8_der_bytes()?.as_ref())
     //                 .map_err(|e| {
-    //                     MError::Cryptography(format!(
+    //                     ModuleError::Cryptography(format!(
     //                         "Failed to parse EC P256 private key: {:?}",
     //                         e
     //                     ))
@@ -135,7 +139,7 @@ impl PrivateKey for Pkcs11PrivateKey {
     //         }
     //         _ => {
     //             error!("Public key is not an EC P256 key");
-    //             Err(MError::Cryptography(
+    //             Err(ModuleError::Cryptography(
     //                 "Public key is not an EC P256 key".to_string(),
     //             ))
     //         }

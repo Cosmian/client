@@ -217,7 +217,7 @@ pub(crate) async fn encrypt(
     let nonce = encrypt_response.iv_counter_nonce;
     let data = encrypt_response
         .data
-        .ok_or_else(|| KmsClientError::UnexpectedError("No data".to_string()))?;
+        .ok_or_else(|| KmsClientError::UnexpectedError("No data".to_owned()))?;
     let mac = encrypt_response.authenticated_encryption_tag;
     Ok((nonce, data, mac))
 }
@@ -346,7 +346,7 @@ pub(crate) async fn decrypt(
 
     decrypt_response
         .data
-        .ok_or_else(|| KmsClientError::UnexpectedError("No data".to_string()))
+        .ok_or_else(|| KmsClientError::UnexpectedError("No data".to_owned()))
 }
 
 fn decrypt_request(

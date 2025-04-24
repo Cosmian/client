@@ -1,6 +1,6 @@
 use std::{
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::mpsc,
     thread::{self, JoinHandle},
     time::Duration,
@@ -33,7 +33,7 @@ pub(crate) static ONCE: OnceCell<TestsContext> = OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_AUTH: OnceCell<TestsContext> = OnceCell::const_new();
 
 pub fn get_redis_url(redis_url_var_env: &str) -> String {
-    env::var(redis_url_var_env).unwrap_or_else(|_| REDIS_DEFAULT_URL.to_string())
+    env::var(redis_url_var_env).unwrap_or_else(|_| REDIS_DEFAULT_URL.to_owned())
 }
 
 fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
@@ -238,12 +238,23 @@ fn generate_server_params(
 }
 
 fn set_access_token(server_params: &ServerParams) -> Option<String> {
-    if server_params.identity_provider_configurations.is_some() {
-        trace!("Setting access token for JWT: {AUTH0_TOKEN:?}");
-        Some(AUTH0_TOKEN.to_string())
-    } else {
-        None
-    }
+    server_params
+        .identity_provider_configurations
+        .is_some()
+        .then(|| {
+            trace!("Setting access token for JWT: {AUTH0_TOKEN:?}");
+            AUTH0_TOKEN.to_owned()
+        })
+}
+fn get_owner_certificate(root_dir: &Path, server_params: &ServerParams) -> Option<String> {
+    server_params.authority_cert_file.is_some().then(|| {
+        let path = if cfg!(target_os = "macos") {
+            "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.format.p12"
+        } else {
+            "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12"
+        };
+        root_dir.join(path).to_str().unwrap().to_owned()
+    })
 }
 
 fn generate_owner_conf(server_params: &ServerParams) -> Result<RestClientConfig, ClientError> {
@@ -252,38 +263,22 @@ fn generate_owner_conf(server_params: &ServerParams) -> Result<RestClientConfig,
 
     let owner_client_conf = RestClientConfig {
         http_config: HttpClientConfig {
-            server_url: if matches!(server_params.http_params, HttpParams::Https(_)) {
-                format!("https://0.0.0.0:{}", server_params.port)
-            } else {
-                format!("http://0.0.0.0:{}", server_params.port)
-            },
+            server_url: format!(
+                "{}://0.0.0.0:{}",
+                if matches!(server_params.http_params, HttpParams::Https(_)) {
+                    "https"
+                } else {
+                    "http"
+                },
+                server_params.port
+            ),
             accept_invalid_certs: true,
             access_token: set_access_token(server_params),
-            ssl_client_pkcs12_path: if server_params.authority_cert_file.is_some() {
-                #[cfg(not(target_os = "macos"))]
-                let p = root_dir.join(
-                    "../../test_data/certificates/client_server/owner/owner.client.acme.com.p12",
-                );
-                #[cfg(target_os = "macos")]
-                let p = root_dir.join(
-                    "../../test_data/certificates/client_server/owner/owner.client.acme.com.old.\
-                     format.p12",
-                );
-                Some(
-                    p.to_str()
-                        .ok_or_else(|| {
-                            ClientError::Default("Can't convert path to string".to_owned())
-                        })?
-                        .to_string(),
-                )
-            } else {
-                None
-            },
-            ssl_client_pkcs12_password: if server_params.authority_cert_file.is_some() {
-                Some("password".to_owned())
-            } else {
-                None
-            },
+            ssl_client_pkcs12_path: get_owner_certificate(&root_dir, server_params),
+            ssl_client_pkcs12_password: server_params
+                .authority_cert_file
+                .is_some()
+                .then(|| "password".to_owned()),
             ..Default::default()
         },
     };
@@ -311,7 +306,7 @@ fn generate_user_conf(
         Some(
             p.to_str()
                 .ok_or_else(|| ClientError::Default("Can't convert path to string".to_owned()))?
-                .to_string(),
+                .to_owned(),
         )
     };
     user_conf.http_config.ssl_client_pkcs12_password = Some("password".to_owned());
