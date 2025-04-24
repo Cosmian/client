@@ -2,10 +2,8 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm;
-use test_kms_server::{
-    start_default_test_kms_server_with_cert_auth,
-    start_default_test_kms_server_with_privileged_users,
-};
+use cosmian_logger::log_init;
+use test_kms_server::start_default_test_kms_server_with_cert_auth;
 use tracing::trace;
 
 use super::{
@@ -351,6 +349,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
+    log_init(Some("debug"));
     // the client conf will use the owner cert
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
@@ -509,6 +508,7 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
+    log_init(Some("debug"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 

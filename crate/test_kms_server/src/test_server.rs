@@ -1,13 +1,13 @@
 use std::{
     env,
-    path::{Path, PathBuf},
-    sync::mpsc,
+    path::PathBuf,
+    sync::{Arc, mpsc},
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use actix_server::ServerHandle;
-use base64::{Engine, engine::general_purpose::STANDARD as b64};
+use base64::{Engine as _, engine::general_purpose::STANDARD as b64};
 use cosmian_cli::{
     config::ClientConfig,
     reexport::{
@@ -22,10 +22,12 @@ use cosmian_cli::{
     },
 };
 use cosmian_kms_server::{
-    config::{ClapConfig, HttpConfig, HttpParams, JwtAuthConfig, MainDBConfig, ServerParams},
+    config::{
+        ClapConfig, HttpConfig, JwtAuthConfig, MainDBConfig, ServerParams, SocketServerConfig,
+        TlsConfig,
+    },
     start_kms_server::start_kms_server,
 };
-use cosmian_kms_server_database::SqlCipherSessionParams;
 use cosmian_logger::log_init;
 use tempfile::TempDir;
 use tokio::sync::OnceCell;
@@ -383,7 +385,7 @@ fn start_test_kms_server(
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()?
-            .block_on(start_kms_server(server_params, Some(tx)))
+            .block_on(start_kms_server(Arc::new(server_params), Some(tx)))
             .map_err(|e| KmsClientError::UnexpectedError(e.to_string()))
     });
     trace!("Waiting for test KMS server to start...");
@@ -423,47 +425,27 @@ async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), Kms
     Ok(())
 }
 
-fn generate_http_config(
-    port: u16,
-    use_https: bool,
-    use_client_cert: bool,
-    api_token_id: Option<String>,
-) -> HttpConfig {
-    // This create root dir
+fn generate_tls_config(use_https: bool, use_client_cert: bool) -> TlsConfig {
+    // This is the crate root dir
     let root_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
+    let mut tls_config = TlsConfig::default();
     if use_https {
+        tls_config.tls_p12_file =
+            Some(root_dir.join("../../test_data/client_server/server/kmserver.acme.com.p12"));
+        assert!(
+            tls_config.tls_p12_file.as_ref().unwrap().exists(),
+            "File not found: {:?}",
+            tls_config.tls_p12_file.unwrap()
+        );
+        tls_config.tls_p12_password = Some("password".to_owned());
         if use_client_cert {
-            HttpConfig {
-                port,
-                https_p12_file: Some(root_dir.join(
-                    "../../test_data/certificates/client_server/server/kmserver.acme.com.p12",
-                )),
-                https_p12_password: Some("password".to_owned()),
-                authority_cert_file: Some(
-                    root_dir.join("../../test_data/certificates/client_server/server/ca.crt"),
-                ),
-                api_token_id,
-                ..HttpConfig::default()
-            }
-        } else {
-            HttpConfig {
-                port,
-                https_p12_file: Some(root_dir.join(
-                    "../../test_data/certificates/client_server/server/kmserver.acme.com.p12",
-                )),
-                https_p12_password: Some("password".to_owned()),
-                api_token_id,
-                ..HttpConfig::default()
-            }
-        }
-    } else {
-        HttpConfig {
-            port,
-            api_token_id,
-            ..HttpConfig::default()
+            tls_config.clients_ca_cert_file =
+                Some(root_dir.join("../../test_data/client_server/ca/ca.crt"));
+            assert!(tls_config.clients_ca_cert_file.as_ref().unwrap().exists());
         }
     }
+    tls_config
 }
 
 fn generate_server_params(
@@ -481,13 +463,23 @@ fn generate_server_params(
         } else {
             JwtAuthConfig::default()
         },
+        socket_server: SocketServerConfig {
+            // start the socket server automatically if both https and client cert authentication are used
+            socket_server_start: authentication_options.use_https
+                && authentication_options.use_client_cert,
+            socket_server_port: port + 100,
+            ..Default::default()
+        },
         db: db_config,
-        http: generate_http_config(
-            port,
+        tls: generate_tls_config(
             authentication_options.use_https,
             authentication_options.use_client_cert,
-            authentication_options.api_token_id.clone(),
         ),
+        http: HttpConfig {
+            port,
+            api_token_id: authentication_options.api_token_id.clone(),
+            ..HttpConfig::default()
+        },
         non_revocable_key_id,
         google_cse_disable_tokens_validation: true,
         hsm_admin: hsm_options
@@ -544,37 +536,46 @@ fn generate_owner_conf(
     let root_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
     // Create a conf
-    let owner_client_conf_path = format!("/tmp/owner_kms_{}.toml", server_params.port);
+    let owner_client_conf_path = format!("/tmp/owner_kms_{}.toml", server_params.http_port);
 
     let gmail_api_conf: Option<GmailApiConf> = std::env::var("TEST_GMAIL_API_CONF")
         .ok()
         .and_then(|config| serde_json::from_str(&config).ok());
 
-    let use_jwt_token = server_params.identity_provider_configurations.is_some();
+    let use_client_cert_auth = server_params
+        .tls_params
+        .as_ref()
+        .and_then(|tls| tls.client_ca_cert_pem.as_ref())
+        .is_some();
 
     let owner_client_conf = ClientConfig {
         kms_config: KmsClientConfig {
             http_config: HttpClientConfig {
-                server_url: format!(
-                    "{}://0.0.0.0:{}",
-                    if matches!(server_params.http_params, HttpParams::Https(_)) {
-                        "https"
-                    } else {
-                        "http"
-                    },
-                    server_params.port
-                ),
+                server_url: if server_params.tls_params.is_some() {
+                    format!("https://0.0.0.0:{}", server_params.http_port)
+                } else {
+                    format!("http://0.0.0.0:{}", server_params.http_port)
+                },
                 accept_invalid_certs: true,
-                access_token: set_access_token(
-                    use_jwt_token,
-                    Some(AUTH0_TOKEN.to_owned()),
-                    api_token,
-                ),
-                ssl_client_pkcs12_path: get_owner_certificate(&root_dir, server_params),
-                ssl_client_pkcs12_password: server_params
-                    .authority_cert_file
-                    .is_some()
-                    .then(|| "password".to_owned()),
+                access_token: set_access_token(server_params, api_token),
+                ssl_client_pkcs12_path: if use_client_cert_auth {
+                    let p = root_dir
+                        .join("../../test_data/client_server/owner/owner.client.acme.com.p12");
+                    Some(
+                        p.to_str()
+                            .ok_or_else(|| {
+                                KmsClientError::Default("Can't convert path to string".to_owned())
+                            })?
+                            .to_string(),
+                    )
+                } else {
+                    None
+                },
+                ssl_client_pkcs12_password: if use_client_cert_auth {
+                    Some("password".to_owned())
+                } else {
+                    None
+                },
                 ..HttpClientConfig::default()
             },
             gmail_api_conf,
@@ -601,13 +602,8 @@ fn generate_user_conf(
 
     let mut user_conf = owner_client_conf.clone();
     user_conf.kms_config.http_config.ssl_client_pkcs12_path = {
-        #[cfg(not(target_os = "macos"))]
         let p = root_dir
             .join("../../test_data/certificates/client_server/user/user.client.acme.com.p12");
-        #[cfg(target_os = "macos")]
-        let p = root_dir.join(
-            "../../test_data/certificates/client_server/user/user.client.acme.com.old.format.p12",
-        );
         Some(
             p.to_str()
                 .ok_or_else(|| KmsClientError::Default("Can't convert path to string".to_owned()))?
@@ -637,22 +633,7 @@ pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
     let mut invalid_conf = correct_conf.clone();
     // and a temp file
     let invalid_conf_path = "/tmp/invalid_conf.toml".to_owned();
-    // Generate a wrong token with valid group id
-    let secrets = b64
-        .decode(
-            correct_conf
-                .kms_config
-                .http_config
-                .database_secret
-                .as_ref()
-                .expect("missing database secret")
-                .clone(),
-        )
-        .expect("Can't decode token");
-    let mut secrets = serde_json::from_slice::<SqlCipherSessionParams>(&secrets)
-        .expect("Can't deserialize token");
-    secrets.key = db_key; // bad secret
-    let token = b64.encode(serde_json::to_string(&secrets).expect("Can't encode token"));
+    let token = hex::encode(&*db_key);
     invalid_conf.kms_config.http_config.database_secret = Some(token);
 
     // write the invalid conf

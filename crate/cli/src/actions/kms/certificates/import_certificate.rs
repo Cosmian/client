@@ -3,13 +3,16 @@ use std::path::PathBuf;
 use clap::Parser;
 use cosmian_kms_client::{
     KmsClient,
-    cosmian_kmip::kmip_2_1::{
-        kmip_objects::Object,
-        kmip_types::{
-            Attributes, CertificateType, KeyFormatType, LinkType, LinkedObjectIdentifier,
+    cosmian_kmip::{
+        kmip_0::kmip_types::CertificateType,
+        kmip_2_1::{
+            kmip_objects::Object,
+            kmip_types::{KeyFormatType, LinkType, LinkedObjectIdentifier},
+            requests::import_object_request,
         },
-        requests::import_object_request,
     },
+    kmip_2_1,
+    kmip_2_1::kmip_attributes::Attributes,
     read_bytes_from_file, read_object_from_json_ttlv_file,
     reexport::cosmian_kms_client_utils::import_utils::{
         CertificateInputFormat, KeyUsage, build_private_key_from_der_bytes,
@@ -143,14 +146,13 @@ impl ImportCertificateAction {
                 trace!("CLI: import certificate as TTLV JSON file");
                 // read the certificate file
                 let object = read_object_from_json_ttlv_file(self.get_certificate_file()?)?;
-                let certificate_id = self
-                    .import_chain(
-                        kms_rest_client,
-                        vec![object],
-                        self.replace_existing,
-                        leaf_certificate_attributes,
-                    )
-                    .await?;
+                let certificate_id = Box::pin(self.import_chain(
+                    kms_rest_client,
+                    vec![object],
+                    self.replace_existing,
+                    leaf_certificate_attributes,
+                ))
+                .await?;
                 (
                     "The certificate in the JSON TTLV was successfully imported!".to_owned(),
                     Some(certificate_id),
@@ -165,18 +167,17 @@ impl ImportCertificateAction {
                         "Cannot read PEM content to X509. Error: {e:?}"
                     ))
                 })?;
-                let object = Object::Certificate {
+                let object = Object::Certificate(kmip_2_1::kmip_objects::Certificate {
                     certificate_type: CertificateType::X509,
                     certificate_value: certificate.to_der()?,
-                };
-                let certificate_id = self
-                    .import_chain(
-                        kms_rest_client,
-                        vec![object],
-                        self.replace_existing,
-                        leaf_certificate_attributes,
-                    )
-                    .await?;
+                });
+                let certificate_id = Box::pin(self.import_chain(
+                    kms_rest_client,
+                    vec![object],
+                    self.replace_existing,
+                    leaf_certificate_attributes,
+                ))
+                .await?;
                 (
                     "The certificate in the PEM file was successfully imported!".to_owned(),
                     Some(certificate_id),
@@ -191,18 +192,17 @@ impl ImportCertificateAction {
                         "Cannot read DER content to X509. Error: {e:?}"
                     ))
                 })?;
-                let object = Object::Certificate {
+                let object = Object::Certificate(kmip_2_1::kmip_objects::Certificate {
                     certificate_type: CertificateType::X509,
                     certificate_value: certificate.to_der()?,
-                };
-                let certificate_id = self
-                    .import_chain(
-                        kms_rest_client,
-                        vec![object],
-                        self.replace_existing,
-                        leaf_certificate_attributes,
-                    )
-                    .await?;
+                });
+                let certificate_id = Box::pin(self.import_chain(
+                    kms_rest_client,
+                    vec![object],
+                    self.replace_existing,
+                    leaf_certificate_attributes,
+                ))
+                .await?;
                 (
                     "The certificate in the DER file was successfully imported!".to_owned(),
                     Some(certificate_id),
@@ -223,14 +223,13 @@ impl ImportCertificateAction {
                 let pem_stack = read_bytes_from_file(&self.get_certificate_file()?)?;
                 let objects = build_chain_from_stack(&pem_stack)?;
                 // import the full chain
-                let leaf_certificate_id = self
-                    .import_chain(
-                        kms_rest_client,
-                        objects,
-                        self.replace_existing,
-                        leaf_certificate_attributes,
-                    )
-                    .await?;
+                let leaf_certificate_id = Box::pin(self.import_chain(
+                    kms_rest_client,
+                    objects,
+                    self.replace_existing,
+                    leaf_certificate_attributes,
+                ))
+                .await?;
                 (
                     "The certificate chain in the PEM file was successfully imported!".to_owned(),
                     Some(leaf_certificate_id),
@@ -253,7 +252,7 @@ impl ImportCertificateAction {
                     })?;
                 // import the certificates
                 let objects = build_chain_from_stack(&ccadb_bytes)?;
-                self.import_chain(kms_rest_client, objects, self.replace_existing, None)
+                Box::pin(self.import_chain(kms_rest_client, objects, self.replace_existing, None))
                     .await?;
 
                 ("The list of Mozilla CCADB certificates".to_owned(), None)
@@ -375,10 +374,10 @@ fn build_chain_from_stack(pem_chain: &[u8]) -> CosmianResult<Vec<Object>> {
         let certificate = Certificate::from_der(pem_data.contents()).map_err(|e| {
             CosmianError::Conversion(format!("Cannot read DER content to X509. Error: {e:?}"))
         })?;
-        let object = Object::Certificate {
+        let object = Object::Certificate(kmip_2_1::kmip_objects::Certificate {
             certificate_type: CertificateType::X509,
             certificate_value: certificate.to_der()?,
-        };
+        });
         objects.push(object);
     }
     Ok(objects)

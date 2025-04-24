@@ -4,7 +4,8 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use cosmian_kms_client::{
-    kmip_2_1::kmip_types::{BlockCipherMode, KeyFormatType},
+    kmip_0::kmip_types::BlockCipherMode,
+    kmip_2_1::kmip_types::KeyFormatType,
     read_bytes_from_file, read_object_from_json_ttlv_file,
     reexport::cosmian_kms_client_utils::export_utils::{ExportKeyFormat, WrappingAlgorithm},
 };
@@ -54,7 +55,6 @@ pub(crate) struct ExportKeyParams {
     pub wrap_key_id: Option<String>,
     pub allow_revoked: bool,
     pub wrapping_algorithm: Option<WrappingAlgorithm>,
-    pub authenticated_additional_data: Option<String>,
 }
 
 pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
@@ -97,19 +97,7 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
         args.push("--wrapping-algorithm".to_owned());
         args.push(wrapping_algorithm.to_string());
     }
-    if let Some(authenticated_additional_data) = params.authenticated_additional_data {
-        if let Some(wrapping_algorithm) = params.wrapping_algorithm {
-            if wrapping_algorithm == WrappingAlgorithm::AesGCM {
-                args.push("--authenticated-additional-data".to_owned());
-                args.push(authenticated_additional_data);
-            } else {
-                return Err(CosmianError::Default(
-                    "Authenticated additional data can only be used with AESGCM wrapping algorithm"
-                        .to_owned(),
-                ));
-            }
-        }
-    }
+
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, params.cli_conf_path);
 
@@ -272,20 +260,15 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     assert_eq!(key_bytes, key_bytes_2);
 
-    // Can't specify nist-key-wrap with aad
-    assert!(
-        export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
-            sub_command: "rsa".to_owned(),
-            key_id: private_key_id.clone(),
-            key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
-            wrap_key_id: Some(sym_key_id.clone()),
-            wrapping_algorithm: Some(WrappingAlgorithm::NistKeyWrap),
-            authenticated_additional_data: Some("encryption_data".to_owned()),
-            ..Default::default()
-        })
-        .is_err()
-    );
+    export_key(ExportKeyParams {
+        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        sub_command: "rsa".to_owned(),
+        key_id: private_key_id.clone(),
+        key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
+        wrap_key_id: Some(sym_key_id.clone()),
+        wrapping_algorithm: Some(WrappingAlgorithm::NistKeyWrap),
+        ..Default::default()
+    })?;
 
     // Export wrapped key with a symmetric key using AESGCM as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
@@ -464,6 +447,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
 
+    use cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
     use tracing::trace;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -496,16 +480,18 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
         key_block.cryptographic_algorithm,
         Some(CryptographicAlgorithm::ECDH)
     );
-    let kv = &key_block.key_value;
+    let Some(KeyValue::Structure { key_material, .. }) = &key_block.key_value else {
+        panic!("Invalid key value type");
+    };
     let KeyMaterial::TransparentECPrivateKey {
         d,
         recommended_curve,
-    } = &kv.key_material
+    } = key_material
     else {
-        panic!("Invalid key value type");
+        panic!("Invalid key material ");
     };
     assert_eq!(recommended_curve, &RecommendedCurve::CURVE25519);
-    let mut d_vec = d.to_bytes_be();
+    let (_, mut d_vec) = d.to_bytes_be();
     // 32 is privkey size on x25519.
     pad_be_bytes(&mut d_vec, 32);
     trace!("d_vec size is {:?}", d_vec.len());
@@ -554,11 +540,13 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
         key_block.cryptographic_algorithm,
         Some(CryptographicAlgorithm::ECDH)
     );
-    let kv = &key_block.key_value;
+    let Some(KeyValue::Structure { key_material, .. }) = &key_block.key_value else {
+        panic!("Invalid key value type");
+    };
     let KeyMaterial::TransparentECPublicKey {
         q_string,
         recommended_curve,
-    } = &kv.key_material
+    } = key_material
     else {
         panic!("Invalid key value type")
     };
@@ -598,10 +586,13 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // generate a symmetric key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        sensitive: true,
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            sensitive: true,
+            ..Default::default()
+        },
+    )?;
 
     // the key should not be exportable
     assert!(
@@ -666,11 +657,13 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // generate an ec key pair
-    let (private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+    let (private_key_id, public_key_id) = create_rsa_key_pair(
+        &ctx.owner_client_conf_path,
+        &RsaKeyPairOptions {
             sensitive: true,
             ..Default::default()
-        })?;
+        },
+    )?;
 
     // the private key should not be exportable
     assert!(
