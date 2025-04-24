@@ -1,5 +1,5 @@
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
-use tracing::trace;
+use tracing::{info, trace};
 
 use super::KmsEncryptionLayer;
 use crate::ClientError;
@@ -13,12 +13,14 @@ impl<
     type Error = ClientError;
     type Word = [u8; WORD_LENGTH];
 
+    #[allow(clippy::print_stdout)]
     async fn guarded_write(
         &self,
         guard: (Self::Address, Option<Self::Word>),
         bindings: Vec<(Self::Address, Self::Word)>,
     ) -> Result<Option<Self::Word>, Self::Error> {
-        trace!("guarded_write: guard: {:?}", guard);
+        info!("guarded_write: guard: {:?}", guard);
+        println!("guarded_write: guard: ");
         let (address, optional_word) = guard;
 
         // Split bindings into two vectors
@@ -407,7 +409,9 @@ mod tests {
         log_init(None);
         info!("start the test ... trying to start the server");
         println!("start the test ... trying to start the server");
-        let ctx = start_default_test_kms_server().await;
+        // let ctx = start_default_test_kms_server().await;
+        let ctx = Box::new(start_default_test_kms_server().await);
+
         info!("the kms server is started");
         println!("the kms server is started");
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
