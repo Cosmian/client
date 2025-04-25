@@ -27,8 +27,8 @@ impl<
         Ok(RequestMessage {
             request_header: RequestMessageHeader {
                 protocol_version: ProtocolVersion {
-                    protocol_version_major: 1,
-                    protocol_version_minor: 0,
+                    protocol_version_major: 2,
+                    protocol_version_minor: 1,
                 },
                 maximum_response_size: Some(9999),
                 batch_count: items_number,
@@ -57,7 +57,7 @@ impl<
         let items = addresses
             .iter()
             .map(|address| {
-                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(Operation::Mac(
+                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(Operation::MAC(
                     self.build_mac_request(address.to_vec()),
                 )))
             })
