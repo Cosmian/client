@@ -109,9 +109,9 @@ impl<
         let some_words = self
             .batch_decrypt(
                 // Since indexes are produced using encrypted_words and the
-                // above check guarantees its length is not greater than the
-                // length of permuted_addresses, the following indexing is
-                // guaranteed to be in range.
+                // above check guarantees its length is equal to the length of
+                // permuted_addresses, the following indexing is guaranteed to
+                // be in range.
                 #[allow(clippy::indexing_slicing)]
                 some_encrypted_words
                     .iter()
