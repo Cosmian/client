@@ -91,9 +91,9 @@ impl<
             .map_err(|e| ClientError::Default(format!("Memory error: {e}")))?;
 
         if permuted_addresses.len() < encrypted_words.len() {
-            return Err(ClientError::Default(format!(
-                "there can be no more words than addresses"
-            )));
+            return Err(ClientError::Default(
+                "there can be no more words than addresses".to_string(),
+            ));
         }
 
         // None values need to be filtered out to compose with batch_decrypt.
@@ -110,7 +110,7 @@ impl<
                 // above check guarantees its length is not greater than the
                 // length of permuted_addresses, the following indexing is
                 // guaranteed to be in range.
-                #[allow(clippy::index_slicing)]
+                #[allow(clippy::indexing_slicing)]
                 some_encrypted_words
                     .iter()
                     .map(|(i, w)| (&permuted_addresses[*i], w)),
