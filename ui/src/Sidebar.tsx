@@ -1,8 +1,8 @@
 import { Layout, Menu, MenuProps, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// @ts-ignore: Case mismatch in file import
 import { useAuth } from "./AuthContext.tsx";
+// @ts-ignore: Case mismatch in file import
 import { MenuItem, menuItems } from "./MenuItems.tsx";
 import { getNoTTLVRequest } from "./utils.ts";
 
@@ -34,21 +34,26 @@ const Sidebar: React.FC = () => {
         fetchCreatePermission();
     }, []);
 
-    // Process menu items to disable "Create" options based on access rights
+    // Process menu items to disable "Create" and "Import" options based on access rights
     const processMenuItems = (hasCreateAccess: boolean) => {
         const processItems = (items: MenuItem[]): MenuItem[] => {
             return items.map((item) => {
                 const newItem = { ...item };
 
+                // Check if item is a Create item
                 const isCreateItem = item.key && (item.key.includes("/create") || item.key.includes("/create-") || item.label === "Create");
 
-                // If it's a create item and we don't have access, disable it
-                if (isCreateItem && !hasCreateAccess) {
-                    newItem.disabled = true;
+                // Check if item is an Import item
+                const isImportItem = item.key && (item.key.includes("/import") || item.key.includes("/import-") || item.label === "Import");
+
+                // Handle disabled state based on access rights
+                if (isCreateItem || isImportItem) {
+                    newItem.disabled = !hasCreateAccess;
                 }
 
-                if (item.children && item.children.length > 0) {
-                    newItem.children = processItems(item.children);
+                // Process children recursively if they exist
+                if (newItem.children) {
+                    newItem.children = processItems(newItem.children);
                 }
 
                 return newItem;

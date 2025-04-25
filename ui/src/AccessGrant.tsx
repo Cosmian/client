@@ -132,7 +132,7 @@ const AccessGrantForm: React.FC = () => {
                             <Form.Item
                                 name="grant_create_access_right"
                                 valuePropName="checked"
-                                help="If set, the user will have the right to create Kms objects."
+                                help="If set, the user will have the right to create and import Kms objects."
                             >
                                 <Checkbox>Grant create access right to user</Checkbox>
                             </Form.Item>

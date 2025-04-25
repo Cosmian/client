@@ -20,7 +20,7 @@ use crate::{
     error::{result::CosmianResult, CosmianError},
     tests::{
         kms::{
-            shared::{destroy, export_key, revoke, ExportKeyParams},
+            shared::{destroy, export_key, import_key, revoke, ExportKeyParams, ImportKeyParams},
             symmetric::encrypt_decrypt::run_encrypt_decrypt_test,
         },
         PROG_NAME,
@@ -34,15 +34,28 @@ fn gen_key(cli_conf_path: &str) -> CosmianResult<String> {
     create_symmetric_key(cli_conf_path, CreateKeyAction::default())
 }
 
-/// Generates a symmetric key
+/// Generates a key pair
 fn gen_keypair(cli_conf_path: &str) -> CosmianResult<(String, String)> {
     create_rsa_key_pair(cli_conf_path, &RsaKeyPairOptions::default())
 }
 
-// /// Generates a symmetric key
-// fn imp_key(cli_conf_path: &str) -> CosmianResult<String> {
-//     import_key(cli_conf_path)
-// }
+/// Export and import symmetric key
+fn export_import_sym_key(key_id: &str, cli_conf_path: &str) -> Result<String, CosmianError> {
+    export_key(ExportKeyParams {
+        cli_conf_path: cli_conf_path.to_owned(),
+        sub_command: "sym".to_owned(),
+        key_id: key_id.to_owned(),
+        key_file: "/tmp/output.export".to_owned(),
+        ..Default::default()
+    })?;
+    let import_params = ImportKeyParams {
+        cli_conf_path: cli_conf_path.to_owned(),
+        sub_command: "sym".to_owned(),
+        key_file: "/tmp/output.export".to_string(),
+        ..Default::default()
+    };
+    import_key(import_params)
+}
 
 /// Grants access to a user
 pub(crate) fn grant_access(
@@ -754,17 +767,29 @@ pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
     ])
     .await;
 
-    // by default privileged users can create objects
+    // by default privileged users can create or import objects
     let key_id = gen_key(&ctx.owner_client_conf_path);
     assert!(key_id.is_ok());
+    let binding = key_id.unwrap();
+    let initial_key_id = binding.as_str();
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(initial_key_id),
+        "user.client@acme.com",
+        &["export", "get"],
+    )?;
     let keypair_id = gen_keypair(&ctx.owner_client_conf_path);
     assert!(keypair_id.is_ok());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.owner_client_conf_path);
+    assert!(imported_key_id.is_ok());
 
-    // by default non-privileged users can't create objects
+    // by default non-privileged users can't create or import objects
     let key_id_user = gen_key(&ctx.user_client_conf_path);
     assert!(key_id_user.is_err());
     let keypair_id_user = gen_key(&ctx.user_client_conf_path);
     assert!(keypair_id_user.is_err());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_err());
 
     // privileged user can grant create access
     let result_grant_create = grant_access(
@@ -780,6 +805,8 @@ pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
     assert!(key_id_user.is_ok());
     let keypair_id_user = gen_key(&ctx.user_client_conf_path);
     assert!(keypair_id_user.is_ok());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_ok());
 
     // simple user can't grant create access
     let result_grant_create = grant_access(
@@ -813,6 +840,8 @@ pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
     assert!(key_id_user.is_err());
     let keypair_id_user = gen_key(&ctx.user_client_conf_path);
     assert!(keypair_id_user.is_err());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_err());
 
     // privileged user can't revoke create access to other privileged user
     let result_revoke_create = revoke_access(
