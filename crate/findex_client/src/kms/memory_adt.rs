@@ -42,7 +42,7 @@ impl<
             *permuted_addresses.get(bindings.len()).ok_or_else(|| {
                 ClientError::Default("no permuted guard address found".to_owned())
             })?,
-            encrypted_words.get(bindings.len()).cloned(),
+            encrypted_words.get(bindings.len()).copied(),
         );
 
         let encrypted_bindings = permuted_addresses
@@ -51,7 +51,7 @@ impl<
             .take(bindings.len())
             .collect::<Vec<_>>();
 
-        let permuted_ag = encrypted_guard.0.clone();
+        let permuted_ag = encrypted_guard.0;
 
         // Perform the actual call to the memory.
         let encrypted_wg_cur = self
@@ -90,6 +90,12 @@ impl<
             .await
             .map_err(|e| ClientError::Default(format!("Memory error: {e}")))?;
 
+        if permuted_addresses.len() < encrypted_words.len() {
+            return Err(ClientError::Default(format!(
+                "there can be no more words than addresses"
+            )));
+        }
+
         // None values need to be filtered out to compose with batch_decrypt.
         // However, their positions shall not be lost.
         let some_encrypted_words = encrypted_words
@@ -100,6 +106,11 @@ impl<
 
         let some_words = self
             .batch_decrypt(
+                // Since indexes are produced using encrypted_words and the
+                // above check guarantees its length is not greater than the
+                // length of permuted_addresses, the following indexing is
+                // guaranteed to be in range.
+                #[allow(clippy::index_slicing)]
                 some_encrypted_words
                     .iter()
                     .map(|(i, w)| (&permuted_addresses[*i], w)),
