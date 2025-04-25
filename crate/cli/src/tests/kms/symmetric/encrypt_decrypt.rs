@@ -444,7 +444,7 @@ async fn test_rfc5649_aes_gcm_client_side() -> CosmianResult<()> {
 
 #[tokio::test]
 async fn test_client_side_encryption_with_buffer() -> CosmianResult<()> {
-    log_init(Some("debug"));
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server().await;
     let kek = create_symmetric_key(
         &ctx.owner_client_conf_path,

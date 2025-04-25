@@ -6,6 +6,7 @@ use cosmian_kms_client::{
     read_object_from_json_ttlv_file,
     reexport::cosmian_kms_client_utils::import_utils::{ImportKeyFormat, KeyUsage},
 };
+use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use test_kms_server::start_default_test_kms_server;
 
@@ -166,8 +167,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
 pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     use crate::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 
-    cosmian_logger::log_init(None);
-    // cosmian_logger::log_init(Some("cosmian_kms_server=debug,cosmian_kms_utils=debug"));
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server().await;
 
     // Covercrypt import/export test

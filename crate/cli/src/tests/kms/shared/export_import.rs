@@ -15,7 +15,7 @@ use crate::{
 
 #[tokio::test]
 pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
-    log_init(Some("info"));
+    log_init(option_env!("RUST_LOG"));
     // init the test server
     let ctx = start_default_test_kms_server().await;
     // create a temp dir
