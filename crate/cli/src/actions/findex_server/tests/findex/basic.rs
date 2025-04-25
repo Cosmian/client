@@ -31,7 +31,7 @@ use crate::{
 };
 
 pub(crate) fn findex_number_of_threads() -> Option<usize> {
-    std::env::var("GITHUB_ACTIONS").is_ok().then_some(1)
+    std::env::var("GITHUB_ACTIONS").map(|_| 1).ok()
 }
 
 #[tokio::test]
