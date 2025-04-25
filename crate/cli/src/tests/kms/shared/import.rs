@@ -6,6 +6,7 @@ use cosmian_kms_client::{
     read_object_from_json_ttlv_file,
     reexport::cosmian_kms_client_utils::import_utils::{ImportKeyFormat, KeyUsage},
 };
+#[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use test_kms_server::start_default_test_kms_server;
