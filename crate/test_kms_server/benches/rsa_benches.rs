@@ -351,8 +351,8 @@ pub(crate) async fn message_encrypt(
     let message_request = RequestMessage {
         request_header: RequestMessageHeader {
             protocol_version: ProtocolVersion {
-                protocol_version_major: 1,
-                protocol_version_minor: 0,
+                protocol_version_major: 2,
+                protocol_version_minor: 1,
             },
             batch_count: num_plaintexts as i32,
             ..Default::default()
@@ -390,8 +390,8 @@ pub(crate) async fn message_decrypt(
     let message_request = RequestMessage {
         request_header: RequestMessageHeader {
             protocol_version: ProtocolVersion {
-                protocol_version_major: 1,
-                protocol_version_minor: 0,
+                protocol_version_major: 2,
+                protocol_version_minor: 1,
             },
             batch_count: num_ciphertexts as i32,
             ..Default::default()
