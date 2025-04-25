@@ -90,10 +90,12 @@ impl<
             .await
             .map_err(|e| ClientError::Default(format!("Memory error: {e}")))?;
 
-        if permuted_addresses.len() < encrypted_words.len() {
-            return Err(ClientError::Default(
-                "there can be no more words than addresses".to_string(),
-            ));
+        if permuted_addresses.len() != encrypted_words.len() {
+            return Err(ClientError::Default(format!(
+                "incorrect number of words: expected {}, but {} were given",
+                permuted_addresses.len(),
+                encrypted_words.len()
+            )));
         }
 
         // None values need to be filtered out to compose with batch_decrypt.
