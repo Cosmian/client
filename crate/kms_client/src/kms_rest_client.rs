@@ -9,7 +9,7 @@ use cosmian_kms_client_utils::reexport::cosmian_kmip::kmip_2_1::kmip_operations:
 };
 use cosmian_kms_client_utils::reexport::{
     cosmian_kmip::kmip_2_1::kmip_operations::{
-        DeleteAttribute, DeleteAttributeResponse, Hash, HashResponse, Mac, MacResponse, ReKey,
+        DeleteAttribute, DeleteAttributeResponse, Hash, HashResponse, MAC, MACResponse, ReKey,
         ReKeyResponse, SetAttribute, SetAttributeResponse,
     },
     cosmian_kms_access::access::{
@@ -400,8 +400,8 @@ impl KmsClient {
     ///
     /// The success or failure of the operation is indicated by the Result Status (and if failure the Result
     /// Reason) in the response header.
-    pub async fn mac(&self, request: Mac) -> Result<MacResponse, KmsClientError> {
-        self.post_ttlv::<Mac, MacResponse>(&request).await
+    pub async fn mac(&self, request: MAC) -> Result<MACResponse, KmsClientError> {
+        self.post_ttlv::<MAC, MACResponse>(&request).await
     }
 
     // This request is used to generate a replacement key pair for an existing

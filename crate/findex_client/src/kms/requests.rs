@@ -6,7 +6,7 @@ use cosmian_kms_client::{
     },
     kmip_2_1::{
         kmip_messages::RequestMessageBatchItem,
-        kmip_operations::{Decrypt, Encrypt, Mac, Operation},
+        kmip_operations::{Decrypt, Encrypt, MAC, Operation},
         kmip_types::{CryptographicAlgorithm, CryptographicParameters, UniqueIdentifier},
         requests::encrypt_request,
     },
@@ -38,13 +38,13 @@ impl<
         })
     }
 
-    fn build_mac_request(&self, data: Vec<u8>) -> Mac {
-        Mac {
+    fn build_mac_request(&self, data: Vec<u8>) -> MAC {
+        MAC {
             unique_identifier: Some(UniqueIdentifier::TextString(self.hmac_key_id.clone())),
-            cryptographic_parameters: CryptographicParameters {
+            cryptographic_parameters: Some(CryptographicParameters {
                 hashing_algorithm: Some(HashingAlgorithm::SHA3256),
                 ..CryptographicParameters::default()
-            },
+            }),
             data: Some(data),
             ..Default::default()
         }

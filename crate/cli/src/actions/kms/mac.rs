@@ -4,7 +4,7 @@ use clap::{Parser, ValueEnum};
 use cosmian_kms_client::{
     KmsClient,
     cosmian_kmip::{kmip_0::kmip_types::HashingAlgorithm, kmip_2_1::kmip_types::UniqueIdentifier},
-    kmip_2_1::{kmip_operations::Mac, kmip_types::CryptographicParameters},
+    kmip_2_1::{kmip_operations::MAC, kmip_types::CryptographicParameters},
 };
 
 use crate::{actions::console, error::result::CosmianResult};
@@ -123,9 +123,9 @@ impl MacAction {
         let final_indicator = Some(self.final_indicator);
 
         let response = kms_rest_client
-            .mac(Mac {
+            .mac(MAC {
                 unique_identifier: unique_identifier.clone(),
-                cryptographic_parameters,
+                cryptographic_parameters: Some(cryptographic_parameters),
                 data,
                 correlation_value,
                 init_indicator,
@@ -133,7 +133,7 @@ impl MacAction {
             })
             .await?;
 
-        let hex_output = response.data.map_or_else(String::new, hex::encode);
+        let hex_output = response.mac_data.map_or_else(String::new, hex::encode);
 
         console::Stdout::new(&format!("Mac output: {hex_output}")).write()?;
         Ok(())
