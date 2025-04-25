@@ -349,7 +349,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
-    log_init(Some("debug"));
+    log_init(option_env!("RUST_LOG"));
     // the client conf will use the owner cert
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
@@ -509,7 +509,7 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
-    log_init(Some("debug"));
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
