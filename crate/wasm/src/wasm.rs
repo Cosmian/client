@@ -1055,10 +1055,7 @@ pub fn parse_get_attributes_ttlv_response(
     response: &str,
     selected_attributes: Vec<String>,
 ) -> Result<JsValue, JsValue> {
-    let selected_attributes: Vec<&str> = selected_attributes
-        .iter()
-        .map(std::string::String::as_str)
-        .collect();
+    let selected_attributes: Vec<&str> = selected_attributes.iter().map(String::as_str).collect();
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
     let GetAttributesResponse {
         unique_identifier: _,
