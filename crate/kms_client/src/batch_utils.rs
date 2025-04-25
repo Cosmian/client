@@ -26,8 +26,8 @@ pub(crate) async fn batch_operations(
     let request = RequestMessage {
         request_header: RequestMessageHeader {
             protocol_version: ProtocolVersion {
-                protocol_version_major: 1,
-                protocol_version_minor: 0,
+                protocol_version_major: 2,
+                protocol_version_minor: 1,
             },
             maximum_response_size: Some(9999),
             batch_count: i32::try_from(operations.len())?,
