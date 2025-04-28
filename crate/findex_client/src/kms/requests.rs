@@ -45,12 +45,11 @@ impl<
         }
     }
 
-    pub(crate) fn build_mac_message_request(
+    pub(crate) fn build_mac_message_request<'a>(
         &self,
-        addresses: &[Memory::Address],
+        addresses: impl Iterator<Item = &'a Memory::Address>,
     ) -> ClientResult<Message> {
         let items = addresses
-            .iter()
             .map(|address| {
                 MessageBatchItem::new(Operation::Mac(self.build_mac_request(address.to_vec())))
             })
@@ -73,15 +72,12 @@ impl<
         )?)
     }
 
-    pub(crate) fn build_encrypt_message_request(
+    pub(crate) fn build_encrypt_message_request<'a>(
         &self,
-        words: &[[u8; WORD_LENGTH]],
-        tokens: &[Memory::Address],
+        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
     ) -> ClientResult<Message> {
-        let items = words
-            .iter()
-            .zip(tokens)
-            .map(|(word, address)| {
+        let items = bindings
+            .map(|(address, word)| {
                 self.build_encrypt_request(word.to_vec(), address.to_vec())
                     .map(|encrypt_request| {
                         MessageBatchItem::new(Operation::Encrypt(encrypt_request))
@@ -105,15 +101,12 @@ impl<
         }
     }
 
-    pub(crate) fn build_decrypt_message_request(
+    pub(crate) fn build_decrypt_message_request<'a>(
         &self,
-        words: &[[u8; WORD_LENGTH]],
-        tokens: &[Memory::Address],
+        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
     ) -> ClientResult<Message> {
-        let items = words
-            .iter()
-            .zip(tokens)
-            .map(|(word, address)| {
+        let items = bindings
+            .map(|(address, word)| {
                 MessageBatchItem::new(Operation::Decrypt(
                     self.build_decrypt_request(word.to_vec(), address.to_vec()),
                 ))
