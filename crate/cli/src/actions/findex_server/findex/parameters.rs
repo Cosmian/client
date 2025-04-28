@@ -2,6 +2,7 @@ use clap::Parser;
 use cosmian_kms_client::{
     KmsClient, reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
 };
+use tracing::trace;
 use uuid::Uuid;
 
 use super::findex_instance::FindexKeys;
@@ -68,6 +69,7 @@ impl FindexParameters {
             algorithm: SymmetricAlgorithm,
             key_type: &str,
         ) -> CosmianResult<String> {
+            trace!("Generating {key_type} key with {bits} bits using {algorithm:?}",);
             let uid = CreateKeyAction {
                 number_of_bits: Some(bits as usize),
                 algorithm,

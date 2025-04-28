@@ -10,7 +10,9 @@ use cosmian_kms_client::{
     kmip_2_1::{
         kmip_attributes::Attributes,
         kmip_data_structures::KeyWrappingSpecification,
-        kmip_types::{CryptographicAlgorithm, CryptographicParameters, KeyFormatType},
+        kmip_types::{
+            CryptographicAlgorithm, CryptographicParameters, EncodingOption, KeyFormatType,
+        },
         requests::{create_symmetric_key_kmip_object, encrypt_request},
     },
     read_bytes_from_file,
@@ -20,6 +22,7 @@ use cosmian_kms_crypto::crypto::{
     symmetric::symmetric_ciphers::{Mode, SymCipher, encrypt, random_key, random_nonce},
     wrap::wrap_key_block,
 };
+use tracing::trace;
 use zeroize::Zeroizing;
 
 use crate::{
@@ -374,6 +377,9 @@ impl EncryptAction {
         kek_id: &str,
         data_encryption_algorithm: DataEncryptionAlgorithm,
     ) -> CosmianResult<(Zeroizing<Vec<u8>>, Vec<u8>)> {
+        trace!(
+            "client_side_kem_encapsulation: data_encryption_algorithm: {data_encryption_algorithm}"
+        );
         // Generate the ephemeral key (DEK)
         let dek: Zeroizing<Vec<u8>> = match data_encryption_algorithm {
             DataEncryptionAlgorithm::AesCbc => random_key(SymCipher::Aes256Cbc)?,
@@ -384,6 +390,10 @@ impl EncryptAction {
             DataEncryptionAlgorithm::AesGcmSiv => random_key(SymCipher::Aes256Gcm)?,
             DataEncryptionAlgorithm::AesXts => random_key(SymCipher::Aes256Xts)?,
         };
+        trace!(
+            "client_side_kem_encapsulation: dek (len={}): {dek:?}",
+            dek.len()
+        );
 
         // First export the KEK locally
         let wrapping_key = export_object(
@@ -409,7 +419,10 @@ impl EncryptAction {
         wrap_key_block(
             dek_object.key_block_mut()?,
             &wrapping_key,
-            &KeyWrappingSpecification::default(),
+            &KeyWrappingSpecification {
+                encoding_option: Some(EncodingOption::NoEncoding),
+                ..Default::default()
+            },
         )?;
 
         let encapsulation = dek_object.key_block()?.key_bytes()?;
