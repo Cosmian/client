@@ -105,6 +105,13 @@ impl<
             .enumerate()
             .filter_map(|(i, w)| w.map(|w| (i, w)))
             .collect::<Vec<_>>();
+        trace!(
+            "batch_read: some_encrypted_words: {:?}",
+            some_encrypted_words
+        );
+        if some_encrypted_words.is_empty() {
+            return Ok(vec![None; addresses.len()]);
+        }
 
         let some_words = self
             .batch_decrypt(
@@ -380,9 +387,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_sequential_read_write() -> ClientResult<()> {
-        log_init(Some(
-            "info,cosmian_kms_server=debug,cosmian_findex_client::kms=trace",
-        ));
+        log_init(None);
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 

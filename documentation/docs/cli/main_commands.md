@@ -72,13 +72,11 @@ Handle KMS actions
 
 **`mac`** [[1.12]](#112-cosmian-kms-mac)  Hash arbitrary data with a MAC key.
 
-**`new-database`** [[1.13]](#113-cosmian-kms-new-database)  Initialize a new user encrypted database and return the secret (`SQLCipher` only).
+**`rsa`** [[1.13]](#113-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
 
-**`rsa`** [[1.14]](#114-cosmian-kms-rsa)  Manage RSA keys. Encrypt and decrypt data using RSA keys
+**`server-version`** [[1.14]](#114-cosmian-kms-server-version)  Print the version of the server
 
-**`server-version`** [[1.15]](#115-cosmian-kms-server-version)  Print the version of the server
-
-**`sym`** [[1.16]](#116-cosmian-kms-sym)  Manage symmetric keys. Encrypt and decrypt data
+**`sym`** [[1.15]](#115-cosmian-kms-sym)  Manage symmetric keys. Encrypt and decrypt data
 
 ---
 
@@ -528,8 +526,6 @@ Possible values:  `"true", "false"` [default: `"false"`]
 `--key-usage <KEY_USAGE>` For what operations should the key be used
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
-
-`--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
 
 
 
@@ -1249,8 +1245,6 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
 
-`--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
-
 
 
 ---
@@ -1762,17 +1756,7 @@ Possible values:  `"true", "false"`
 
 ---
 
-## 1.13 cosmian kms new-database
-
-Initialize a new user encrypted database and return the secret (`SQLCipher` only).
-
-### Usage
-`cosmian kms new-database`
-
-
----
-
-## 1.14 cosmian kms rsa
+## 1.13 cosmian kms rsa
 
 Manage RSA keys. Encrypt and decrypt data using RSA keys
 
@@ -1781,15 +1765,15 @@ Manage RSA keys. Encrypt and decrypt data using RSA keys
 
 ### Subcommands
 
-**`keys`** [[1.14.1]](#1141-cosmian-kms-rsa-keys)  Create, destroy, import, and export RSA key pairs
+**`keys`** [[1.13.1]](#1131-cosmian-kms-rsa-keys)  Create, destroy, import, and export RSA key pairs
 
-**`encrypt`** [[1.14.2]](#1142-cosmian-kms-rsa-encrypt)  Encrypt a file with the given public key using either
+**`encrypt`** [[1.13.2]](#1132-cosmian-kms-rsa-encrypt)  Encrypt a file with the given public key using either
 
  - `CKM_RSA_PKCS` a.k.a PKCS #1 RSA V1.5 as specified in PKCS#11 v2.40
  - `CKM_RSA_PKCS_OAEP` a.k.a PKCS #1 RSA OAEP as specified in PKCS#11 v2.40
  - `CKM_RSA_AES_KEY_WRAP` as specified in PKCS#11 v2.40
 
-**`decrypt`** [[1.14.3]](#1143-cosmian-kms-rsa-decrypt)  Decrypt a file with the given private key using either
+**`decrypt`** [[1.13.3]](#1133-cosmian-kms-rsa-decrypt)  Decrypt a file with the given private key using either
 
  - `CKM_RSA_PKCS` a.k.a PKCS #1 RSA V1.5 as specified in PKCS#11 v2.40
  - `CKM_RSA_PKCS_OAEP` a.k.a PKCS #1 RSA OAEP as specified in PKCS#11 v2.40
@@ -1797,7 +1781,7 @@ Manage RSA keys. Encrypt and decrypt data using RSA keys
 
 ---
 
-## 1.14.1 cosmian kms rsa keys
+## 1.13.1 cosmian kms rsa keys
 
 Create, destroy, import, and export RSA key pairs
 
@@ -1806,23 +1790,23 @@ Create, destroy, import, and export RSA key pairs
 
 ### Subcommands
 
-**`create`** [[1.14.1.1]](#11411-cosmian-kms-rsa-keys-create)  Create a new RSA key pair
+**`create`** [[1.13.1.1]](#11311-cosmian-kms-rsa-keys-create)  Create a new RSA key pair
 
-**`export`** [[1.14.1.2]](#11412-cosmian-kms-rsa-keys-export)  Export a key from the KMS
+**`export`** [[1.13.1.2]](#11312-cosmian-kms-rsa-keys-export)  Export a key from the KMS
 
-**`import`** [[1.14.1.3]](#11413-cosmian-kms-rsa-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.13.1.3]](#11313-cosmian-kms-rsa-keys-import)  Import a private or public key in the KMS.
 
-**`wrap`** [[1.14.1.4]](#11414-cosmian-kms-rsa-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.13.1.4]](#11314-cosmian-kms-rsa-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.14.1.5]](#11415-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.13.1.5]](#11315-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
 
-**`revoke`** [[1.14.1.6]](#11416-cosmian-kms-rsa-keys-revoke)  Revoke a public or private key
+**`revoke`** [[1.13.1.6]](#11316-cosmian-kms-rsa-keys-revoke)  Revoke a public or private key
 
-**`destroy`** [[1.14.1.7]](#11417-cosmian-kms-rsa-keys-destroy)  Destroy a public or private key
+**`destroy`** [[1.13.1.7]](#11317-cosmian-kms-rsa-keys-destroy)  Destroy a public or private key
 
 ---
 
-## 1.14.1.1 cosmian kms rsa keys create
+## 1.13.1.1 cosmian kms rsa keys create
 
 Create a new RSA key pair
 
@@ -1844,7 +1828,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.14.1.2 cosmian kms rsa keys export
+## 1.13.1.2 cosmian kms rsa keys export
 
 Export a key from the KMS
 
@@ -1895,7 +1879,7 @@ By default, the algorithm used is
 
 ---
 
-## 1.14.1.3 cosmian kms rsa keys import
+## 1.13.1.3 cosmian kms rsa keys import
 
 Import a private or public key in the KMS.
 
@@ -1932,13 +1916,11 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
 
-`--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
-
 
 
 ---
 
-## 1.14.1.4 cosmian kms rsa keys wrap
+## 1.13.1.4 cosmian kms rsa keys wrap
 
 Locally wrap a key in KMIP JSON TTLV format.
 
@@ -1963,7 +1945,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.14.1.5 cosmian kms rsa keys unwrap
+## 1.13.1.5 cosmian kms rsa keys unwrap
 
 Locally unwrap a key in KMIP JSON TTLV format.
 
@@ -1986,7 +1968,7 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.14.1.6 cosmian kms rsa keys revoke
+## 1.13.1.6 cosmian kms rsa keys revoke
 
 Revoke a public or private key
 
@@ -2004,7 +1986,7 @@ Revoke a public or private key
 
 ---
 
-## 1.14.1.7 cosmian kms rsa keys destroy
+## 1.13.1.7 cosmian kms rsa keys destroy
 
 Destroy a public or private key
 
@@ -2027,7 +2009,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.14.2 cosmian kms rsa encrypt
+## 1.13.2 cosmian kms rsa encrypt
 
 Encrypt a file with the given public key using either
 
@@ -2059,7 +2041,7 @@ Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "
 
 ---
 
-## 1.14.3 cosmian kms rsa decrypt
+## 1.13.3 cosmian kms rsa decrypt
 
 Decrypt a file with the given private key using either
 
@@ -2092,7 +2074,7 @@ Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "
 
 ---
 
-## 1.15 cosmian kms server-version
+## 1.14 cosmian kms server-version
 
 Print the version of the server
 
@@ -2102,7 +2084,7 @@ Print the version of the server
 
 ---
 
-## 1.16 cosmian kms sym
+## 1.15 cosmian kms sym
 
 Manage symmetric keys. Encrypt and decrypt data
 
@@ -2111,15 +2093,15 @@ Manage symmetric keys. Encrypt and decrypt data
 
 ### Subcommands
 
-**`keys`** [[1.16.1]](#1161-cosmian-kms-sym-keys)  Create, destroy, import, and export symmetric keys
+**`keys`** [[1.15.1]](#1151-cosmian-kms-sym-keys)  Create, destroy, import, and export symmetric keys
 
-**`encrypt`** [[1.16.2]](#1162-cosmian-kms-sym-encrypt)  Encrypt a file using a symmetric cipher
+**`encrypt`** [[1.15.2]](#1152-cosmian-kms-sym-encrypt)  Encrypt a file using a symmetric cipher
 
-**`decrypt`** [[1.16.3]](#1163-cosmian-kms-sym-decrypt)  Decrypt a file using a symmetric key.
+**`decrypt`** [[1.15.3]](#1153-cosmian-kms-sym-decrypt)  Decrypt a file using a symmetric key.
 
 ---
 
-## 1.16.1 cosmian kms sym keys
+## 1.15.1 cosmian kms sym keys
 
 Create, destroy, import, and export symmetric keys
 
@@ -2128,25 +2110,25 @@ Create, destroy, import, and export symmetric keys
 
 ### Subcommands
 
-**`create`** [[1.16.1.1]](#11611-cosmian-kms-sym-keys-create)  Create a new symmetric key
+**`create`** [[1.15.1.1]](#11511-cosmian-kms-sym-keys-create)  Create a new symmetric key
 
-**`re-key`** [[1.16.1.2]](#11612-cosmian-kms-sym-keys-re-key)  Refresh an existing symmetric key
+**`re-key`** [[1.15.1.2]](#11512-cosmian-kms-sym-keys-re-key)  Refresh an existing symmetric key
 
-**`export`** [[1.16.1.3]](#11613-cosmian-kms-sym-keys-export)  Export a key from the KMS
+**`export`** [[1.15.1.3]](#11513-cosmian-kms-sym-keys-export)  Export a key from the KMS
 
-**`import`** [[1.16.1.4]](#11614-cosmian-kms-sym-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.15.1.4]](#11514-cosmian-kms-sym-keys-import)  Import a private or public key in the KMS.
 
-**`wrap`** [[1.16.1.5]](#11615-cosmian-kms-sym-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.15.1.5]](#11515-cosmian-kms-sym-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.16.1.6]](#11616-cosmian-kms-sym-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.15.1.6]](#11516-cosmian-kms-sym-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
 
-**`revoke`** [[1.16.1.7]](#11617-cosmian-kms-sym-keys-revoke)  Revoke a symmetric key
+**`revoke`** [[1.15.1.7]](#11517-cosmian-kms-sym-keys-revoke)  Revoke a symmetric key
 
-**`destroy`** [[1.16.1.8]](#11618-cosmian-kms-sym-keys-destroy)  Destroy a symmetric key
+**`destroy`** [[1.15.1.8]](#11518-cosmian-kms-sym-keys-destroy)  Destroy a symmetric key
 
 ---
 
-## 1.16.1.1 cosmian kms sym keys create
+## 1.15.1.1 cosmian kms sym keys create
 
 Create a new symmetric key
 
@@ -2181,7 +2163,7 @@ If the wrapping key is:
 
 ---
 
-## 1.16.1.2 cosmian kms sym keys re-key
+## 1.15.1.2 cosmian kms sym keys re-key
 
 Refresh an existing symmetric key
 
@@ -2194,7 +2176,7 @@ Refresh an existing symmetric key
 
 ---
 
-## 1.16.1.3 cosmian kms sym keys export
+## 1.15.1.3 cosmian kms sym keys export
 
 Export a key from the KMS
 
@@ -2245,7 +2227,7 @@ By default, the algorithm used is
 
 ---
 
-## 1.16.1.4 cosmian kms sym keys import
+## 1.15.1.4 cosmian kms sym keys import
 
 Import a private or public key in the KMS.
 
@@ -2282,13 +2264,11 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
 
-`--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
-
 
 
 ---
 
-## 1.16.1.5 cosmian kms sym keys wrap
+## 1.15.1.5 cosmian kms sym keys wrap
 
 Locally wrap a key in KMIP JSON TTLV format.
 
@@ -2313,7 +2293,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.16.1.6 cosmian kms sym keys unwrap
+## 1.15.1.6 cosmian kms sym keys unwrap
 
 Locally unwrap a key in KMIP JSON TTLV format.
 
@@ -2336,7 +2316,7 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 ---
 
-## 1.16.1.7 cosmian kms sym keys revoke
+## 1.15.1.7 cosmian kms sym keys revoke
 
 Revoke a symmetric key
 
@@ -2354,7 +2334,7 @@ Revoke a symmetric key
 
 ---
 
-## 1.16.1.8 cosmian kms sym keys destroy
+## 1.15.1.8 cosmian kms sym keys destroy
 
 Destroy a symmetric key
 
@@ -2377,7 +2357,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 ---
 
-## 1.16.2 cosmian kms sym encrypt
+## 1.15.2 cosmian kms sym encrypt
 
 Encrypt a file using a symmetric cipher
 
@@ -2409,7 +2389,7 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rf
 
 ---
 
-## 1.16.3 cosmian kms sym decrypt
+## 1.15.3 cosmian kms sym decrypt
 
 Decrypt a file using a symmetric key.
 

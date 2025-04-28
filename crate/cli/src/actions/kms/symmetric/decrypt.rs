@@ -260,6 +260,7 @@ impl DecryptAction {
         // determine the DEM parameters
         let dem_cryptographic_parameters: CryptographicParameters =
             data_encryption_algorithm.into();
+        trace!("client_side_decrypt_with_file: dek length {}", dek.len());
         let cipher = SymCipher::from_algorithm_and_key_size(
             dem_cryptographic_parameters
                 .cryptographic_algorithm
@@ -326,8 +327,9 @@ impl DecryptAction {
         aad: Option<Vec<u8>>,
     ) -> CosmianResult<Vec<u8>> {
         trace!(
-            "Decrypting buffer with data encryption algorithm {:?}, key id {:?}, ciphertext: {:?}",
-            data_encryption_algorithm, key_encapsulation_key_id, ciphertext
+            "client_side_decrypt_with_buffer: encryption algorithm {:?}, key id {:?}, ciphertext (len={}): \
+             {:?}",
+            data_encryption_algorithm, key_encapsulation_key_id, ciphertext.len(), ciphertext
         );
 
         // First export the KEK locally
@@ -365,6 +367,7 @@ impl DecryptAction {
         // read the encapsulated data
         #[allow(clippy::cast_possible_truncation)]
         let mut encapsulation = vec![0; encaps_length as usize];
+        trace!("client_side_decrypt_with_buffer: encapsulation length {}", encaps_length);
         ct.read_exact(&mut encapsulation)?;
 
         // Create the KMIP object corresponding to the DEK
@@ -389,6 +392,8 @@ impl DecryptAction {
         // determine the DEM parameters
         let dem_cryptographic_parameters: CryptographicParameters =
             data_encryption_algorithm.into();
+
+        trace!("client_side_decrypt_with_buffer: dek length {}", dek.len());
         let sym_cipher = SymCipher::from_algorithm_and_key_size(
             dem_cryptographic_parameters
                 .cryptographic_algorithm
