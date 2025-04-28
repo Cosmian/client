@@ -20,13 +20,13 @@
     cosmian --version
     ```
 
-=== "RHEL 9"
+=== "Rocky Linux 9"
 
     Download package and install it:
 
     ```console title="On local machine"
-    sudo dnf update && dnf install -y wget
-    wget https://package.cosmian.com/cli/0.3.1/rhel9/cosmian_cli-0.3.1-1.x86_64.rpm
+    sudo dnf update && sudo dnf install -y wget
+    wget https://package.cosmian.com/cli/0.3.1/rockylinux9/cosmian_cli-0.3.1-1.x86_64.rpm
     sudo dnf install ./cosmian_cli-0.3.1-1.x86_64.rpm
     cosmian --version
     ```
