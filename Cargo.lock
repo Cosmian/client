@@ -1942,7 +1942,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "bitflags 2.9.0",
  "chrono",
@@ -1963,7 +1963,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1972,7 +1972,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_base_hsm"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -2041,7 +2041,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_crypto"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2065,7 +2065,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_interfaces"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2079,7 +2079,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2138,7 +2138,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server_database"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "async-trait",
  "clap",
@@ -5386,7 +5386,7 @@ dependencies = [
 [[package]]
 name = "pkcs11_sys"
 version = "0.2.17"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 
 [[package]]
 name = "pkcs5"
@@ -5587,7 +5587,7 @@ dependencies = [
 [[package]]
 name = "proteccio_pkcs11_loader"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -7710,7 +7710,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utimaco_pkcs11_loader"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#b119835e69868958a0782b938006b99d4e38e594"
+source = "git+https://www.github.com/Cosmian/kms?branch=feat%2Fadd_privileged_create#af8f4620230c99f1b3d370edde32e837e651565c"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
