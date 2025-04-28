@@ -7,22 +7,22 @@ use cosmian_kms_client::read_object_from_json_ttlv_file;
 use cosmian_logger::log_init;
 use tempfile::TempDir;
 use test_kms_server::{
-    start_test_server_with_options, AuthenticationOptions, MainDBConfig, TestsContext,
+    AuthenticationOptions, MainDBConfig, TestsContext, start_test_server_with_options,
 };
 use tracing::{info, trace};
 
-use super::{utils::recover_cmd_logs, KMS_SUBCOMMAND};
+use super::{KMS_SUBCOMMAND, utils::recover_cmd_logs};
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::result::CosmianResult,
     tests::{
+        PROG_NAME,
         kms::{
             access::SUB_COMMAND,
-            shared::{export_key, ExportKeyParams},
+            shared::{ExportKeyParams, export_key},
             symmetric::create_key::create_symmetric_key,
         },
-        PROG_NAME,
     },
 };
 

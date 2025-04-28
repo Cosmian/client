@@ -7,14 +7,14 @@ use std::{
 };
 
 use actix_server::ServerHandle;
-use base64::{engine::general_purpose::STANDARD as b64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as b64};
 use cosmian_cli::{
     config::ClientConfig,
     reexport::{
         cosmian_kms_client::{
-            kms_client_bail, kms_client_error,
+            GmailApiConf, KmsClient, KmsClientConfig, KmsClientError, kms_client_bail,
+            kms_client_error,
             reexport::{cosmian_config_utils::ConfigUtils, cosmian_http_client::HttpClientConfig},
-            GmailApiConf, KmsClient, KmsClientConfig, KmsClientError,
         },
         cosmian_kms_crypto::crypto::{
             secret::Secret, symmetric::symmetric_ciphers::AES_256_GCM_KEY_LENGTH,
@@ -31,7 +31,7 @@ use tempfile::TempDir;
 use tokio::sync::OnceCell;
 use tracing::{info, trace};
 
-use crate::test_jwt::{get_auth0_jwt_config, AUTH0_TOKEN, AUTH0_TOKEN_USER};
+use crate::test_jwt::{AUTH0_TOKEN, AUTH0_TOKEN_USER, get_auth0_jwt_config};
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N KMS servers (one per test)

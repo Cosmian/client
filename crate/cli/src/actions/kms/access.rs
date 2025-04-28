@@ -1,7 +1,7 @@
 use clap::Parser;
 use cosmian_kms_client::{
-    cosmian_kmip::kmip_2_1::kmip_types::UniqueIdentifier, kmip_2_1::KmipOperation,
-    reexport::cosmian_kms_access::access::Access, KmsClient,
+    KmsClient, cosmian_kmip::kmip_2_1::kmip_types::UniqueIdentifier, kmip_2_1::KmipOperation,
+    reexport::cosmian_kms_access::access::Access,
 };
 
 use crate::{
