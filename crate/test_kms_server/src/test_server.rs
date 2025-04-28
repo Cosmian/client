@@ -61,23 +61,6 @@ fn sqlite_db_config() -> MainDBConfig {
     }
 }
 
-fn sqlite_enc_db_config() -> MainDBConfig {
-    trace!("TESTS: using sqlite-enc");
-    let tmp_dir = TempDir::new().unwrap();
-    // SQLCipher uses a directory
-    let dir_path = tmp_dir.path().join("test_sqlite_enc.db");
-    if dir_path.exists() {
-        std::fs::remove_dir_all(&dir_path).unwrap();
-    }
-    std::fs::create_dir_all(&dir_path).unwrap();
-    MainDBConfig {
-        database_type: Some("sqlite-enc".to_owned()),
-        clear_database: true,
-        sqlite_path: dir_path,
-        ..MainDBConfig::default()
-    }
-}
-
 fn mysql_db_config() -> MainDBConfig {
     trace!("TESTS: using mysql");
     let mysql_url = option_env!("KMS_MYSQL_URL")
@@ -125,7 +108,7 @@ fn get_db_config() -> MainDBConfig {
     env::var_os("KMS_TEST_DB").map_or_else(sqlite_db_config, |v| match v.to_str().unwrap_or("") {
         "redis-findex" => redis_findex_db_config(),
         "mysql" => mysql_db_config(),
-        "sqlite-enc" => sqlite_enc_db_config(),
+        "sqlite-enc" => sqlite_db_config(),
         "postgresql" => postgres_db_config(),
         _ => sqlite_db_config(),
     })
@@ -579,7 +562,7 @@ pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
 #[tokio::test]
 async fn test_start_server() -> Result<(), KmsClientError> {
     let context = start_test_server_with_options(
-        sqlite_enc_db_config(),
+        sqlite_db_config(),
         9990,
         AuthenticationOptions {
             use_jwt_token: false,

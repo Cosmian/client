@@ -327,9 +327,12 @@ impl DecryptAction {
         aad: Option<Vec<u8>>,
     ) -> CosmianResult<Vec<u8>> {
         trace!(
-            "client_side_decrypt_with_buffer: encryption algorithm {:?}, key id {:?}, ciphertext (len={}): \
-             {:?}",
-            data_encryption_algorithm, key_encapsulation_key_id, ciphertext.len(), ciphertext
+            "client_side_decrypt_with_buffer: encryption algorithm {:?}, key id {:?}, ciphertext \
+             (len={}): {:?}",
+            data_encryption_algorithm,
+            key_encapsulation_key_id,
+            ciphertext.len(),
+            ciphertext
         );
 
         // First export the KEK locally
@@ -367,7 +370,10 @@ impl DecryptAction {
         // read the encapsulated data
         #[allow(clippy::cast_possible_truncation)]
         let mut encapsulation = vec![0; encaps_length as usize];
-        trace!("client_side_decrypt_with_buffer: encapsulation length {}", encaps_length);
+        trace!(
+            "client_side_decrypt_with_buffer: encapsulation length {}",
+            encaps_length
+        );
         ct.read_exact(&mut encapsulation)?;
 
         // Create the KMIP object corresponding to the DEK

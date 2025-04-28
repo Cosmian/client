@@ -376,10 +376,13 @@ pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
         {
             let mut session_map = SESSIONS.lock().expect("failed locking the sessions map");
             if session_map.is_empty() {
-                session_map.insert(0, Session {
-                    flags,
-                    ..Default::default()
-                });
+                session_map.insert(
+                    0,
+                    Session {
+                        flags,
+                        ..Default::default()
+                    },
+                );
             }
         }
         0
@@ -388,10 +391,13 @@ pub(crate) fn create(flags: CK_FLAGS) -> CK_SESSION_HANDLE {
         SESSIONS
             .lock()
             .expect("failed locking the sessions map")
-            .insert(handle, Session {
-                flags,
-                ..Default::default()
-            });
+            .insert(
+                handle,
+                Session {
+                    flags,
+                    ..Default::default()
+                },
+            );
         handle
     }
 }

@@ -65,22 +65,28 @@ pub(crate) async fn test_mac() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server().await;
 
-    let mac_key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        algorithm: SymmetricAlgorithm::Sha3,
-        number_of_bits: Some(256),
-        ..Default::default()
-    })?;
+    let mac_key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            algorithm: SymmetricAlgorithm::Sha3,
+            number_of_bits: Some(256),
+            ..Default::default()
+        },
+    )?;
 
     let large_data = "00".repeat(1024);
 
-    create_mac(&ctx.owner_client_conf_path, MacAction {
-        mac_key_id,
-        hashing_algorithm: CHashingAlgorithm::SHA3_256,
-        data: Some(large_data),
-        correlation_value: None,
-        init_indicator: false,
-        final_indicator: false,
-    })?;
+    create_mac(
+        &ctx.owner_client_conf_path,
+        MacAction {
+            mac_key_id,
+            hashing_algorithm: CHashingAlgorithm::SHA3_256,
+            data: Some(large_data),
+            correlation_value: None,
+            init_indicator: false,
+            final_indicator: false,
+        },
+    )?;
 
     Ok(())
 }
