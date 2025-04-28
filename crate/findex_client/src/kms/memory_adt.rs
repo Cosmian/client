@@ -256,10 +256,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![(
-                    header_addr,
-                    [2; CUSTOM_WORD_LENGTH]
-                ),])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![(header_addr, [2; CUSTOM_WORD_LENGTH]),]
+                )
                 .await?,
             None
         );
@@ -287,10 +287,13 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                    ]
+                )
                 .await?,
             None
         );
@@ -321,33 +324,42 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2, [1; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                        (val_addr_2, [1; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             None
         );
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2, [3; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
+                        (val_addr_2, [3; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, Some([2; CUSTOM_WORD_LENGTH])), vec![
-                    (header_addr, [4; CUSTOM_WORD_LENGTH]),
-                    (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_4, [2; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, Some([2; CUSTOM_WORD_LENGTH])),
+                    vec![
+                        (header_addr, [4; CUSTOM_WORD_LENGTH]),
+                        (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_4, [2; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
@@ -375,7 +387,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_sequential_read_write() -> ClientResult<()> {
-        log_init(None);
+        log_init(Some(
+            "info,cosmian_kms_server=debug,cosmian_findex_client::kms=trace",
+        ));
         let ctx = start_default_test_kms_server().await;
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
 

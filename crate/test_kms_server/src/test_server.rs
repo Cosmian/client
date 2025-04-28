@@ -286,7 +286,8 @@ pub async fn start_test_server_with_options(
     non_revocable_key_id: Option<Vec<String>>,
     hsm_options: Option<HsmOptions>,
 ) -> Result<TestsContext, KmsClientError> {
-    log_init(None);
+    log_init(option_env!("RUST_LOG"));
+
     let server_params = generate_server_params(
         db_config.clone(),
         port,
@@ -364,7 +365,7 @@ async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), Kms
             retry = timeout >= 0;
             if retry {
                 info!("The server is not up yet, retrying in {waiting}s... ({result:?}) ",);
-                thread::sleep(Duration::from_secs(waiting));
+                tokio::time::sleep(Duration::from_secs(waiting)).await;
                 waiting *= 2;
             } else {
                 info!("The server is still not up, stop trying");
@@ -474,7 +475,7 @@ fn generate_owner_conf(
     // Create a conf
     let owner_client_conf_path = format!("/tmp/owner_kms_{}.toml", server_params.http_port);
 
-    let gmail_api_conf: Option<GmailApiConf> = std::env::var("TEST_GMAIL_API_CONF")
+    let gmail_api_conf: Option<GmailApiConf> = env::var("TEST_GMAIL_API_CONF")
         .ok()
         .and_then(|config| serde_json::from_str(&config).ok());
 
