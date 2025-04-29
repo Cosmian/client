@@ -683,7 +683,7 @@ fn cancel_function() {
 
 #[test]
 #[serial]
-fn test_generate_key_encrypt_decrypt() -> ModuleResult<()> {
+fn module_test_generate_key_encrypt_decrypt() -> ModuleResult<()> {
     test_init();
     assert_eq!(C_Initialize(ptr::null_mut()), CKR_OK);
     let mut handle = CK_INVALID_HANDLE;

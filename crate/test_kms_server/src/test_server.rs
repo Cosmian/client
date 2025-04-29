@@ -226,7 +226,7 @@ impl TestsContext {
         self.server_handle.stop(false).await;
         self.thread_handle
             .join()
-            .map_err(|_e| kms_client_error!("failed joining th stop thread"))?
+            .map_err(|_e| kms_client_error!("failed joining the stop thread"))?
     }
 }
 
@@ -565,7 +565,7 @@ pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
 async fn test_start_server() -> Result<(), KmsClientError> {
     let context = start_test_server_with_options(
         sqlite_db_config(),
-                DEFAULT_SOCKET_SERVER_PORT + 4,
+        DEFAULT_SOCKET_SERVER_PORT + 4,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
