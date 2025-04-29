@@ -57,13 +57,16 @@ pub(crate) async fn test_hash() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server().await;
 
-    create_hash(&ctx.owner_client_conf_path, HashAction {
-        hashing_algorithm: CHashingAlgorithm::SHA3_256,
-        data: Some("010203".to_owned()),
-        correlation_value: None,
-        init_indicator: false,
-        final_indicator: false,
-    })?;
+    create_hash(
+        &ctx.owner_client_conf_path,
+        HashAction {
+            hashing_algorithm: CHashingAlgorithm::SHA3_256,
+            data: Some("010203".to_owned()),
+            correlation_value: None,
+            init_indicator: false,
+            final_indicator: false,
+        },
+    )?;
 
     Ok(())
 }

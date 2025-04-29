@@ -184,10 +184,7 @@ pub(crate) fn bench_encrypt(
 
     let mut group = c.benchmark_group("Symmetric encryption");
     group.bench_function(
-        format!(
-            "{} {}bit encryption of {} plaintext(s)",
-            name, num_bits, num_plaintexts
-        ),
+        format!("{name} {num_bits}bit encryption of {num_plaintexts} plaintext(s)"),
         |b| {
             b.to_async(&runtime).iter(|| async {
                 let _ = encrypt(
@@ -432,7 +429,7 @@ pub(crate) fn bench_encrypt_parametrized(
             group.throughput(Throughput::Elements(num_plaintexts as u64));
             group.bench_with_input(
                 BenchmarkId::new(
-                    format!("{}-bit key encrypt", num_bits),
+                    format!("{num_bits}-bit key encrypt"),
                     parameter_name.clone(),
                 ),
                 &plaintext,
@@ -450,7 +447,7 @@ pub(crate) fn bench_encrypt_parametrized(
                 },
             );
             group.bench_with_input(
-                BenchmarkId::new(format!("{}-bit key decrypt", num_bits), parameter_name),
+                BenchmarkId::new(format!("{num_bits}-bit key decrypt"), parameter_name),
                 &ciphertext,
                 |b, ct| {
                     b.to_async(&runtime).iter(|| async {

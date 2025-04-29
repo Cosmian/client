@@ -22,21 +22,27 @@ pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
-    let wrapping_key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
-        number_of_bits: Some(256),
-        algorithm: SymmetricAlgorithm::Aes,
-        sensitive: true,
-        ..Default::default()
-    })?;
+    let wrapping_key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Aes,
+            sensitive: true,
+            ..Default::default()
+        },
+    )?;
     // println!("Wrapping key id: {wrapping_key_id}" );
-    let dek = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some(Uuid::new_v4().to_string()),
-        number_of_bits: Some(256),
-        algorithm: SymmetricAlgorithm::Aes,
-        wrapping_key_id: Some(wrapping_key_id),
-        ..Default::default()
-    })?;
+    let dek = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some(Uuid::new_v4().to_string()),
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Aes,
+            wrapping_key_id: Some(wrapping_key_id),
+            ..Default::default()
+        },
+    )?;
     run_encrypt_decrypt_test(
         &ctx.owner_client_conf_path,
         &dek,
@@ -63,21 +69,26 @@ pub(crate) async fn test_wrap_with_rsa_oaep() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
-    let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+    let (_private_key_id, public_key_id) = create_rsa_key_pair(
+        &ctx.owner_client_conf_path,
+        &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             number_of_bits: Some(2048),
             sensitive: true,
             ..Default::default()
-        })?;
+        },
+    )?;
     println!("Wrapping key id: {public_key_id}");
-    let dek = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some(Uuid::new_v4().to_string()),
-        number_of_bits: Some(256),
-        algorithm: SymmetricAlgorithm::Aes,
-        wrapping_key_id: Some(public_key_id),
-        ..Default::default()
-    })?;
+    let dek = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some(Uuid::new_v4().to_string()),
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Aes,
+            wrapping_key_id: Some(public_key_id),
+            ..Default::default()
+        },
+    )?;
     run_encrypt_decrypt_test(
         &ctx.owner_client_conf_path,
         &dek,
@@ -104,21 +115,26 @@ pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
-    let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+    let (_private_key_id, public_key_id) = create_rsa_key_pair(
+        &ctx.owner_client_conf_path,
+        &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             number_of_bits: Some(2048),
             sensitive: true,
             ..Default::default()
-        })?;
+        },
+    )?;
     println!("Wrapping key id: {public_key_id}");
-    let dek = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some(Uuid::new_v4().to_string()),
-        number_of_bits: Some(256),
-        algorithm: SymmetricAlgorithm::Aes,
-        wrapping_key_id: Some(public_key_id),
-        ..Default::default()
-    })?;
+    let dek = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some(Uuid::new_v4().to_string()),
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Aes,
+            wrapping_key_id: Some(public_key_id),
+            ..Default::default()
+        },
+    )?;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     export_key(ExportKeyParams {

@@ -52,30 +52,42 @@ async fn create_keys(
     kms_rest_client: &KmsClient,
     disk_encryption_tag: &str,
 ) -> Result<(), Pkcs11Error> {
-    let vol1 = create_symmetric_key_kmip_object(&[1, 2, 3, 4], &Attributes {
-        cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-        ..Default::default()
-    })?;
+    let vol1 = create_symmetric_key_kmip_object(
+        &[1, 2, 3, 4],
+        &Attributes {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+            ..Default::default()
+        },
+    )?;
     debug!("vol1: {}", vol1);
-    let import_object_request =
-        import_object_request(Some("vol1".to_owned()), vol1, None, false, true, [
-            disk_encryption_tag,
-            "vol1",
-        ]);
+    let import_object_request = import_object_request(
+        Some("vol1".to_owned()),
+        vol1,
+        None,
+        false,
+        true,
+        [disk_encryption_tag, "vol1"],
+    );
     let _vol1_id = kms_rest_client
         .import(import_object_request)
         .await?
         .unique_identifier;
 
-    let vol2 = create_symmetric_key_kmip_object(&[4, 5, 6, 7], &Attributes {
-        cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-        ..Default::default()
-    })?;
-    let import_object_request_2 =
-        requests::import_object_request(Some("vol2".to_owned()), vol2, None, false, true, [
-            disk_encryption_tag,
-            "vol2",
-        ]);
+    let vol2 = create_symmetric_key_kmip_object(
+        &[4, 5, 6, 7],
+        &Attributes {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+            ..Default::default()
+        },
+    )?;
+    let import_object_request_2 = requests::import_object_request(
+        Some("vol2".to_owned()),
+        vol2,
+        None,
+        false,
+        true,
+        [disk_encryption_tag, "vol2"],
+    );
     let _vol2_id = kms_rest_client
         .import(import_object_request_2)
         .await?
@@ -108,11 +120,14 @@ async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
         },
     });
 
-    let import_object_request =
-        import_object_request(Some("test.p12".to_owned()), p12_sk, None, false, true, [
-            disk_encryption_tag,
-            "luks_volume",
-        ]);
+    let import_object_request = import_object_request(
+        Some("test.p12".to_owned()),
+        p12_sk,
+        None,
+        false,
+        true,
+        [disk_encryption_tag, "luks_volume"],
+    );
     let p12_id = kms_rest_client
         .import(import_object_request)
         .await?
@@ -213,7 +228,7 @@ fn test_generate_key_encrypt_decrypt() -> Pkcs11Result<()> {
                 CKF_SERIAL_SESSION,
                 std::ptr::null_mut(),
                 None,
-                &mut handle,
+                &raw mut handle,
             )
         },
         CKR_OK
