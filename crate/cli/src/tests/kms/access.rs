@@ -74,7 +74,7 @@ pub(crate) fn grant_access(
         cmd.arg(operation);
     }
     if let Some(uid) = object_id {
-        cmd.args(vec!["--object_uid", uid]);
+        cmd.args(vec!["-i", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
@@ -103,7 +103,7 @@ pub(crate) fn revoke_access(
         cmd.arg(operation);
     }
     if let Some(uid) = object_id {
-        cmd.args(vec!["--object_uid", uid]);
+        cmd.args(vec!["-i", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
