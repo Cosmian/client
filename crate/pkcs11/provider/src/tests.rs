@@ -228,7 +228,7 @@ fn test_generate_key_encrypt_decrypt() -> Pkcs11Result<()> {
                 CKF_SERIAL_SESSION,
                 std::ptr::null_mut(),
                 None,
-                &mut handle,
+                &raw mut handle,
             )
         },
         CKR_OK

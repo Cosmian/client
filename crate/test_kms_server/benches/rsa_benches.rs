@@ -446,7 +446,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
             group.throughput(Throughput::Elements(num_plaintexts as u64));
             group.bench_with_input(
                 BenchmarkId::new(
-                    format!("{}-bit key encrypt", key_size),
+                    format!("{key_size}-bit key encrypt"),
                     parameter_name.clone(),
                 ),
                 &vec![0_u8; 32],
@@ -464,7 +464,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
                 },
             );
             group.bench_with_input(
-                BenchmarkId::new(format!("{}-bit key decrypt", key_size), parameter_name),
+                BenchmarkId::new(format!("{key_size}-bit key decrypt"), parameter_name),
                 &ciphertext,
                 |b, ct| {
                     b.to_async(&runtime).iter(|| async {
