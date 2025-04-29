@@ -101,6 +101,7 @@ const DestroyForm: React.FC<DestroyFormProps> = (props: DestroyFormProps) => {
                         </ul>
                     </div>
                 </div>
+                <div>Destroying a key from a keypair will delete both the public and private keys.</div>
             </div>
 
             <Form

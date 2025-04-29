@@ -14,7 +14,6 @@ const KMIP_OPERATIONS = [
     { label: "Get", value: "get" },
     { label: "Encrypt", value: "encrypt" },
     { label: "Decrypt", value: "decrypt" },
-    { label: "Import", value: "import" },
     { label: "Revoke", value: "revoke" },
     { label: "Locate", value: "locate" },
     { label: "Rekey", value: "rekey" },
@@ -36,7 +35,7 @@ const AccessGrantForm: React.FC = () => {
             const response = await getNoTTLVRequest("/access/privileged", idToken, serverUrl);
             setIsPrivilegedUser(response.has_privileged_access);
         } catch (e) {
-            console.error("Error fetching create permission:", e);
+            console.error("Error fetching privileged access:", e);
         }
     };
 
@@ -99,7 +98,6 @@ const AccessGrantForm: React.FC = () => {
                                 options={KMIP_OPERATIONS}
                                 placeholder="Select operations"
                                 onChange={() => {
-                                    // Trigger revalidation of dependent fields
                                     form.validateFields(["unique_identifier"]);
                                 }}
                             />

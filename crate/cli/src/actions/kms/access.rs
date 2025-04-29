@@ -1,7 +1,7 @@
 use clap::Parser;
 use cosmian_kms_client::{
-    KmsClient, cosmian_kmip::kmip_2_1::kmip_types::UniqueIdentifier, kmip_2_1::KmipOperation,
-    reexport::cosmian_kms_access::access::Access,
+    cosmian_kmip::kmip_2_1::kmip_types::UniqueIdentifier, kmip_2_1::KmipOperation,
+    reexport::cosmian_kms_access::access::Access, KmsClient,
 };
 
 use crate::{
@@ -57,7 +57,7 @@ pub struct GrantAccess {
     user: String,
 
     /// The object unique identifier stored in the KMS
-    #[clap(long = "object_uid", short = 'i')]
+    #[clap(long, short = 'i')]
     object_uid: Option<String>,
 
     /// The operations to grant (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)
@@ -132,7 +132,7 @@ pub struct RevokeAccess {
     user: String,
 
     /// The object unique identifier stored in the KMS
-    #[clap(long = "object_uid", short = 'i')]
+    #[clap(long, short = 'i')]
     object_uid: Option<String>,
 
     /// The operations to revoke (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)

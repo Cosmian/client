@@ -58,6 +58,7 @@ const ECKeyCreateForm: React.FC = () => {
                     <li>The public key is used to encrypt or verify a signature and can be safely shared.</li>
                     <li>The private key is used to decrypt or sign and must be kept secret.</li>
                 </ul>
+                <p>When creating a key pair with a specified tag, the tag is applied to both keys.</p>
             </div>
 
             <Form
