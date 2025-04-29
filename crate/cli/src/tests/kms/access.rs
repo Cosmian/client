@@ -74,7 +74,7 @@ pub(crate) fn grant_access(
         cmd.arg(operation);
     }
     if let Some(uid) = object_id {
-        cmd.args(vec!["-i", uid]);
+        cmd.args(vec!["--object-uid", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
@@ -103,7 +103,7 @@ pub(crate) fn revoke_access(
         cmd.arg(operation);
     }
     if let Some(uid) = object_id {
-        cmd.args(vec!["-i", uid]);
+        cmd.args(vec!["--object-uid", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
@@ -748,7 +748,7 @@ pub(crate) async fn test_grant_multiple_operations() -> CosmianResult<()> {
 pub(crate) async fn test_grant_with_without_object_uid() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
-    // grant create access to user - without objet id
+    // grant create access to user - without object id
     let result_grant_create = grant_access(
         &ctx.owner_client_conf_path,
         None,

@@ -109,13 +109,12 @@ Grant another user one or multiple access rights to an object
 
 ### Usage
 `cosmian kms access-rights grant [options] <USER>
- <OBJECT_UID>
  <OPERATIONS>...
 `
 ### Arguments
 ` <USER>` The user identifier to allow
 
-` <OBJECT_UID>` The object unique identifier stored in the KMS
+`--object-uid [-i] <OBJECT_UID>` The object unique identifier stored in the KMS
 
 ` <OPERATIONS>` The operations to grant (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)
 
@@ -129,13 +128,12 @@ Revoke another user one or multiple access rights to an object
 
 ### Usage
 `cosmian kms access-rights revoke [options] <USER>
- <OBJECT_UID>
  <OPERATIONS>...
 `
 ### Arguments
 ` <USER>` The user to revoke access to
 
-` <OBJECT_UID>` The object unique identifier stored in the KMS
+`--object-uid [-i] <OBJECT_UID>` The object unique identifier stored in the KMS
 
 ` <OPERATIONS>` The operations to revoke (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)
 
