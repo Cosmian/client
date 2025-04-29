@@ -63,7 +63,8 @@ fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
 }
 
 // let us not make other test cases fail
-const PORT: u16 = 9999;
+const DEFAULT_SOCKET_SERVER_PORT: u16 = 5696;
+const PORT: u16 = DEFAULT_SOCKET_SERVER_PORT + 5;
 
 #[tokio::test]
 pub(crate) async fn test_all_authentications() -> CosmianResult<()> {

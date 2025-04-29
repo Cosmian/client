@@ -45,6 +45,8 @@ pub(crate) static ONCE_SERVER_WITH_NON_REVOCABLE_KEY: OnceCell<TestsContext> =
     OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_HSM: OnceCell<TestsContext> = OnceCell::const_new();
 
+const DEFAULT_SOCKET_SERVER_PORT: u16 = 5696;
+
 fn sqlite_db_config() -> MainDBConfig {
     trace!("TESTS: using sqlite");
     let tmp_dir = TempDir::new().unwrap();
@@ -121,7 +123,7 @@ pub async fn start_default_test_kms_server() -> &'static TestsContext {
     ONCE.get_or_try_init(|| {
         start_test_server_with_options(
             get_db_config(),
-            9998,
+            DEFAULT_SOCKET_SERVER_PORT,
             AuthenticationOptions {
                 use_jwt_token: false,
                 use_https: false,
@@ -143,7 +145,7 @@ pub async fn start_default_test_kms_server_with_cert_auth() -> &'static TestsCon
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9991,
+                DEFAULT_SOCKET_SERVER_PORT + 1,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: true,
@@ -167,7 +169,7 @@ pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9992,
+                DEFAULT_SOCKET_SERVER_PORT + 2,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: true,
@@ -190,7 +192,7 @@ pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsC
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9993,
+                DEFAULT_SOCKET_SERVER_PORT + 3,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: false,
@@ -563,7 +565,7 @@ pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
 async fn test_start_server() -> Result<(), KmsClientError> {
     let context = start_test_server_with_options(
         sqlite_db_config(),
-        9990,
+                DEFAULT_SOCKET_SERVER_PORT + 4,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
