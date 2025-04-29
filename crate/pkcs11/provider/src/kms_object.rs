@@ -119,11 +119,15 @@ pub(crate) async fn get_kms_object_async(
     object_id_or_tags: &str,
     key_format_type: KeyFormatType,
 ) -> Pkcs11Result<KmsObject> {
-    let (id, object, _) = export_object(kms_client, object_id_or_tags, ExportObjectParams {
-        unwrap: true,
-        key_format_type: Some(key_format_type),
-        ..Default::default()
-    })
+    let (id, object, _) = export_object(
+        kms_client,
+        object_id_or_tags,
+        ExportObjectParams {
+            unwrap: true,
+            key_format_type: Some(key_format_type),
+            ..Default::default()
+        },
+    )
     .await?;
 
     // Get request does not return attributes, try to get them form the object

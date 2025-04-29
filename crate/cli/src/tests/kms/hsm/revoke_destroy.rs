@@ -18,10 +18,13 @@ async fn test_revoke_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
     // sym
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
+            ..Default::default()
+        },
+    )?;
 
     // revoke
     match revoke(

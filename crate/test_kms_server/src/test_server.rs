@@ -45,6 +45,8 @@ pub(crate) static ONCE_SERVER_WITH_NON_REVOCABLE_KEY: OnceCell<TestsContext> =
     OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_HSM: OnceCell<TestsContext> = OnceCell::const_new();
 
+const DEFAULT_KMS_SERVER_PORT: u16 = 9998;
+
 fn sqlite_db_config() -> MainDBConfig {
     trace!("TESTS: using sqlite");
     let tmp_dir = TempDir::new().unwrap();
@@ -57,23 +59,6 @@ fn sqlite_db_config() -> MainDBConfig {
         database_type: Some("sqlite".to_owned()),
         clear_database: true,
         sqlite_path: file_path,
-        ..MainDBConfig::default()
-    }
-}
-
-fn sqlite_enc_db_config() -> MainDBConfig {
-    trace!("TESTS: using sqlite-enc");
-    let tmp_dir = TempDir::new().unwrap();
-    // SQLCipher uses a directory
-    let dir_path = tmp_dir.path().join("test_sqlite_enc.db");
-    if dir_path.exists() {
-        std::fs::remove_dir_all(&dir_path).unwrap();
-    }
-    std::fs::create_dir_all(&dir_path).unwrap();
-    MainDBConfig {
-        database_type: Some("sqlite-enc".to_owned()),
-        clear_database: true,
-        sqlite_path: dir_path,
         ..MainDBConfig::default()
     }
 }
@@ -125,7 +110,7 @@ fn get_db_config() -> MainDBConfig {
     env::var_os("KMS_TEST_DB").map_or_else(sqlite_db_config, |v| match v.to_str().unwrap_or("") {
         "redis-findex" => redis_findex_db_config(),
         "mysql" => mysql_db_config(),
-        "sqlite-enc" => sqlite_enc_db_config(),
+        "sqlite-enc" => sqlite_db_config(),
         "postgresql" => postgres_db_config(),
         _ => sqlite_db_config(),
     })
@@ -138,7 +123,7 @@ pub async fn start_default_test_kms_server() -> &'static TestsContext {
     ONCE.get_or_try_init(|| {
         start_test_server_with_options(
             get_db_config(),
-            9998,
+            DEFAULT_KMS_SERVER_PORT,
             AuthenticationOptions {
                 use_jwt_token: false,
                 use_https: false,
@@ -160,7 +145,7 @@ pub async fn start_default_test_kms_server_with_cert_auth() -> &'static TestsCon
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9991,
+                DEFAULT_KMS_SERVER_PORT + 1,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: true,
@@ -184,7 +169,7 @@ pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9992,
+                DEFAULT_KMS_SERVER_PORT + 2,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: true,
@@ -207,7 +192,7 @@ pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsC
         .get_or_try_init(|| {
             start_test_server_with_options(
                 get_db_config(),
-                9993,
+                DEFAULT_KMS_SERVER_PORT + 3,
                 AuthenticationOptions {
                     use_jwt_token: false,
                     use_https: false,
@@ -241,7 +226,7 @@ impl TestsContext {
         self.server_handle.stop(false).await;
         self.thread_handle
             .join()
-            .map_err(|_e| kms_client_error!("failed joining th stop thread"))?
+            .map_err(|_e| kms_client_error!("failed joining the stop thread"))?
     }
 }
 
@@ -579,8 +564,8 @@ pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
 #[tokio::test]
 async fn test_start_server() -> Result<(), KmsClientError> {
     let context = start_test_server_with_options(
-        sqlite_enc_db_config(),
-        9990,
+        sqlite_db_config(),
+        DEFAULT_KMS_SERVER_PORT + 4,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,

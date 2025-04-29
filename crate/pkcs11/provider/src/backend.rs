@@ -125,10 +125,10 @@ impl Backend for CliBackend {
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let mut private_keys = vec![];
-        let ids = locate_kms_objects(&self.kms_rest_client, &[
-            disk_encryption_tag,
-            "_sk".to_owned(),
-        ])?;
+        let ids = locate_kms_objects(
+            &self.kms_rest_client,
+            &[disk_encryption_tag, "_sk".to_owned()],
+        )?;
         for id in ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
             let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
