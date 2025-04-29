@@ -131,7 +131,7 @@ const AccessRevokeForm: React.FC = () => {
                             <Form.Item
                                 name="revoke_create_access_right"
                                 valuePropName="checked"
-                                help="If set, the user will no longer have the right to create Kms objects."
+                                help="If set, the user will no longer have the right to create or import Kms objects."
                             >
                                 <Checkbox>Revoke create access right to user</Checkbox>
                             </Form.Item>

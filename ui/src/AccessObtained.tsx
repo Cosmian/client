@@ -112,7 +112,8 @@ const AccessObtainedList: React.FC = () => {
                     <div className="mb-4 space-y-2">
                         <h3 className="text-m font-bold mb-4">Create access right</h3>
                         <Tag color={hasCreatePermission ? "green" : "red"}>Create</Tag>
-                        {hasCreatePermission ? "You have" : "You don't have"} Create access right, enabling object creation from KMS.
+                        {hasCreatePermission ? "You have" : "You don't have"} Create access right, enabling object creation and import from
+                        KMS.
                     </div>
                     <h3 className="text-m font-bold mb-4">Objects access rights</h3>
                     <Table
