@@ -969,6 +969,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
+name = "aws-lc-rs"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19b756939cb2f8dc900aa6dcd505e6e2428e9cae7ff7b028c49e3946efa70878"
+dependencies = [
+ "aws-lc-sys",
+ "zeroize",
+]
+
+[[package]]
+name = "aws-lc-sys"
+version = "0.28.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfa9b6986f250236c27e5a204062434a773a13243d2ffc2955f37bdba4c5c6a1"
+dependencies = [
+ "bindgen",
+ "cc",
+ "cmake",
+ "dunce",
+ "fs_extra",
+]
+
+[[package]]
 name = "axum"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1082,6 +1105,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "bindgen"
+version = "0.69.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
+dependencies = [
+ "bitflags 2.9.0",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.12.1",
+ "lazy_static",
+ "lazycell",
+ "log",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustc-hash 1.1.0",
+ "shlex",
+ "syn 2.0.100",
+ "which",
 ]
 
 [[package]]
@@ -1323,6 +1369,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d43a04d8753f35258c91f8ec639f792891f748a1edbd759cf1dcea3382ad83c"
 
 [[package]]
+name = "cexpr"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766"
+dependencies = [
+ "nom",
+]
+
+[[package]]
 name = "cfg-expr"
 version = "0.15.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1437,6 +1492,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "clang-sys"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b023947811758c97c59bf9d1c188fd619ad4718dcaa767947df1cadb14f39f4"
+dependencies = [
+ "glob",
+ "libc",
+ "libloading 0.8.6",
+]
+
+[[package]]
 name = "clap"
 version = "4.5.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1502,6 +1568,15 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "cmake"
+version = "0.1.54"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7caa3f9de89ddbe2c607f4101924c5abec803763ae9534e4f4d7d8f84aa81f0"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1697,7 +1772,7 @@ dependencies = [
  "cosmian_findex_structs",
  "cosmian_kms_client",
  "cosmian_kms_crypto",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "csv",
  "der",
  "hex",
@@ -1853,7 +1928,7 @@ dependencies = [
  "cosmian_findex_structs",
  "cosmian_http_client",
  "cosmian_kms_client",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "reqwest 0.11.27",
  "serde",
  "test_kms_server",
@@ -1944,12 +2019,13 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "bitflags 2.9.0",
  "chrono",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "hex",
+ "kmip-derive",
  "leb128",
  "num-bigint-dig",
  "serde",
@@ -1965,7 +2041,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1974,13 +2050,13 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_base_hsm"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
  "libloading 0.8.6",
  "lru",
- "pkcs11_sys",
+ "pkcs11_sys 0.2.17",
  "rand 0.9.1",
  "thiserror 2.0.12",
  "tracing",
@@ -2043,7 +2119,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_crypto"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2051,7 +2127,7 @@ dependencies = [
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "hex",
  "num-bigint-dig",
  "openssl",
@@ -2060,6 +2136,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "tracing",
+ "uuid",
  "x509-parser",
  "zeroize",
 ]
@@ -2067,11 +2144,12 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_interfaces"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
  "num-bigint-dig",
+ "serde",
  "serde_json",
  "thiserror 2.0.12",
  "tracing",
@@ -2081,7 +2159,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2105,7 +2183,7 @@ dependencies = [
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
  "cosmian_kms_server_database",
- "cosmian_logger 0.1.1",
+ "cosmian_logger 0.2.0",
  "dotenvy",
  "futures",
  "hex",
@@ -2116,6 +2194,7 @@ dependencies = [
  "openssl",
  "proteccio_pkcs11_loader",
  "reqwest 0.11.27",
+ "rustls 0.23.26",
  "serde",
  "serde_json",
  "strum",
@@ -2124,8 +2203,6 @@ dependencies = [
  "tokio",
  "toml",
  "tracing",
- "tracing-opentelemetry 0.24.0",
- "tracing-subscriber",
  "url",
  "utimaco_pkcs11_loader",
  "uuid",
@@ -2136,18 +2213,17 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server_database"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "async-trait",
- "clap",
  "cloudproof_findex",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
  "hex",
- "lazy_static",
  "lru",
+ "num-bigint-dig",
  "num_cpus",
  "rawsql",
  "redis 0.23.3",
@@ -2155,7 +2231,6 @@ dependencies = [
  "serde_json",
  "sqlx",
  "thiserror 2.0.12",
- "tiny-keccak",
  "tokio",
  "tracing",
  "url",
@@ -2166,21 +2241,51 @@ dependencies = [
 
 [[package]]
 name = "cosmian_logger"
+version = "0.1.0"
+source = "git+https://www.github.com/Cosmian/http_client_server?tag=0.1.0#66c4e05ebbfa6d205ae16bacf99d197bab3a70a9"
+dependencies = [
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "cosmian_logger"
 version = "0.1.1"
 source = "git+https://github.com/Cosmian/http_client_server?rev=aa6ab58baceb1633beb92a564413bb36e87da15e#aa6ab58baceb1633beb92a564413bb36e87da15e"
 dependencies = [
- "opentelemetry 0.29.1",
+ "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
  "opentelemetry-stdout",
- "opentelemetry_sdk 0.29.0",
+ "opentelemetry_sdk",
  "syslog-tracing",
  "thiserror 2.0.12",
  "tokio",
  "tonic",
  "tracing",
  "tracing-core",
- "tracing-opentelemetry 0.30.0",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "cosmian_logger"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eabbc045f06d6b223dd21a5b6368baf301d341501f9cd36074918fd73126d92c"
+dependencies = [
+ "opentelemetry",
+ "opentelemetry-otlp",
+ "opentelemetry-semantic-conventions",
+ "opentelemetry-stdout",
+ "opentelemetry_sdk",
+ "syslog-tracing",
+ "thiserror 2.0.12",
+ "tokio",
+ "tonic",
+ "tracing",
+ "tracing-core",
+ "tracing-opentelemetry",
  "tracing-subscriber",
 ]
 
@@ -2191,13 +2296,13 @@ dependencies = [
  "cosmian_cli",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "cosmian_pkcs11_module",
  "etcetera",
  "hex",
  "p256",
  "pkcs1",
- "pkcs11_sys",
+ "pkcs11_sys 0.2.17 (git+https://www.github.com/Cosmian/kms?branch=develop)",
  "serde_json",
  "serial_test",
  "sha3",
@@ -2218,13 +2323,13 @@ version = "0.3.1"
 dependencies = [
  "bincode",
  "const-oid",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "hex",
  "log",
  "once_cell",
  "p256",
  "pkcs1",
- "pkcs11_sys",
+ "pkcs11_sys 0.2.17 (git+https://www.github.com/Cosmian/kms?branch=develop)",
  "rand 0.9.1",
  "rsa",
  "serial_test",
@@ -2637,7 +2742,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.7.4",
+ "libloading 0.8.6",
 ]
 
 [[package]]
@@ -2666,6 +2771,12 @@ name = "downcast-rs"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+
+[[package]]
+name = "dunce"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "dyn-clone"
@@ -3072,6 +3183,12 @@ checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
 ]
+
+[[package]]
+name = "fs_extra"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
 name = "futures"
@@ -4255,6 +4372,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "kmip-derive"
+version = "5.0.0"
+dependencies = [
+ "quote",
+ "syn 2.0.100",
+]
+
+[[package]]
 name = "language-tags"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4268,6 +4393,12 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 dependencies = [
  "spin",
 ]
+
+[[package]]
+name = "lazycell"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "leb128"
@@ -5086,20 +5217,6 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b69a91d4893e713e06f724597ad630f1fa76057a5e1026c0ca67054a9032a76"
-dependencies = [
- "futures-core",
- "futures-sink",
- "js-sys",
- "once_cell",
- "pin-project-lite",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "opentelemetry"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e87237e2775f74896f9ad219d26a2081751187eb7c9f5c58dde20a23b95d16c"
@@ -5121,7 +5238,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "http 1.3.1",
- "opentelemetry 0.29.1",
+ "opentelemetry",
  "reqwest 0.12.15",
  "tracing",
 ]
@@ -5134,10 +5251,10 @@ checksum = "d899720fe06916ccba71c01d04ecd77312734e2de3467fd30d9d580c8ce85656"
 dependencies = [
  "futures-core",
  "http 1.3.1",
- "opentelemetry 0.29.1",
+ "opentelemetry",
  "opentelemetry-http",
  "opentelemetry-proto",
- "opentelemetry_sdk 0.29.0",
+ "opentelemetry_sdk",
  "prost",
  "reqwest 0.12.15",
  "thiserror 2.0.12",
@@ -5152,8 +5269,8 @@ version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c40da242381435e18570d5b9d50aca2a4f4f4d8e146231adb4e7768023309b3"
 dependencies = [
- "opentelemetry 0.29.1",
- "opentelemetry_sdk 0.29.0",
+ "opentelemetry",
+ "opentelemetry_sdk",
  "prost",
  "tonic",
 ]
@@ -5172,28 +5289,8 @@ checksum = "a7e27d446dabd68610ef0b77d07b102ecde827a4596ea9c01a4d3811e945b286"
 dependencies = [
  "chrono",
  "futures-util",
- "opentelemetry 0.29.1",
- "opentelemetry_sdk 0.29.0",
-]
-
-[[package]]
-name = "opentelemetry_sdk"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae312d58eaa90a82d2e627fd86e075cf5230b3f11794e2ed74199ebbe572d4fd"
-dependencies = [
- "async-trait",
- "futures-channel",
- "futures-executor",
- "futures-util",
- "glob",
- "lazy_static",
- "once_cell",
- "opentelemetry 0.23.0",
- "ordered-float 4.6.0",
- "percent-encoding",
- "rand 0.8.5",
- "thiserror 1.0.69",
+ "opentelemetry",
+ "opentelemetry_sdk",
 ]
 
 [[package]]
@@ -5206,7 +5303,7 @@ dependencies = [
  "futures-executor",
  "futures-util",
  "glob",
- "opentelemetry 0.29.1",
+ "opentelemetry",
  "percent-encoding",
  "rand 0.9.1",
  "serde_json",
@@ -5230,15 +5327,6 @@ name = "ordered-float"
 version = "2.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68f19d67e5a2795c94e73e0bb1cc1a7edeb2e28efd39e2e1c9b7a40c1108b11c"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "ordered-float"
-version = "4.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bb71e1b3fa6ca1c61f383464aaf2bb0e2f8e772a1f01d486832464de363b951"
 dependencies = [
  "num-traits",
 ]
@@ -5476,6 +5564,10 @@ dependencies = [
 [[package]]
 name = "pkcs11_sys"
 version = "0.2.17"
+
+[[package]]
+name = "pkcs11_sys"
+version = "0.2.17"
 source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
 
 [[package]]
@@ -5624,6 +5716,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "prettyplease"
+version = "0.2.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "664ec5419c51e34154eec046ebcba56312d5a2fc3b09a06da188e1ad21afadf6"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.100",
+]
+
+[[package]]
 name = "primeorder"
 version = "0.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5668,7 +5770,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.10.5",
+ "itertools 0.12.1",
  "proc-macro2",
  "quote",
  "syn 2.0.101",
@@ -5677,12 +5779,12 @@ dependencies = [
 [[package]]
 name = "proteccio_pkcs11_loader"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
  "libloading 0.8.6",
- "pkcs11_sys",
+ "pkcs11_sys 0.2.17",
  "tracing",
  "uuid",
 ]
@@ -5698,7 +5800,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash",
+ "rustc-hash 2.1.1",
  "rustls 0.23.26",
  "socket2 0.5.9",
  "thiserror 2.0.12",
@@ -5717,7 +5819,7 @@ dependencies = [
  "getrandom 0.3.2",
  "rand 0.9.1",
  "ring",
- "rustc-hash",
+ "rustc-hash 2.1.1",
  "rustls 0.23.26",
  "rustls-pki-types",
  "slab",
@@ -6120,6 +6222,12 @@ checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
 
 [[package]]
 name = "rustc-hash"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+
+[[package]]
+name = "rustc-hash"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "357703d41365b4b27c590e3ed91eabb1b663f07c4c084095e60cbed4362dff0d"
@@ -6200,6 +6308,7 @@ version = "0.23.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df51b5869f3a441595eac5e8ff14d486ff285f7b8c0df8770e49c3b56351f0f0"
 dependencies = [
+ "aws-lc-rs",
  "once_cell",
  "ring",
  "rustls-pki-types",
@@ -6251,6 +6360,7 @@ version = "0.103.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fef8b8769aaccf73098557a87cd1816b4f9c7c16811c9c77142aa695c16f2c03"
 dependencies = [
+ "aws-lc-rs",
  "ring",
  "rustls-pki-types",
  "untrusted",
@@ -6414,7 +6524,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3a1a3341211875ef120e117ea7fd5228530ae7e7036a779fdc9117be6b3282c"
 dependencies = [
- "ordered-float 2.10.1",
+ "ordered-float",
  "serde",
 ]
 
@@ -6960,20 +7070,20 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "strum"
-version = "0.25.0"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
+checksum = "f64def088c51c9510a8579e3c5d67c65349dcf755e5479ad3d010aa6454e2c32"
 dependencies = [
- "strum_macros 0.25.3",
+ "strum_macros 0.27.1",
 ]
 
 [[package]]
 name = "strum_macros"
-version = "0.25.3"
+version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
+checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "rustversion",
@@ -6982,9 +7092,9 @@ dependencies = [
 
 [[package]]
 name = "strum_macros"
-version = "0.26.4"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
+checksum = "c77a8c5abcaf0f9ce05d62342b7d298c346515365c36b673df4ebe3ced01fde8"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -7137,7 +7247,7 @@ dependencies = [
  "actix-server",
  "cosmian_findex_client",
  "cosmian_findex_server",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "criterion",
  "tokio",
  "tracing",
@@ -7149,11 +7259,10 @@ name = "test_kms_server"
 version = "0.3.1"
 dependencies = [
  "actix-server",
- "base64 0.22.1",
  "cosmian_cli",
  "cosmian_kms_server",
  "cosmian_kms_server_database",
- "cosmian_logger",
+ "cosmian_logger 0.1.1",
  "criterion",
  "hex",
  "serde_json",
@@ -7637,32 +7746,14 @@ dependencies = [
 
 [[package]]
 name = "tracing-opentelemetry"
-version = "0.24.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f68803492bf28ab40aeccaecc7021096bd256baf7ca77c3d425d89b35a7be4e4"
-dependencies = [
- "js-sys",
- "once_cell",
- "opentelemetry 0.23.0",
- "opentelemetry_sdk 0.23.0",
- "smallvec",
- "tracing",
- "tracing-core",
- "tracing-log",
- "tracing-subscriber",
- "web-time 1.1.0",
-]
-
-[[package]]
-name = "tracing-opentelemetry"
 version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd8e764bd6f5813fd8bebc3117875190c5b0415be8f7f8059bffb6ecd979c444"
 dependencies = [
  "js-sys",
  "once_cell",
- "opentelemetry 0.29.1",
- "opentelemetry_sdk 0.29.0",
+ "opentelemetry",
+ "opentelemetry_sdk",
  "smallvec",
  "tracing",
  "tracing-core",
@@ -7824,12 +7915,12 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utimaco_pkcs11_loader"
 version = "4.24.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#c3c0e9286452767f6f7917f416fc42a3741db29d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#818957a572c5e299dc7f58648615e54cedb4ec87"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
  "libloading 0.8.6",
- "pkcs11_sys",
+ "pkcs11_sys 0.2.17",
  "tracing",
  "uuid",
 ]
@@ -8179,6 +8270,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29aad86cec885cafd03e8305fd727c418e970a521322c91688414d5b8efba16b"
 dependencies = [
  "rustls-pki-types",
+]
+
+[[package]]
+name = "which"
+version = "4.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
+dependencies = [
+ "either",
+ "home",
+ "once_cell",
+ "rustix 0.38.44",
 ]
 
 [[package]]
