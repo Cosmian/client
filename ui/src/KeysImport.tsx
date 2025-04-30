@@ -61,7 +61,6 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
                 values.replaceExisting,
                 values.tags,
                 values.keyUsage,
-                values.authenticatedAdditionalData
             );
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
