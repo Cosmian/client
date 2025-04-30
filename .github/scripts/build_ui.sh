@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Build the KMS UI
+# This script:
+# 1. Builds the WASM component
+# 2. Builds the UI
+# 3. Copies the built UI to the final location
+
+# Exit on error, print commands
+set -ex
+
+if [ -n "$FEATURES" ]; then
+  FEATURES="--features $FEATURES"
+fi
+
+# Install nodejs from nodesource if npm is not installed
+if ! command -v npm &>/dev/null; then
+  SUDO="sudo"
+  [ "$(id -u)" = "0" ] && SUDO=""
+  if [ -f /etc/debian_version ]; then
+    # Debian/Ubuntu
+    curl -fsSL https://deb.nodesource.com/setup_23.x | $SUDO bash -
+    $SUDO apt-get install -y nodejs
+  elif [ -f /etc/redhat-release ]; then
+    # RHEL/CentOS/Fedora
+    curl -fsSL https://rpm.nodesource.com/setup_23.x | $SUDO bash -
+    $SUDO yum install -y nodejs
+  else
+    echo "Unsupported distribution"
+    exit 1
+  fi
+fi
+
+# Install wasm-pack tool
+cargo install --version 0.13.1 wasm-pack --force
+
+# Build WASM component
+cd crate/wasm
+# shellcheck disable=SC2086
+wasm-pack build --target web --release $FEATURES
