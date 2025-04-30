@@ -108,7 +108,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with JWT token auth");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 1,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: false,
@@ -128,7 +128,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with TLS token auth");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 2,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -148,7 +148,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with bad API token auth but JWT auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 3,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -168,7 +168,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with API token auth");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 4,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: false,
@@ -188,7 +188,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with TLS client cert auth");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 5,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
@@ -207,7 +207,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("Testing server with bad API token auth but cert auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 6,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
@@ -229,7 +229,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config,
-        PORT + 7,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
