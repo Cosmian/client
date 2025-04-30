@@ -1,4 +1,4 @@
-use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
+use cosmian_findex::{Address, MemoryADT, ADDRESS_LENGTH};
 use cosmian_kms_client::{
     cosmian_kmip::kmip_0::{
         kmip_messages::{RequestMessage, RequestMessageBatchItemVersioned, RequestMessageHeader},
@@ -6,7 +6,7 @@ use cosmian_kms_client::{
     },
     kmip_2_1::{
         kmip_messages::RequestMessageBatchItem,
-        kmip_operations::{Decrypt, Encrypt, MAC, Operation},
+        kmip_operations::{Decrypt, Encrypt, Operation, MAC},
         kmip_types::{CryptographicAlgorithm, CryptographicParameters, UniqueIdentifier},
         requests::encrypt_request,
     },
