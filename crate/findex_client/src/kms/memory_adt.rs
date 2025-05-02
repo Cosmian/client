@@ -20,7 +20,7 @@ impl<
         bindings: Vec<(Self::Address, Self::Word)>,
     ) -> Result<Option<Self::Word>, Self::Error> {
         info!("guarded_write: guard: {:?}", guard);
-        println!("guarded_write: guard: {guard:?}");
+        //        println!("guarded_write: guard: {guard:?}");
         let (address, optional_word) = guard;
 
         // Split bindings into two vectors
@@ -151,15 +151,14 @@ impl<
 #[cfg(test)]
 #[allow(clippy::panic_in_result_fn, clippy::indexing_slicing)]
 mod tests {
-    use std::{fmt::Debug, sync::Arc};
+    use std::sync::Arc;
 
-    use cosmian_crypto_core::{
-        CsRng, Sampling,
-        reexport::rand_core::{RngCore, SeedableRng},
-    };
+    use cosmian_crypto_core::{CsRng, Sampling, reexport::rand_core::SeedableRng};
     use cosmian_findex::{
         InMemory,
-        test_utils::{gen_seed, test_single_write_and_read, test_wrong_guard},
+        test_utils::{
+            gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
+        },
     };
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
     use cosmian_kms_client::{
@@ -398,132 +397,132 @@ mod tests {
         Ok(())
     }
 
-    fn gen_bytes<const BYTES_LENGTH: usize>(rng: &mut impl RngCore) -> [u8; BYTES_LENGTH] {
-        let mut bytes = [0; BYTES_LENGTH];
-        rng.fill_bytes(&mut bytes);
-        bytes
-    }
+    // fn gen_bytes<const BYTES_LENGTH: usize>(rng: &mut impl RngCore) -> [u8; BYTES_LENGTH] {
+    //     let mut bytes = [0; BYTES_LENGTH];
+    //     rng.fill_bytes(&mut bytes);
+    //     bytes
+    // }
 
-    fn u128_to_array<const WORD_LENGTH: usize>(u: u128) -> [u8; WORD_LENGTH] {
-        let mut bytes = [0_u8; WORD_LENGTH];
-        bytes[..16].copy_from_slice(&u.to_be_bytes());
-        bytes
-    }
+    // fn u128_to_array<const WORD_LENGTH: usize>(u: u128) -> [u8; WORD_LENGTH] {
+    //     let mut bytes = [0_u8; WORD_LENGTH];
+    //     bytes[..16].copy_from_slice(&u.to_be_bytes());
+    //     bytes
+    // }
 
-    fn word_to_array<const WORD_LENGTH: usize>(
-        word: [u8; WORD_LENGTH],
-    ) -> Result<u128, &'static str> {
-        if WORD_LENGTH < 16 {
-            return Err("WORD_LENGTH must be at least 16 bytes");
-        }
-        let mut bytes = [0; 16];
-        bytes.copy_from_slice(&word[..16]);
-        Ok(u128::from_be_bytes(bytes))
-    }
+    // fn word_to_array<const WORD_LENGTH: usize>(
+    //     word: [u8; WORD_LENGTH],
+    // ) -> Result<u128, &'static str> {
+    //     if WORD_LENGTH < 16 {
+    //         return Err("WORD_LENGTH must be at least 16 bytes");
+    //     }
+    //     let mut bytes = [0; 16];
+    //     bytes.copy_from_slice(&word[..16]);
+    //     Ok(u128::from_be_bytes(bytes))
+    // }
 
-    #[allow(clippy::unwrap_used, clippy::expect_used, clippy::as_conversions)]
-    async fn test_guarded_write_concurrent_debugger<const WORD_LENGTH: usize, Memory>(
-        memory: &Memory,
-        seed: [u8; 32],
-        n_threads: Option<usize>,
-    ) where
-        Memory: 'static + Send + Sync + MemoryADT + Clone,
-        Memory::Address: Send + From<[u8; ADDRESS_LENGTH]>,
-        Memory::Word:
-            Send + Debug + PartialEq + From<[u8; WORD_LENGTH]> + Into<[u8; WORD_LENGTH]> + Clone,
-        Memory::Error: Send + std::error::Error,
-    {
-        const M: usize = 10; // number of increments per worker
-        // A worker increment N times the counter m[a].
-        async fn worker<const WORD_LENGTH: usize, Memory>(
-            m: Memory,
-            a: [u8; ADDRESS_LENGTH],
-        ) -> Result<(), Memory::Error>
-        where
-            Memory: 'static + Send + Sync + MemoryADT + Clone,
-            Memory::Address: Send + From<[u8; ADDRESS_LENGTH]>,
-            Memory::Word: Send
-                + Debug
-                + PartialEq
-                + From<[u8; WORD_LENGTH]>
-                + Into<[u8; WORD_LENGTH]>
-                + Clone,
-        {
-            let mut cnt = 0_u128;
-            for _ in 0..M {
-                let mut backoff_ms = 1; // Start with 1ms backoff
-                let mut attempts = 0;
+    // #[allow(clippy::unwrap_used, clippy::expect_used, clippy::as_conversions)]
+    // async fn test_guarded_write_concurrent_debugger<const WORD_LENGTH: usize, Memory>(
+    //     memory: &Memory,
+    //     seed: [u8; 32],
+    //     n_threads: Option<usize>,
+    // ) where
+    //     Memory: 'static + Send + Sync + MemoryADT + Clone,
+    //     Memory::Address: Send + From<[u8; ADDRESS_LENGTH]>,
+    //     Memory::Word:
+    //         Send + Debug + PartialEq + From<[u8; WORD_LENGTH]> + Into<[u8; WORD_LENGTH]> + Clone,
+    //     Memory::Error: Send + std::error::Error,
+    // {
+    //     const M: usize = 10; // number of increments per worker
+    //     // A worker increment N times the counter m[a].
+    //     async fn worker<const WORD_LENGTH: usize, Memory>(
+    //         m: Memory,
+    //         a: [u8; ADDRESS_LENGTH],
+    //     ) -> Result<(), Memory::Error>
+    //     where
+    //         Memory: 'static + Send + Sync + MemoryADT + Clone,
+    //         Memory::Address: Send + From<[u8; ADDRESS_LENGTH]>,
+    //         Memory::Word: Send
+    //             + Debug
+    //             + PartialEq
+    //             + From<[u8; WORD_LENGTH]>
+    //             + Into<[u8; WORD_LENGTH]>
+    //             + Clone,
+    //     {
+    //         let mut cnt = 0_u128;
+    //         for _ in 0..M {
+    //             // let mut backoff_ms = 1; // Start with 1ms backoff
+    //             // let mut attempts = 0;
 
-                loop {
-                    let guard = if 0 == cnt {
-                        None
-                    } else {
-                        Some(Memory::Word::from(u128_to_array(cnt)))
-                    };
+    //             loop {
+    //                 let guard = if 0 == cnt {
+    //                     None
+    //                 } else {
+    //                     Some(Memory::Word::from(u128_to_array(cnt)))
+    //                 };
 
-                    let new_cnt = cnt + 1;
-                    let cur_cnt = m
-                        .guarded_write((a.into(), guard), vec![(
-                            a.into(),
-                            Memory::Word::from(u128_to_array(new_cnt)),
-                        )])
-                        .await?
-                        .map(|w| word_to_array(w.into()).unwrap())
-                        .unwrap_or_default();
+    //                 let new_cnt = cnt + 1;
+    //                 let cur_cnt = m
+    //                     .guarded_write((a.into(), guard), vec![(
+    //                         a.into(),
+    //                         Memory::Word::from(u128_to_array(new_cnt)),
+    //                     )])
+    //                     .await?
+    //                     .map(|w| word_to_array(w.into()).unwrap())
+    //                     .unwrap_or_default();
 
-                    if cnt == cur_cnt {
-                        cnt = new_cnt;
-                        break;
-                    }
+    //                 if cnt == cur_cnt {
+    //                     cnt = new_cnt;
+    //                     break;
+    //                 }
 
-                    // Contention detected - apply backoff with jitter
-                    attempts += 1;
-                    cnt = cur_cnt;
+    //                 // Contention detected - apply backoff with jitter
+    //                 // attempts += 1;
+    //                 // cnt = cur_cnt;
 
-                    if attempts > 1 {
-                        // Apply exponential backoff with no random jitter
-                        let mut rng = CsRng::from_entropy();
-                        let jitter = rng.next_u64() % 10;
-                        let sleep_time = std::time::Duration::from_millis(backoff_ms + jitter);
-                        tokio::time::sleep(sleep_time).await;
+    //                 // if attempts > 1 {
+    //                 //     // Apply exponential backoff with no random jitter
+    //                 //     let mut rng = CsRng::from_entropy();
+    //                 //     let jitter = rng.next_u64() % 10;
+    //                 //     let sleep_time = std::time::Duration::from_millis(backoff_ms + jitter);
+    //                 //     tokio::time::sleep(sleep_time).await;
 
-                        // Exponential increase with cap at 100ms
-                        backoff_ms = std::cmp::min(backoff_ms * 2, 100);
-                    }
-                }
-            }
-            Ok(())
-        }
+    //                 //     // Exponential increase with cap at 100ms
+    //                 //     backoff_ms = std::cmp::min(backoff_ms * 2, 100);
+    //                 // }
+    //             }
+    //         }
+    //         Ok(())
+    //     }
 
-        let n: usize = n_threads.unwrap_or(100); // number of workers
-        let mut rng = CsRng::from_seed(seed);
-        let a = gen_bytes(&mut rng);
+    //     let n: usize = n_threads.unwrap_or(100); // number of workers
+    //     let mut rng = CsRng::from_seed(seed);
+    //     let a = gen_bytes(&mut rng);
 
-        let handles = (0..n)
-            .map(|_| {
-                let m = memory.clone();
-                tokio::spawn(worker(m, a))
-            })
-            .collect::<Vec<_>>();
+    //     let handles = (0..n)
+    //         .map(|_| {
+    //             let m = memory.clone();
+    //             tokio::spawn(worker(m, a))
+    //         })
+    //         .collect::<Vec<_>>();
 
-        for handle in handles {
-            handle.await.unwrap().unwrap();
-        }
+    //     for handle in handles {
+    //         handle.await.unwrap().unwrap();
+    //     }
 
-        let final_count = memory.batch_read(vec![a.into()]).await.unwrap()[0]
-            .clone()
-            .expect("Counter should exist");
+    //     let final_count = memory.batch_read(vec![a.into()]).await.unwrap()[0]
+    //         .clone()
+    //         .expect("Counter should exist");
 
-        assert_eq!(
-            word_to_array(final_count.clone().into()).unwrap(),
-            (n * M) as u128,
-            "test_guarded_write_concurrent failed. Expected the counter to be at {:?}, found \
-             {:?}.\nDebug seed : {:?}.",
-            (n * M) as u128,
-            word_to_array(final_count.into()).unwrap(),
-            seed
-        );
-    }
+    //     assert_eq!(
+    //         word_to_array(final_count.clone().into()).unwrap(),
+    //         (n * M) as u128,
+    //         "test_guarded_write_concurrent failed. Expected the counter to be at {:?}, found \
+    //          {:?}.\nDebug seed : {:?}.",
+    //         (n * M) as u128,
+    //         word_to_array(final_count.into()).unwrap(),
+    //         seed
+    //     );
+    // }
 
     // #[ignore = "stack overflow"]
     #[allow(clippy::print_stdout)]
@@ -532,21 +531,16 @@ mod tests {
         log_init(None);
         info!("start the test ... trying to start the server");
         println!("start the test ... trying to start the server");
-        // let ctx = start_default_test_kms_server().await;
-        let ctx = Box::new(start_default_test_kms_server().await);
+        let ctx = start_default_test_kms_server().await;
+        // let ctx = Box::new(start_default_test_kms_server().await);
 
         info!("the kms server is started");
         println!("the kms server is started");
         let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
+        std::thread::sleep(std::time::Duration::from_secs(2)); // Give debugger time to attach
         info!("the kms layer is created");
         println!("the kms layer is created");
-        unsafe { backtrace_on_stack_overflow::enable() };
-        test_guarded_write_concurrent_debugger::<CUSTOM_WORD_LENGTH, _>(
-            &memory,
-            gen_seed(),
-            Some(20),
-        )
-        .await;
+        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(20)).await;
         info!("the test is done");
         println!("the test is done");
         Ok(())
