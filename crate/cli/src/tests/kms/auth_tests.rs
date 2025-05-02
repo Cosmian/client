@@ -69,7 +69,7 @@ const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 5; // +5 since there are other KMS t
 
 #[tokio::test]
 pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
-    log_init(None);
+    log_init(Some("debug"));
     // plaintext no auth
     info!("Testing server with no auth");
     let ctx = start_test_server_with_options(

@@ -14,6 +14,7 @@ use cosmian_kms_client::{
         import_utils::CertificateInputFormat,
     },
 };
+use cosmian_logger::log_init;
 use openssl::{
     pkcs7::Pkcs7,
     pkcs12::Pkcs12,
@@ -46,6 +47,7 @@ use crate::{
 
 #[tokio::test]
 async fn test_import_export_p12_25519() {
+    log_init(option_env!("RUST_LOG"));
     //load the PKCS#12 file
     let p12_bytes =
         include_bytes!("../../../../../../test_data/certificates/another_p12/server.p12");

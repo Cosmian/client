@@ -66,7 +66,8 @@ pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_wrap_with_rsa_oaep() -> CosmianResult<()> {
-    log_init(None);
+    // log_init(None);
+    log_init(Some("debug"));
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
     let (_private_key_id, public_key_id) = create_rsa_key_pair(
@@ -119,7 +120,7 @@ pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
         &ctx.owner_client_conf_path,
         &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
-            number_of_bits: Some(2048),
+            number_of_bits: Some(3072),
             sensitive: true,
             ..Default::default()
         },

@@ -30,7 +30,7 @@ use cosmian_kms_server::{
 use cosmian_logger::log_init;
 use tempfile::TempDir;
 use tokio::sync::OnceCell;
-use tracing::{info, trace};
+use tracing::{info, log::error, trace};
 
 use crate::test_jwt::{AUTH0_TOKEN, AUTH0_TOKEN_USER, get_auth0_jwt_config};
 
@@ -362,7 +362,10 @@ fn start_test_kms_server(
             .enable_all()
             .build()?
             .block_on(start_kms_server(Arc::new(server_params), Some(tx)))
-            .map_err(|e| KmsClientError::UnexpectedError(e.to_string()))
+            .map_err(|e| {
+                error!("Error starting the KMS server: {e:?}");
+                KmsClientError::UnexpectedError(e.to_string())
+            })
     });
     trace!("Waiting for test KMS server to start...");
     let server_handle = rx
