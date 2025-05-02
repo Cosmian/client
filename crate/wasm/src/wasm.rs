@@ -571,6 +571,7 @@ pub fn import_ttlv_request(
     replace_existing: bool,
     tags: Vec<String>,
     key_usage: Option<Vec<String>>,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let key_usage = key_usage.map(|vec| {
         vec.into_iter()
@@ -587,6 +588,7 @@ pub fn import_ttlv_request(
         &certificate_id,
         &private_key_id,
         &public_key_id,
+        wrapping_key_id.as_ref(),
     )
     .map_err(|e| JsValue::from(e.to_string()))?;
     let request = import_object_request(

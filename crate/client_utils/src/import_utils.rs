@@ -331,6 +331,7 @@ pub fn prepare_key_import_elements(
     certificate_id: &Option<String>,
     private_key_id: &Option<String>,
     public_key_id: &Option<String>,
+    wrapping_key_id: Option<&String>,
 ) -> Result<(Object, Attributes), UtilsError> {
     let cryptographic_usage_mask = key_usage
         .as_deref()
@@ -380,6 +381,9 @@ pub fn prepare_key_import_elements(
             LinkType::PublicKeyLink,
             LinkedObjectIdentifier::TextString(public_key_id.clone()),
         );
+    }
+    if let Some(kek) = wrapping_key_id {
+        import_attributes.set_wrapping_key_id(kek);
     }
 
     Ok((object, import_attributes))

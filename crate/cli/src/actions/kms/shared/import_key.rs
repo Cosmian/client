@@ -79,6 +79,19 @@ pub struct ImportKeyAction {
     /// For what operations should the key be used.
     #[clap(long)]
     key_usage: Option<Vec<KeyUsage>>,
+
+    /// The key encryption key (KEK) used to wrap this imported key with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
 }
 
 impl ImportKeyAction {
@@ -109,6 +122,7 @@ impl ImportKeyAction {
             &self.certificate_id,
             &self.private_key_id,
             &self.public_key_id,
+            self.wrapping_key_id.as_ref(),
         )?;
         let object_type: ObjectType = object.object_type();
 
