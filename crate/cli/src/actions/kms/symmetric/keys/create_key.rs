@@ -65,11 +65,11 @@ pub struct CreateKeyAction {
     #[clap(long = "sensitive", default_value = "false")]
     pub sensitive: bool,
 
-    /// The key to wrap this new key with.
+    /// The key encryption key (KEK) used to wrap this new key with.
     /// If the wrapping key is:
-    /// -  a symmetric key, AES-GCM will be used
-    /// -  a RSA key, RSA-OAEP will be used
-    /// -  a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
     #[clap(
         long = "wrapping-key-id",
         short = 'w',

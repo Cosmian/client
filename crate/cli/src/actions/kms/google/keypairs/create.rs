@@ -58,6 +58,19 @@ pub struct CreateKeyPairsAction {
     #[clap(long = "sensitive", default_value = "false")]
     sensitive: bool,
 
+    /// The key encryption key (KEK) used to wrap the keypair with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
+
     /// Dry run mode. If set, the action will not be executed.
     #[clap(long, default_value = "false")]
     dry_run: bool,
@@ -149,6 +162,7 @@ impl CreateKeyPairsAction {
                     Vec::<String>::new(),
                     RSA_4096,
                     self.sensitive,
+                    self.wrapping_key_id.as_ref(),
                 )?)
                 .await?;
             (

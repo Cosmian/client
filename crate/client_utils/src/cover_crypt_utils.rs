@@ -23,6 +23,7 @@ pub fn build_create_covercrypt_master_keypair_request<T: IntoIterator<Item = imp
     access_structure: &str,
     tags: T,
     sensitive: bool,
+    wrapping_key_id: Option<&String>,
 ) -> Result<CreateKeyPair, UtilsError> {
     let vendor_attributes = VendorAttribute {
         vendor_identification: VENDOR_ID_COSMIAN.to_owned(),
@@ -39,6 +40,9 @@ pub fn build_create_covercrypt_master_keypair_request<T: IntoIterator<Item = imp
         ..Attributes::default()
     };
     attributes.set_tags(tags)?;
+    if let Some(wrap_key_id) = wrapping_key_id {
+        attributes.set_wrapping_key_id(wrap_key_id);
+    }
     Ok(CreateKeyPair {
         common_attributes: Some(attributes),
         ..CreateKeyPair::default()
@@ -51,6 +55,7 @@ pub fn build_create_covercrypt_usk_request<T: IntoIterator<Item = impl AsRef<str
     cover_crypt_master_secret_key_id: &str,
     tags: T,
     sensitive: bool,
+    wrapping_key_id: Option<&String>,
 ) -> Result<Create, UtilsError> {
     let vendor_attributes: VendorAttribute = VendorAttribute {
         vendor_identification: VENDOR_ID_COSMIAN.to_owned(),
@@ -73,6 +78,9 @@ pub fn build_create_covercrypt_usk_request<T: IntoIterator<Item = impl AsRef<str
         ..Attributes::default()
     };
     attributes.set_tags(tags)?;
+    if let Some(wrap_key_id) = wrapping_key_id {
+        attributes.set_wrapping_key_id(wrap_key_id);
+    }
     Ok(Create {
         attributes,
         object_type: ObjectType::PrivateKey,

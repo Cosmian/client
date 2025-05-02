@@ -123,16 +123,23 @@ pub fn parse_locate_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
 
 // Create keys Requests
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_rsa_key_pair_ttlv_request(
     private_key_id: Option<String>,
     tags: Vec<String>,
     cryptographic_length: usize,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let private_key_id = private_key_id.map(UniqueIdentifier::TextString);
-    let request: CreateKeyPair =
-        create_rsa_key_pair_request(private_key_id, tags, cryptographic_length, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
+    let request: CreateKeyPair = create_rsa_key_pair_request(
+        private_key_id,
+        tags,
+        cryptographic_length,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -141,19 +148,26 @@ pub fn create_rsa_key_pair_ttlv_request(
 }
 
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_ec_key_pair_ttlv_request(
     private_key_id: Option<String>,
     tags: Vec<String>,
     recommended_curve: &str,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let private_key_id = private_key_id.map(UniqueIdentifier::TextString);
     let recommended_curve: RecommendedCurve = Curve::from_str(recommended_curve)
         .map_err(|e| JsValue::from_str(&format!("Invalid recommended curve: {e}")))?
         .into();
-    let request: CreateKeyPair =
-        create_ec_key_pair_request(private_key_id, tags, recommended_curve, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
+    let request: CreateKeyPair = create_ec_key_pair_request(
+        private_key_id,
+        tags,
+        recommended_curve,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -618,15 +632,20 @@ pub fn parse_revoke_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
 
 // Covercrypt requests
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_cc_master_keypair_ttlv_request(
     access_structure: &str,
     tags: Vec<String>,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
-    let request = build_create_covercrypt_master_keypair_request(access_structure, tags, sensitive)
-        .map_err(|e| {
-            JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}"))
-        })?;
+    let request = build_create_covercrypt_master_keypair_request(
+        access_structure,
+        tags,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -635,15 +654,22 @@ pub fn create_cc_master_keypair_ttlv_request(
 }
 
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_cc_user_key_ttlv_request(
     master_secret_key_id: &str,
     access_policy: &str,
     tags: Vec<String>,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
-    let request =
-        build_create_covercrypt_usk_request(access_policy, master_secret_key_id, tags, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
+    let request = build_create_covercrypt_usk_request(
+        access_policy,
+        master_secret_key_id,
+        tags,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
