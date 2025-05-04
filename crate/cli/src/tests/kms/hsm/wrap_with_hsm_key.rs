@@ -5,6 +5,7 @@ use cosmian_kms_client::reexport::cosmian_kms_client_utils::{
 use cosmian_logger::log_init;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::{
@@ -19,7 +20,8 @@ use crate::{
 
 #[tokio::test]
 pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
-    log_init(None);
+    // log_init(option_env!("RUST_LOG"));
+    log_init(Some("info,cosmian_kms_server=debug"));
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
     let wrapping_key_id = create_symmetric_key(
@@ -113,7 +115,8 @@ pub(crate) async fn test_wrap_with_rsa_oaep() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
-    log_init(None);
+    log_init(option_env!("RUST_LOG"));
+    // log_init(Some("debug"));
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
     let (_private_key_id, public_key_id) = create_rsa_key_pair(
@@ -125,7 +128,7 @@ pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
             ..Default::default()
         },
     )?;
-    println!("Wrapping key id: {public_key_id}");
+    info!("===> Wrapping key id: {public_key_id}");
     let dek = create_symmetric_key(
         &ctx.owner_client_conf_path,
         CreateKeyAction {
@@ -136,6 +139,7 @@ pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
             ..Default::default()
         },
     )?;
+    info!("===> DEK id: {dek}");
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     export_key(ExportKeyParams {

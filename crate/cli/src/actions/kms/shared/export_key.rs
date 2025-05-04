@@ -159,13 +159,13 @@ impl ExportKeyAction {
         } else if self.key_format == ExportKeyFormat::Base64 {
             // export the key bytes in base64
             let base64_key = base64::engine::general_purpose::STANDARD
-                .encode(object.key_block()?.key_bytes()?)
+                .encode(object.key_block()?.symmetric_key_bytes()?)
                 .to_lowercase();
             write_bytes_to_file(base64_key.as_bytes(), &self.key_file)?;
         } else {
             // export the bytes only
             let bytes = {
-                let mut bytes = object.key_block()?.key_bytes()?;
+                let mut bytes = object.key_block()?.symmetric_key_bytes()?;
                 if encode_to_pem {
                     bytes = der_to_pem(
                         bytes.as_slice(),

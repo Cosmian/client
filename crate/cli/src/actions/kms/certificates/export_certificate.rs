@@ -144,7 +144,7 @@ impl ExportCertificateAction {
             }
             // PKCS12 is exported as a private key object
             Object::PrivateKey(PrivateKey { key_block }) => {
-                let p12_bytes = key_block.key_bytes()?.to_vec();
+                let p12_bytes = key_block.symmetric_key_bytes()?.to_vec();
                 // save it to a file
                 write_bytes_to_file(&p12_bytes, &self.certificate_file)?;
             }

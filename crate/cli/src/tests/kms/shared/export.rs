@@ -135,7 +135,7 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
     let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
     let key_block = object.key_block()?;
     assert_eq!(key_block.key_format_type, KeyFormatType::Raw);
-    let key_bytes = key_block.key_bytes()?;
+    let key_bytes = key_block.symmetric_key_bytes()?;
 
     // Export the bytes only
     export_key(ExportKeyParams {
@@ -221,7 +221,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     })?;
 
     let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
-    let key_bytes = object.key_block()?.key_bytes()?;
+    let key_bytes = object.key_block()?.symmetric_key_bytes()?;
     let cryptographic_parameters = object
         .key_block()?
         .key_wrapping_data
@@ -247,7 +247,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     })?;
 
     let object_2 = read_object_from_json_ttlv_file(&tmp_path.join("output_2.export"))?;
-    let key_bytes_2 = object_2.key_block()?.key_bytes()?;
+    let key_bytes_2 = object_2.key_block()?.symmetric_key_bytes()?;
     let cryptographic_parameters = object_2
         .key_block()?
         .key_wrapping_data
@@ -334,7 +334,7 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
         let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
         let key_block = object.key_block()?;
         assert_eq!(key_block.key_format_type, key_format_type);
-        let key_bytes = key_block.key_bytes()?;
+        let key_bytes = key_block.symmetric_key_bytes()?;
 
         // Export the key bytes only
         export_key(ExportKeyParams {

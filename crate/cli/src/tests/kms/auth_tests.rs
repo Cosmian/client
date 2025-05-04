@@ -56,7 +56,7 @@ fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
     let api_token = base64::engine::general_purpose::STANDARD.encode(
         read_object_from_json_ttlv_file(&tmp_path.join("api_token"))?
             .key_block()?
-            .key_bytes()?,
+            .symmetric_key_bytes()?,
     );
     trace!("API token created: {api_token}");
     Ok((api_token_id, api_token))

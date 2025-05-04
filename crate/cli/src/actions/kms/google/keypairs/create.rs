@@ -187,7 +187,7 @@ impl CreateKeyPairsAction {
         )
         .await?;
 
-        let wrapped_key_bytes = wrapped_private_key.key_block()?.key_bytes()?;
+        let wrapped_key_bytes = wrapped_private_key.key_block()?.symmetric_key_bytes()?;
 
         // Sign created public key with the issuer private key
         let attributes = Attributes {
