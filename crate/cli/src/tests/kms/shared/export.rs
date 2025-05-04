@@ -347,7 +347,7 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
         let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
         let key_block = object.key_block()?;
         assert_eq!(key_block.key_format_type, key_format_type);
-        let key_bytes = key_block.symmetric_key_bytes()?;
+        let key_bytes = key_block.covercrypt_key_bytes()?;
 
         // Export the key bytes only
         export_key(ExportKeyParams {

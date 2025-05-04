@@ -2,7 +2,7 @@ use cosmian_crypto_core::{Secret, reexport::zeroize::Zeroizing};
 use cosmian_findex::KEY_LENGTH;
 use cosmian_kms_client::{KmsClient, kmip_2_1::kmip_operations::Get};
 
-use crate::error::result::CosmianResult;
+use crate::error::result::{CosmianResult, CosmianResultHelper};
 
 pub mod findex_instance;
 pub mod insert_or_delete;
@@ -25,7 +25,8 @@ pub async fn retrieve_key_from_kms(
             .await?
             .object
             .key_block()?
-            .symmetric_key_bytes()?,
+            .symmetric_key_bytes()
+            .context("findex::retrieve_key_from_kms")?,
     );
     Ok(Secret::from_unprotected_bytes(&mut secret))
 }

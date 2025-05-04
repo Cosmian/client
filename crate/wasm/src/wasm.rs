@@ -24,6 +24,7 @@ use cosmian_kms_client_utils::{
         kmip_0::kmip_types::CertificateType,
         kmip_2_1::{
             kmip_attributes::Attributes,
+            kmip_data_structures::{KeyMaterial, KeyValue},
             kmip_objects::{Certificate as KmipCertificate, Object, ObjectType, PrivateKey},
             kmip_operations::{
                 CertifyResponse, CreateKeyPair, CreateKeyPairResponse, CreateResponse, Decrypt,
@@ -471,28 +472,16 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
         }
         ExportKeyFormat::Base64 => {
             let kmip_object = response.object;
-            let key_block = kmip_object
-                .key_block()
-                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
             let string = base64::engine::general_purpose::STANDARD
-                .encode(
-                    key_block
-                        .key_bytes()
-                        .map_err(|e| JsValue::from_str(&format!("{e}")))?,
-                )
+                .encode(get_object_bytes(&kmip_object)?)
                 .to_lowercase();
             JsValue::from(string)
         }
         _ => {
             let kmip_object = response.object;
-            let key_block = kmip_object
-                .key_block()
-                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
             let object_type = kmip_object.object_type();
             let bytes = {
-                let mut bytes = key_block
-                    .key_bytes()
-                    .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+                let mut bytes = get_object_bytes(&kmip_object)?;
                 let (key_format_type, encode_to_pem) = get_export_key_format_type(&key_format);
 
                 if encode_to_pem {
@@ -505,7 +494,8 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
                         })
                         .map_err(|e| JsValue::from_str(&e.to_string()))?;
                     bytes = der_to_pem(bytes.as_slice(), format_type, object_type)
-                        .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+                        .map_err(|e| JsValue::from_str(&format!("{e}")))?
+                        .to_vec();
                 }
                 bytes
             };
@@ -513,6 +503,31 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
         }
     };
     Ok(data)
+}
+
+fn get_object_bytes(object: &Object) -> Result<Vec<u8>, JsValue> {
+    let key_block = object
+        .key_block()
+        .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+    match key_block
+        .key_value
+        .as_ref()
+        .ok_or_else(|| JsValue::from_str("Key value is missing"))?
+    {
+        KeyValue::ByteString(v) => Ok(v.to_vec()),
+        KeyValue::Structure { key_material, .. } => match key_material {
+            KeyMaterial::ByteString(v) => Ok(v.to_vec()),
+            KeyMaterial::TransparentSymmetricKey { key } => Ok(key.to_vec()),
+            KeyMaterial::TransparentECPrivateKey { .. }
+            | KeyMaterial::TransparentECPublicKey { .. } => key_block
+                .ec_raw_bytes()
+                .map(|v| v.to_vec())
+                .map_err(|e| JsValue::from_str(&e.to_string())),
+            x => Err(JsValue::from_str(&format!(
+                "Unsupported key material type: {x:?}"
+            ))),
+        },
+    }
 }
 
 // Get requests
@@ -924,7 +939,7 @@ pub fn parse_export_certificate_ttlv_response(
         // PKCS12 is exported as a private key object
         Object::PrivateKey(PrivateKey { key_block }) => {
             let p12_bytes = key_block
-                .key_bytes()
+                .pkcs_der_bytes()
                 .map_err(|e| JsValue::from(e.to_string()))?
                 .to_vec();
             Ok(JsValue::from(Uint8Array::from(p12_bytes.as_slice())))

@@ -425,7 +425,7 @@ impl EncryptAction {
             },
         )?;
 
-        let encapsulation = dek_object.key_block()?.symmetric_key_bytes()?;
+        let encapsulation = dek_object.key_block()?.wrapped_key_bytes()?;
 
         Ok((dek, encapsulation.to_vec()))
     }

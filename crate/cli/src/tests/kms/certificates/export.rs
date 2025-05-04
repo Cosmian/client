@@ -264,7 +264,7 @@ async fn test_import_p12_rsa() {
         KeyFormatType::PKCS1
     );
     assert_eq!(
-        sk.key_block().unwrap().pkcs12_bytes().unwrap().to_vec(),
+        sk.key_block().unwrap().pkcs_der_bytes().unwrap().to_vec(),
         parsed_p12
             .pkey
             .unwrap()

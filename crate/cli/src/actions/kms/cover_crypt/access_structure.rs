@@ -87,7 +87,7 @@ impl ViewAction {
         } else {
             cli_bail!("either a key ID or a key TTLV file must be supplied");
         };
-        let mpk = MasterPublicKey::deserialize(&object.key_block()?.symmetric_key_bytes()?)
+        let mpk = MasterPublicKey::deserialize(&object.key_block()?.covercrypt_key_bytes()?)
             .map_err(|e| {
                 CryptoError::Kmip(format!("Failed deserializing the CoverCrypt MPK: {e}"))
             })?;
