@@ -169,6 +169,8 @@ pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     use crate::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 
     log_init(option_env!("RUST_LOG"));
+    // log_init(Some("info,cosmian_kms_server=debug"));
+
     let ctx = start_default_test_kms_server().await;
 
     // Covercrypt import/export test
@@ -225,7 +227,16 @@ pub(crate) fn export_import_test(
     })?;
 
     let object = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output.export"))?;
-    let key_bytes = object.key_block()?.symmetric_key_bytes()?;
+    let key_bytes = match algorithm {
+        CryptographicAlgorithm::AES => object.key_block()?.symmetric_key_bytes()?,
+        CryptographicAlgorithm::ECDH => object.key_block()?.ec_raw_bytes()?,
+        CryptographicAlgorithm::CoverCrypt => object.key_block()?.covercrypt_key_bytes()?,
+        x => {
+            return Err(CosmianError::Default(format!(
+                "unsupported algorithm for export: {x:?}"
+            )))
+        }
+    };
 
     // import and re-export
     let import_params = ImportKeyParams {
@@ -244,7 +255,17 @@ pub(crate) fn export_import_test(
         ..Default::default()
     })?;
     let object2 = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output2.export"))?;
-    assert_eq!(object2.key_block()?.symmetric_key_bytes()?, key_bytes);
+    let object2_key_bytes = match algorithm {
+        CryptographicAlgorithm::AES => object2.key_block()?.symmetric_key_bytes()?,
+        CryptographicAlgorithm::ECDH => object2.key_block()?.ec_raw_bytes()?,
+        CryptographicAlgorithm::CoverCrypt => object2.key_block()?.covercrypt_key_bytes()?,
+        x => {
+            return Err(CosmianError::Default(format!(
+                "unsupported algorithm for export: {x:?}"
+            )))
+        }
+    };
+    assert_eq!(object2_key_bytes, key_bytes);
     assert_eq!(
         object2.key_block()?.cryptographic_algorithm,
         Some(algorithm)

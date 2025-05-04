@@ -179,7 +179,13 @@ pub(crate) fn password_wrap_import_test(
     })?;
 
     let object = read_object_from_json_ttlv_file(&key_file)?;
-    let key_bytes = object.key_block()?.symmetric_key_bytes()?;
+    let key_bytes = if sub_command == "ec" {
+        object.key_block()?.ec_raw_bytes()?
+    } else if sub_command == "cc" {
+        object.key_block()?.covercrypt_key_bytes()?
+    } else {
+        object.key_block()?.symmetric_key_bytes()?
+    };
 
     //wrap and unwrap using a password
     {
@@ -203,10 +209,7 @@ pub(crate) fn password_wrap_import_test(
             wrapped_object.key_wrapping_data().unwrap().encoding_option,
             Some(EncodingOption::TTLVEncoding)
         );
-        assert_ne!(
-            wrapped_object.key_block()?.symmetric_key_bytes()?,
-            key_bytes
-        );
+        assert_ne!(wrapped_object.key_block()?.wrapped_key_bytes()?, key_bytes);
         unwrap(
             &ctx.owner_client_conf_path,
             sub_command,
@@ -220,7 +223,13 @@ pub(crate) fn password_wrap_import_test(
         let unwrapped_object = read_object_from_json_ttlv_file(&key_file)?;
         assert!(unwrapped_object.key_wrapping_data().is_none());
         assert_eq!(
-            unwrapped_object.key_block()?.symmetric_key_bytes()?,
+            if sub_command == "ec" {
+                unwrapped_object.key_block()?.ec_raw_bytes()?
+            } else if sub_command == "cc" {
+                unwrapped_object.key_block()?.covercrypt_key_bytes()?
+            } else {
+                unwrapped_object.key_block()?.symmetric_key_bytes()?
+            },
             key_bytes
         );
     }
@@ -252,10 +261,7 @@ pub(crate) fn password_wrap_import_test(
             wrapped_object.key_wrapping_data().unwrap().encoding_option,
             Some(EncodingOption::TTLVEncoding)
         );
-        assert_ne!(
-            wrapped_object.key_block()?.symmetric_key_bytes()?,
-            key_bytes
-        );
+        assert_ne!(wrapped_object.key_block()?.wrapped_key_bytes()?, key_bytes);
         unwrap(
             &ctx.owner_client_conf_path,
             sub_command,
@@ -269,7 +275,13 @@ pub(crate) fn password_wrap_import_test(
         let unwrapped_object = read_object_from_json_ttlv_file(&key_file)?;
         assert!(unwrapped_object.key_wrapping_data().is_none());
         assert_eq!(
-            unwrapped_object.key_block()?.symmetric_key_bytes()?,
+            if sub_command == "ec" {
+                unwrapped_object.key_block()?.ec_raw_bytes()?
+            } else if sub_command == "cc" {
+                unwrapped_object.key_block()?.covercrypt_key_bytes()?
+            } else {
+                unwrapped_object.key_block()?.symmetric_key_bytes()?
+            },
             key_bytes
         );
     }

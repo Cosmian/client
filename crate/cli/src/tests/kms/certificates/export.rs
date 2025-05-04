@@ -94,7 +94,7 @@ async fn test_import_export_p12_25519() {
 
     let sk = read_object_from_json_ttlv_file(&tmp_exported_sk).unwrap();
     assert_eq!(
-        sk.key_block().unwrap().ec_raw_bytes().unwrap(),
+        sk.key_block().unwrap().ec_raw_bytes().unwrap().to_vec(),
         parsed_p12.pkey.as_ref().unwrap().raw_private_key().unwrap()
     );
     let certificate_id = sk
@@ -264,11 +264,7 @@ async fn test_import_p12_rsa() {
         KeyFormatType::PKCS1
     );
     assert_eq!(
-        sk.key_block()
-            .unwrap()
-            .symmetric_key_bytes()
-            .unwrap()
-            .to_vec(),
+        sk.key_block().unwrap().pkcs12_bytes().unwrap().to_vec(),
         parsed_p12
             .pkey
             .unwrap()

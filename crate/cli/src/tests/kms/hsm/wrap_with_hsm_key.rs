@@ -20,8 +20,8 @@ use crate::{
 
 #[tokio::test]
 pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
-    // log_init(option_env!("RUST_LOG"));
-    log_init(Some("info,cosmian_kms_server=debug"));
+    log_init(option_env!("RUST_LOG"));
+    // log_init(Some("info,cosmian_kms_server=debug"));
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
     let wrapping_key_id = create_symmetric_key(

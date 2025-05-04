@@ -17,6 +17,7 @@ use cosmian_kms_client::{
     },
     pad_be_bytes,
 };
+use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use openssl::pkey::{Id, PKey};
 use tempfile::TempDir;
@@ -31,7 +32,10 @@ use crate::tests::kms::cover_crypt::{
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
-    error::{CosmianError, result::CosmianResult},
+    error::{
+        CosmianError,
+        result::{CosmianResult, CosmianResultHelper},
+    },
     tests::{
         PROG_NAME,
         kms::{
@@ -197,6 +201,9 @@ pub(crate) async fn test_export_sym_allow_revoked() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
+    // log_init(Some("info,cosmian_kms_server=debug"));
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -221,7 +228,10 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     })?;
 
     let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
-    let key_bytes = object.key_block()?.symmetric_key_bytes()?;
+    let key_bytes = object
+        .key_block()?
+        .wrapped_key_bytes()
+        .context("exported wrapped key")?;
     let cryptographic_parameters = object
         .key_block()?
         .key_wrapping_data
@@ -247,7 +257,10 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     })?;
 
     let object_2 = read_object_from_json_ttlv_file(&tmp_path.join("output_2.export"))?;
-    let key_bytes_2 = object_2.key_block()?.symmetric_key_bytes()?;
+    let key_bytes_2 = object_2
+        .key_block()?
+        .wrapped_key_bytes()
+        .context("object 2")?;
     let cryptographic_parameters = object_2
         .key_block()?
         .key_wrapping_data
