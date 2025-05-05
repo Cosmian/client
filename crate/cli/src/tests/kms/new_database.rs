@@ -176,6 +176,7 @@ async fn test_multiple_databases() -> CosmianResult<()> {
         },
         None,
         None,
+        None,
     )
     .await?;
 

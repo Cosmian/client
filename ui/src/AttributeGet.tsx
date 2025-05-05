@@ -75,7 +75,7 @@ interface AttributeGetFormData {
 
 const AttributeGetForm: React.FC = () => {
     const [form] = Form.useForm<AttributeGetFormData>();
-    const [res, setRes] = useState<Map<any, any> | string>(new Map());
+    const [res, setRes] = useState<Map<string, unknown> | string>(new Map());
     const [isLoading, setIsLoading] = useState(false);
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
@@ -99,7 +99,7 @@ const AttributeGetForm: React.FC = () => {
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const response = parse_get_attributes_ttlv_response(result_str, values.selected_attributes);
-                response.size ? setRes(response) : setRes("Empty result");
+                setRes(response.size ? response : "Empty result");
             }
         } catch (e) {
             setRes(`Error getting attributes: ${e}`);
@@ -170,7 +170,7 @@ const AttributeGetForm: React.FC = () => {
                 </div>
             ) : (
                 <Card>
-                    <div ref={responseRef}>{res}</div>
+                    <div ref={responseRef}>{res instanceof Map ? JSON.stringify(Object.fromEntries(res)) : res}</div>
                 </Card>
             )}
         </div>

@@ -13,6 +13,8 @@ interface AccessRight {
 const AccessObtainedList: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [accessRights, setAccessRights] = useState<AccessRight[]>([]);
+    const [hasCreatePermission, setHasCreatePermission] = useState<boolean | undefined>(undefined);
+
     const [res, setRes] = useState<string | undefined>(undefined);
     const { idToken, serverUrl } = useAuth();
     const responseRef = useRef<HTMLDivElement>(null);
@@ -75,8 +77,19 @@ const AccessObtainedList: React.FC = () => {
         }
     };
 
+    const fetchCreatePermission = async () => {
+        setHasCreatePermission(undefined);
+        try {
+            const response = await getNoTTLVRequest("/access/create", idToken, serverUrl);
+            setHasCreatePermission(response.has_create_permission);
+        } catch (e) {
+            console.error("Error fetching create permission:", e);
+        }
+    };
+
     useEffect(() => {
         fetchAccessRights();
+        fetchCreatePermission();
     }, []);
 
     return (
@@ -96,6 +109,13 @@ const AccessObtainedList: React.FC = () => {
             </div>
             <Space direction="vertical" size="middle" style={{ display: "flex" }}>
                 <Card>
+                    <div className="mb-4 space-y-2">
+                        <h3 className="text-m font-bold mb-4">Create access right</h3>
+                        <Tag color={hasCreatePermission ? "green" : "red"}>Create</Tag>
+                        {hasCreatePermission ? "You have" : "You don't have"} Create access right, enabling object creation and import from
+                        KMS.
+                    </div>
+                    <h3 className="text-m font-bold mb-4">Objects access rights</h3>
                     <Table
                         dataSource={accessRights}
                         columns={columns}

@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Form, Input, Radio, Select, Space, Upload } from "antd";
+import { Button, Card, Checkbox, Form, Input, Radio, RadioChangeEvent, Select, Space, Upload } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendKmipRequest } from "./utils";
@@ -48,7 +48,7 @@ const CertificateCertifyForm: React.FC = () => {
         }
     }, [res]);
 
-    const onCertifyMethodChange = (e: any) => {
+    const onCertifyMethodChange = (e: RadioChangeEvent) => {
         setCertifyMethod(e.target.value);
         form.resetFields([
             "certificateSigningRequest",

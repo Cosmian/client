@@ -87,6 +87,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         },
         None,
         None,
+        None,
     )
     .await?;
     run_owned_cli_command(&ctx.owner_client_conf_path);
@@ -115,6 +116,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         },
         None,
         None,
+        None,
     )
     .await?;
     run_owned_cli_command(&ctx.owner_client_conf_path);
@@ -132,6 +134,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
             api_token_id: None,
             api_token: None,
         },
+        None,
         None,
         None,
     )
@@ -153,6 +156,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         },
         None,
         None,
+        None,
     )
     .await?;
     run_owned_cli_command(&ctx.owner_client_conf_path);
@@ -170,6 +174,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
             api_token_id: Some(api_token_id),
             api_token: Some(api_token),
         },
+        None,
         None,
         None,
     )
@@ -196,6 +201,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
             },
             None,
             None,
+            None,
         )
         .await?;
         run_owned_cli_command(&ctx.owner_client_conf_path);
@@ -213,6 +219,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
                 api_token_id: Some("my_bad_token_id".to_string()),
                 api_token: Some("my_bad_token".to_string()),
             },
+            None,
             None,
             None,
         )
@@ -235,6 +242,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
                 api_token_id: Some("my_bad_token_id".to_string()),
                 api_token: Some("my_bad_token".to_string()),
             },
+            None,
             None,
             None,
         )

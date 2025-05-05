@@ -2,9 +2,8 @@
 
 # Build the KMS UI
 # This script:
-# 1. Builds the WASM component
-# 2. Builds the UI
-# 3. Copies the built UI to the final location
+# 1. Verify JS lints
+# 2. Builds the WASM component
 
 # Exit on error, print commands
 set -ex
@@ -31,10 +30,14 @@ if ! command -v npm &>/dev/null; then
   fi
 fi
 
+cd ui
+npm install
+npm run lint
+
 # Install wasm-pack tool
 cargo install --version 0.13.1 wasm-pack --force
 
 # Build WASM component
-cd crate/wasm
+cd ../crate/wasm
 # shellcheck disable=SC2086
 wasm-pack build --target web --release $FEATURES

@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-04-29
+
+### 🚀 Features
+
+- Run KMS server with privileged users ([#40](https://github.com/Cosmian/client/pull/40)):
+  - These users can grant or revoke access rights for other users
+
+### 🐛 Bug Fixes
+
+- Cargo deny missing license
+
+### 🚜 Refactor
+
+- MemoryADT implementation for KmsEncryptionLayer ([#46](https://github.com/Cosmian/client/pull/46))
+
+### 📚 Documentation
+
+- From RHEL to Rocky Linux URL update
+
+### ⚙️ Miscellaneous Tasks
+
+- Reuse GitHub workflow to publish artifacts
+
 ## [0.3.1] - 2025-04-24
 
 ### 🚀 Features

@@ -57,8 +57,8 @@ pub struct GrantAccess {
     user: String,
 
     /// The object unique identifier stored in the KMS
-    #[clap(required = true)]
-    object_uid: String,
+    #[clap(long, short = 'i')]
+    object_uid: Option<String>,
 
     /// The operations to grant (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)
     #[clap(required = true)]
@@ -77,8 +77,23 @@ impl GrantAccess {
     /// Returns an error if the query execution on the KMS server fails.
     ///
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+        let requires_object_uid = self
+            .operations
+            .iter()
+            .any(|op| *op != KmipOperation::Create);
+
+        let uid = if requires_object_uid {
+            Some(UniqueIdentifier::TextString(
+                self.object_uid
+                    .clone()
+                    .context("Object UID is required for operations other than `create`")?,
+            ))
+        } else {
+            None
+        };
+
         let access = Access {
-            unique_identifier: Some(UniqueIdentifier::TextString(self.object_uid.clone())),
+            unique_identifier: uid.clone(),
             user_id: self.user.clone(),
             operation_types: self.operations.clone(),
         };
@@ -91,7 +106,10 @@ impl GrantAccess {
         let stdout = format!(
             "The following kmip operations: {:?}, were successfully granted to user `{}` on \
              object `{}`",
-            self.operations, self.user, self.object_uid
+            self.operations,
+            self.user,
+            uid.as_ref()
+                .map_or("N/A".to_string(), std::string::ToString::to_string)
         );
         console::Stdout::new(&stdout).write()?;
 
@@ -114,8 +132,8 @@ pub struct RevokeAccess {
     user: String,
 
     /// The object unique identifier stored in the KMS
-    #[clap(required = true)]
-    object_uid: String,
+    #[clap(long, short = 'i')]
+    object_uid: Option<String>,
 
     /// The operations to revoke (`create`, `get`, `encrypt`, `decrypt`, `import`, `revoke`, `locate`, `rekey`, `destroy`)
     #[clap(required = true)]
@@ -134,8 +152,23 @@ impl RevokeAccess {
     /// Returns an error if the query execution on the KMS server fails.
     ///
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+        let requires_object_uid = self
+            .operations
+            .iter()
+            .any(|op| *op != KmipOperation::Create);
+
+        let uid = if requires_object_uid {
+            Some(UniqueIdentifier::TextString(
+                self.object_uid
+                    .clone()
+                    .context("Object UID is required for operations other than `create`")?,
+            ))
+        } else {
+            None
+        };
+
         let access = Access {
-            unique_identifier: Some(UniqueIdentifier::TextString(self.object_uid.clone())),
+            unique_identifier: uid.clone(),
             user_id: self.user.clone(),
             operation_types: self.operations.clone(),
         };
@@ -147,7 +180,10 @@ impl RevokeAccess {
 
         let stdout = format!(
             "The following kmip operations: {:?}, have been removed for user `{}` on object `{}`",
-            self.operations, self.user, self.object_uid
+            self.operations,
+            self.user,
+            uid.as_ref()
+                .map_or("N/A".to_string(), std::string::ToString::to_string)
         );
         console::Stdout::new(&stdout).write()?;
 

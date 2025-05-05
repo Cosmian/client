@@ -453,7 +453,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     // Grant access to the user decryption key
     grant_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;
@@ -472,7 +472,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     //revoke the access
     revoke_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;
