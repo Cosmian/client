@@ -199,12 +199,13 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         },
         None,
         None,
+        None,
     )
     .await?;
     run_owned_cli_command(&ctx.owner_client_conf_path);
     ctx.stop_server().await?;
 
-    // Bad API token auth but cert auth used at first
+    // Bad API token auth, but cert auth used at first
     info!("Testing server with bad API token auth but cert auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
@@ -216,6 +217,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
         },
+        None,
         None,
         None,
     )
@@ -238,6 +240,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
         },
+        None,
         None,
         None,
     )

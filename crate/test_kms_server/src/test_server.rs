@@ -34,8 +34,8 @@ use tracing::{info, log::error, trace};
 
 use crate::test_jwt::{AUTH0_TOKEN, AUTH0_TOKEN_USER, get_auth0_jwt_config};
 
-/// In order to run most tests in parallel,
-/// we use that to avoid to try to start N KMS servers (one per test)
+/// To run most tests in parallel,
+/// we use that to avoid trying to start N KMS servers (one per test)
 /// with a default configuration.
 /// Otherwise, we get: "Address already in use (os error 98)"
 /// for N-1 tests.
@@ -500,7 +500,7 @@ fn generate_owner_conf(
     server_params: &ServerParams,
     api_token: Option<String>,
 ) -> Result<(String, ClientConfig), KmsClientError> {
-    // This create root dir
+    // This creates a root dir
     let root_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
     // Create a conf
@@ -516,6 +516,8 @@ fn generate_owner_conf(
         .and_then(|tls| tls.client_ca_cert_pem.as_ref())
         .is_some();
 
+    let use_jwt_token = server_params.identity_provider_configurations.is_some();
+
     let owner_client_conf = ClientConfig {
         kms_config: KmsClientConfig {
             http_config: HttpClientConfig {
@@ -525,7 +527,11 @@ fn generate_owner_conf(
                     format!("http://0.0.0.0:{}", server_params.http_port)
                 },
                 accept_invalid_certs: true,
-                access_token: set_access_token(server_params, api_token),
+                access_token: set_access_token(
+                    use_jwt_token,
+                    Some(AUTH0_TOKEN.to_owned()),
+                    api_token,
+                ),
                 ssl_client_pkcs12_path: if use_client_cert_auth {
                     let p = root_dir
                         .join("../../test_data/client_server/owner/owner.client.acme.com.p12");
