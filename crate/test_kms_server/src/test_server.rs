@@ -9,15 +9,10 @@ use std::{
 use actix_server::ServerHandle;
 use cosmian_cli::{
     config::ClientConfig,
-    reexport::{
-        cosmian_kms_client::{
-            GmailApiConf, KmsClient, KmsClientConfig, KmsClientError, kms_client_bail,
-            kms_client_error,
-            reexport::{cosmian_config_utils::ConfigUtils, cosmian_http_client::HttpClientConfig},
-        },
-        cosmian_kms_crypto::crypto::{
-            secret::Secret, symmetric::symmetric_ciphers::AES_256_GCM_KEY_LENGTH,
-        },
+    reexport::cosmian_kms_client::{
+        GmailApiConf, KmsClient, KmsClientConfig, KmsClientError, kms_client_bail,
+        kms_client_error,
+        reexport::{cosmian_config_utils::ConfigUtils, cosmian_http_client::HttpClientConfig},
     },
 };
 use cosmian_kms_server::{
@@ -111,7 +106,6 @@ fn get_db_config() -> MainDBConfig {
     env::var_os("KMS_TEST_DB").map_or_else(sqlite_db_config, |v| match v.to_str().unwrap_or("") {
         "redis-findex" => redis_findex_db_config(),
         "mysql" => mysql_db_config(),
-        "sqlite-enc" => sqlite_db_config(),
         "postgresql" => postgres_db_config(),
         _ => sqlite_db_config(),
     })
@@ -593,26 +587,6 @@ fn generate_user_conf(
 
     // return the path
     Ok(user_conf_path)
-}
-
-/// Generate an invalid configuration for sqlite-enc
-/// by changing the database secret  and return the file path
-#[must_use]
-pub fn generate_invalid_conf(correct_conf: &ClientConfig) -> String {
-    // Create a new database key
-    let db_key = Secret::<AES_256_GCM_KEY_LENGTH>::new_random()
-        .expect("Failed to generate rand bytes for generate_invalid_conf");
-
-    let mut invalid_conf = correct_conf.clone();
-    // and a temp file
-    let invalid_conf_path = "/tmp/invalid_conf.toml".to_owned();
-    let token = hex::encode(&*db_key);
-    invalid_conf.kms_config.http_config.database_secret = Some(token);
-
-    // write the invalid conf
-    invalid_conf.to_toml(&invalid_conf_path).unwrap();
-
-    invalid_conf_path
 }
 
 #[cfg(test)]

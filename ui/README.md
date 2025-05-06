@@ -14,7 +14,7 @@ To build the WASM package from the corresponding Rust crate:
 wasm-pack build --target web
 ```
 
-Then copy the generated `pkg` directory into the React app’s source tree:
+Then copy the generated `pkg` directory into the React app's source tree:
 
 ```bash
 cp -R pkg ../../ui/src/wasm/

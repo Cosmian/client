@@ -411,6 +411,13 @@ IDs.
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
 
 
 ---
@@ -434,6 +441,13 @@ Create a new user secret key for an access policy, and index it under some
 `--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
 
 Possible values:  `"true", "false"` [default: `"false"`]
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
@@ -526,6 +540,13 @@ Possible values:  `"true", "false"` [default: `"false"`]
 `--key-usage <KEY_USAGE>` For what operations should the key be used
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this imported key with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
@@ -1153,6 +1174,13 @@ Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p52
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
 
 
 ---
@@ -1244,6 +1272,13 @@ Possible values:  `"true", "false"` [default: `"false"`]
 `--key-usage <KEY_USAGE>` For what operations should the key be used
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this imported key with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
@@ -1536,6 +1571,13 @@ the subject name to use.
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 
 Possible values:  `"true", "false"` [default: `"false"`]
@@ -1824,6 +1866,13 @@ Create a new RSA key pair
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
 
 
 ---
@@ -1915,6 +1964,13 @@ Possible values:  `"true", "false"` [default: `"false"`]
 `--key-usage <KEY_USAGE>` For what operations should the key be used
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this imported key with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
@@ -2152,12 +2208,12 @@ Possible values:  `"chacha20", "aes", "sha3", "shake"` [default: `"aes"`]
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key to wrap this new key with.
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this new key with.
 If the wrapping key is:
 
--  a symmetric key, AES-GCM will be used
--  a RSA key, RSA-OAEP will be used
--  a EC key, ECIES will be used (salsa20poly1305 for X25519)
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
@@ -2263,6 +2319,13 @@ Possible values:  `"true", "false"` [default: `"false"`]
 `--key-usage <KEY_USAGE>` For what operations should the key be used
 
 Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this imported key with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
 
 
