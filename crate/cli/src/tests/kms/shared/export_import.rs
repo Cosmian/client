@@ -14,21 +14,22 @@ use crate::{
 };
 
 #[tokio::test]
-pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
+pub(crate) async fn test_wrap_on_export_unwrap_on_import() -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
+    // log_init(Some("debug"));
     // init the test server
     let ctx = start_default_test_kms_server().await;
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
+
     // Generate a symmetric wrapping key
-    let wrap_key_path = tmp_path.join("wrap.key");
-    let key_file = wrap_key_path.to_str().unwrap().to_string();
+    let kek_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
 
-    let sym_wrapping_key_id =
-        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
-
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    // Generate a symmetric key to wrap
+    let dek_path = tmp_path.join("dek.key");
+    let dek_file = dek_path.to_str().unwrap().to_string();
+    let dek_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
 
     // Export and import the key with different block cipher modes
     for wrapping_algorithm in [WrappingAlgorithm::AesGCM, WrappingAlgorithm::NistKeyWrap] {
@@ -36,9 +37,9 @@ pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
         export_key(ExportKeyParams {
             cli_conf_path: ctx.user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
-            key_id: key_id.to_string(),
-            key_file: key_file.clone(),
-            wrap_key_id: Some(sym_wrapping_key_id.clone()),
+            key_id: dek_id.to_string(),
+            key_file: dek_file.clone(),
+            wrap_key_id: Some(kek_id.clone()),
             wrapping_algorithm: Some(wrapping_algorithm.clone()),
             ..Default::default()
         })?;
@@ -46,8 +47,8 @@ pub(crate) async fn test_wrap_export_import() -> CosmianResult<()> {
         let imported_key_id = import_key(ImportKeyParams {
             cli_conf_path: ctx.user_client_conf_path.clone(),
             sub_command: "sym".to_string(),
-            key_file: key_file.clone(),
-            key_id: Some(key_id.clone()),
+            key_file: dek_file.clone(),
+            key_id: Some(dek_id.clone()),
             unwrap: true,
             replace_existing: true,
             ..Default::default()

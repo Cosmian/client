@@ -9,6 +9,7 @@ use tempfile::TempDir;
 use test_kms_server::{
     AuthenticationOptions, MainDBConfig, TestsContext, start_test_server_with_options,
 };
+use tokio::fs;
 use tracing::{info, trace};
 
 use super::{KMS_SUBCOMMAND, utils::recover_cmd_logs};
@@ -71,6 +72,10 @@ const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 5; // +5 since there are other KMS t
 pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     // log_init(Some("debug"));
     log_init(option_env!("RUST_LOG"));
+
+    // delete the temp db dir holding `sqlite-data-auth-tests/kms.db`
+    let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
+
     // plaintext no auth
     info!("Testing server with no auth");
     let ctx = start_test_server_with_options(
@@ -248,5 +253,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     run_owned_cli_command(&ctx.owner_client_conf_path);
     ctx.stop_server().await?;
 
+    // delete the temp db dir
+    let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
     Ok(())
 }
