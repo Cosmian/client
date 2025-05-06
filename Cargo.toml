@@ -64,18 +64,16 @@ cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", 
 cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
-pkcs11_sys = { path = "../crate/pkcs11/sys" }
-cosmian_kmip = { path = "../crate/kmip" }
-cosmian_kms_access = { path = "../crate/access" }
-cosmian_kms_crypto = { path = "../crate/crypto" }
-cosmian_kms_server = { path = "../crate/server" }
-# cosmian_kms_server_database = { path = "../crate/server_database" }
-#pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
-#cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
-#cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
-#cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
-#cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
-#cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
+# pkcs11_sys = { path = "../crate/pkcs11/sys" }
+# cosmian_kmip = { path = "../crate/kmip" }
+# cosmian_kms_access = { path = "../crate/access" }
+# cosmian_kms_crypto = { path = "../crate/crypto" }
+# cosmian_kms_server = { path = "../crate/server" }
+pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
+cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
+cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
+cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
+cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "kmip_1" }
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
 leb128 = "0.2"
