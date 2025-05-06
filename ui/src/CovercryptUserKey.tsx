@@ -9,6 +9,7 @@ interface CovercryptUserKeyFormData {
     accessPolicy: string;
     tags: string[];
     sensitive: boolean;
+    wrappingKeyId?: string;
 }
 
 const POLICY_EXAMPLE = `Department::HR && Security Level::Confidential
@@ -33,7 +34,13 @@ const CovercryptUserKeyForm: React.FC = () => {
         setIsLoading(true);
         setRes(undefined);
         try {
-            const request = create_cc_user_key_ttlv_request(values.masterPrivateKeyId, values.accessPolicy, values.tags, values.sensitive);
+            const request = create_cc_user_key_ttlv_request(
+                values.masterPrivateKeyId,
+                values.accessPolicy,
+                values.tags,
+                values.sensitive,
+                values.wrappingKeyId
+            );
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const result = await parse_create_ttlv_response(result_str);
@@ -111,6 +118,10 @@ const CovercryptUserKeyForm: React.FC = () => {
                     <Card>
                         <Form.Item name="tags" label="Tags" help="Optional tags to help retrieve the key later">
                             <Select mode="tags" placeholder="Enter tags" open={false} />
+                        </Form.Item>
+
+                        <Form.Item name="wrappingKeyId" label="Wrapping Key ID" help="Optional: ID of the key to wrap this new key with">
+                            <Input placeholder="Enter wrapping key ID" />
                         </Form.Item>
 
                         <Form.Item name="sensitive" valuePropName="checked" help="If enabled, the key will not be exportable">

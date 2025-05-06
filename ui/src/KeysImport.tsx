@@ -21,6 +21,7 @@ interface ImportKeyFormData {
     tags: string[];
     keyUsage?: KeyUsage[];
     authenticatedAdditionalData?: string;
+    wrappingKeyId?: string;
 }
 
 type KeyType = "rsa" | "ec" | "symmetric" | "covercrypt";
@@ -61,6 +62,7 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
                 values.replaceExisting,
                 values.tags,
                 values.keyUsage,
+                values.wrappingKeyId
             );
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
@@ -243,6 +245,10 @@ const KeyImportForm: React.FC<KeyImportFormProps> = (props: KeyImportFormProps) 
 
                         <Form.Item name="tags" label="Tags" help="Optional: Add tags to help retrieve the key later">
                             <Select mode="tags" placeholder="Enter tags" open={false} />
+                        </Form.Item>
+
+                        <Form.Item name="wrappingKeyId" label="Wrapping Key ID" help="Optional: ID of the key to wrap this new key with">
+                            <Input placeholder="Enter wrapping key ID" />
                         </Form.Item>
                     </Card>
                     <Card>
