@@ -53,7 +53,7 @@ fn sqlite_db_config() -> MainDBConfig {
     }
     MainDBConfig {
         database_type: Some("sqlite".to_owned()),
-        clear_database: true,
+        clear_database: false,
         sqlite_path: file_path,
         ..MainDBConfig::default()
     }
@@ -66,7 +66,7 @@ fn mysql_db_config() -> MainDBConfig {
         .to_owned();
     MainDBConfig {
         database_type: Some("mysql".to_owned()),
-        clear_database: true,
+        clear_database: false,
         database_url: Some(mysql_url),
         ..MainDBConfig::default()
     }
@@ -79,7 +79,7 @@ fn postgres_db_config() -> MainDBConfig {
         .to_owned();
     MainDBConfig {
         database_type: Some("postgresql".to_owned()),
-        clear_database: true,
+        clear_database: false,
         database_url: Some(postgresql_url),
         ..MainDBConfig::default()
     }
@@ -94,7 +94,7 @@ fn redis_findex_db_config() -> MainDBConfig {
     };
     MainDBConfig {
         database_type: Some("redis-findex".to_owned()),
-        clear_database: true,
+        clear_database: false,
         database_url: Some(url),
         sqlite_path: Default::default(),
         redis_master_password: Some("password".to_owned()),
