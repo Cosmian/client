@@ -20,12 +20,12 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v1
 
   cargo-lint:
-    uses: Cosmian/reusable_workflows/.github/workflows/clippy.yml@develop
+    uses: Cosmian/reusable_workflows/.github/workflows/clippy.yml@move_ci_scripts
     with:
       toolchain: ${{ inputs.toolchain }}
 
   build:
-    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
+    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@move_ci_scripts
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
@@ -40,7 +40,7 @@ jobs:
       - cargo-audit
       - cargo-lint
       - build
-    uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@develop
+    uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@move_ci_scripts
     with:
       project-name: client
       destination: cli # /mnt/packages/cli
