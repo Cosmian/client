@@ -49,6 +49,7 @@ rustup target add "$TARGET"
 
 if [ -f /etc/lsb-release ]; then
   bash $ROOT_FOLDER/Cosmian/reusable_scripts/.github/scripts/test_utimaco.sh
+  rm -rf hsm-simulator
 fi
 
 cd "$ROOT_FOLDER"
