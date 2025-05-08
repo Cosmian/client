@@ -95,6 +95,7 @@ fn redis_findex_db_config() -> MainDBConfig {
     MainDBConfig {
         database_type: Some("redis-findex".to_owned()),
         clear_database: false,
+        unwrapped_cache_max_age: 15,
         database_url: Some(url),
         sqlite_path: Default::default(),
         redis_master_password: Some("password".to_owned()),
