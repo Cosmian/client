@@ -30,7 +30,7 @@ use tracing::{info, log::error, trace};
 use crate::test_jwt::{AUTH0_TOKEN, AUTH0_TOKEN_USER, get_auth0_jwt_config};
 
 /// To run most tests in parallel,
-/// we use that to avoid trying to start N KMS servers (one per test)
+/// We use that to avoid trying to start N KMS servers (one per test)
 /// with a default configuration.
 /// Otherwise, we get: "Address already in use (os error 98)"
 /// for N-1 tests.
@@ -373,7 +373,7 @@ fn start_test_kms_server(
 /// Wait for the server to start by reading the version
 async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), KmsClientError> {
     // Depending on the running environment, the server could take a bit of time to start
-    // We try to query it with a dummy request until be sure it is started.
+    // We try to query it with a dummy request until we are sure it is started.
     let mut retry = true;
     let mut timeout = 5;
     let mut waiting = 1;
@@ -388,7 +388,7 @@ async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), Kms
                 tokio::time::sleep(Duration::from_secs(waiting)).await;
                 waiting *= 2;
             } else {
-                info!("The server is still not up, stop trying");
+                info!("The server is still not up, stop trying.");
                 kms_client_bail!("Can't start the kms server to run tests");
             }
         } else {
@@ -438,7 +438,7 @@ fn generate_server_params(
             JwtAuthConfig::default()
         },
         socket_server: SocketServerConfig {
-            // start the socket server automatically if both https and client cert authentication are used
+            //Start the socket server automatically if both HTTPS and client cert authentication are used
             socket_server_start: authentication_options.use_https
                 && authentication_options.use_client_cert,
             socket_server_port: port + 100,
