@@ -158,11 +158,11 @@ pub async fn start_default_test_kms_server_with_cert_auth() -> &'static TestsCon
         .await
         .unwrap()
 }
-/// Non revocable key ids
+////revocable key IDs
 pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
     non_revocable_key_id: Option<Vec<String>>,
 ) -> &'static TestsContext {
-    trace!("Starting test server with non revocable key ids");
+    trace!("Starting test server with non-revocable key ids");
     ONCE_SERVER_WITH_NON_REVOCABLE_KEY
         .get_or_try_init(|| {
             start_test_server_with_options(
@@ -184,9 +184,9 @@ pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
         .unwrap()
 }
 
-/// Non revocable key ids
+////revocable key IDs
 pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsContext {
-    trace!("Starting test server with non revocable key ids");
+    trace!("Starting test server with non-revocable key ids");
     ONCE_SERVER_WITH_HSM
         .get_or_try_init(|| {
             start_test_server_with_options(
@@ -352,7 +352,7 @@ fn start_test_kms_server(
     let (tx, rx) = mpsc::channel::<ServerHandle>();
 
     let thread_handle = thread::spawn(move || {
-        // allow others `spawn` to happen within the KMS Server future
+        // allow others `spawn` to happen within the KMS Server in the future
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()?
@@ -566,7 +566,7 @@ fn generate_user_conf(
     owner_client_conf: &ClientConfig,
     use_jwt_token: bool,
 ) -> Result<String, KmsClientError> {
-    // This create root dir
+    // This creates root dir
     let root_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
     let mut user_conf = owner_client_conf.clone();
