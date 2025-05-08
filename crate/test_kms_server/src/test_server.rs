@@ -158,7 +158,7 @@ pub async fn start_default_test_kms_server_with_cert_auth() -> &'static TestsCon
         .await
         .unwrap()
 }
-////revocable key IDs
+/// revocable key IDs
 pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
     non_revocable_key_id: Option<Vec<String>>,
 ) -> &'static TestsContext {
@@ -184,7 +184,7 @@ pub async fn start_default_test_kms_server_with_non_revocable_key_ids(
         .unwrap()
 }
 
-////revocable key IDs
+/// revocable key IDs
 pub async fn start_default_test_kms_server_with_utimaco_hsm() -> &'static TestsContext {
     trace!("Starting test server with non-revocable key ids");
     ONCE_SERVER_WITH_HSM
