@@ -89,4 +89,6 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
 fi
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 # shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
+cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES \
+  --exclude cosmian_gui \
+  -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
