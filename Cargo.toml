@@ -1,5 +1,5 @@
 [workspace]
-default-members = ["crate/cli", "crate/gui", "crate/wasm"]
+default-members = ["crate/cli", "crate/pkcs11/provider", "crate/wasm"]
 members = [
     "crate/cli",
     "crate/findex_client",
