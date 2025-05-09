@@ -18,7 +18,7 @@ use std::sync::{PoisonError, RwLockReadGuard, RwLockWriteGuard};
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use pkcs11_sys::{
+use cosmian_pkcs11_sys::{
     CK_ATTRIBUTE_TYPE, CK_MECHANISM_TYPE, CK_OBJECT_HANDLE, CK_RV, CK_SESSION_HANDLE, CK_SLOT_ID,
     CKR_ARGUMENTS_BAD, CKR_ATTRIBUTE_TYPE_INVALID, CKR_ATTRIBUTE_VALUE_INVALID,
     CKR_BUFFER_TOO_SMALL, CKR_CRYPTOKI_ALREADY_INITIALIZED, CKR_CRYPTOKI_NOT_INITIALIZED,

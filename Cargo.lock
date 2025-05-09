@@ -1756,7 +1756,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_cli"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "actix-rt",
  "actix-server",
@@ -1767,7 +1767,7 @@ dependencies = [
  "cosmian_config_utils",
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.0.0",
+ "cosmian_findex 7.1.0",
  "cosmian_findex_client",
  "cosmian_findex_structs",
  "cosmian_kms_client",
@@ -1908,11 +1908,16 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex"
-version = "7.0.0"
-source = "git+https://github.com/Cosmian/findex?rev=6329b6b2f2b64b033e40b05cd12ca1c9b5ee376f#6329b6b2f2b64b033e40b05cd12ca1c9b5ee376f"
+version = "7.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abc2ce562374fb7bd202a123bce41f26328895901d8161923fa62c41dd551235"
 dependencies = [
  "aes",
  "cosmian_crypto_core 10.1.0",
+ "criterion",
+ "futures",
+ "rand 0.9.1",
+ "rand_distr",
  "redis 0.28.2",
  "tokio",
  "xts-mode",
@@ -1920,11 +1925,11 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.0.0",
+ "cosmian_findex 7.1.0",
  "cosmian_findex_structs",
  "cosmian_http_client",
  "cosmian_kms_client",
@@ -1941,7 +1946,8 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.3.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#1d6343570e3041cf3322cdad500423a6d6ed408e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0218d8054281baa909541102270b0d72ebf9124dd1705833615f4e8c75a70281"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1953,7 +1959,7 @@ dependencies = [
  "chrono",
  "clap",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.0.0",
+ "cosmian_findex 7.1.0",
  "cosmian_findex_structs",
  "cosmian_logger 0.1.1",
  "dotenvy",
@@ -1975,11 +1981,12 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.3.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#1d6343570e3041cf3322cdad500423a6d6ed408e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ae9704419dab9b8e28c30a8a5aa46c0f4e866ddc58ff9083073ce3b25c48b17"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.0.0",
+ "cosmian_findex 7.1.0",
  "thiserror 2.0.12",
  "tracing",
  "uuid",
@@ -1987,7 +1994,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_gui"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "clap",
  "cosmian_cli",
@@ -2019,7 +2026,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1f31d793a09e6b0ecc7d921150d489366c26d80f2a5ceb0202ff2c9276622b1"
 dependencies = [
  "bitflags 2.9.0",
  "cosmian_logger 0.1.1",
@@ -2040,7 +2048,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "246f79db0e5808f1f4bc0c7520e10e8d1039bb01533778c3dcbe7fe6b450017f"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -2049,13 +2058,14 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_base_hsm"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c10d29462b2672fb73bb3fef4549d773d7403cafac1a40c0e37a34b02bd74fc6"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
+ "cosmian_pkcs11_sys",
  "libloading 0.8.6",
  "lru",
- "pkcs11_sys",
  "rand 0.9.1",
  "thiserror 2.0.12",
  "tracing",
@@ -2065,7 +2075,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "cosmian_crypto_core 10.1.0",
  "cosmian_http_client",
@@ -2082,7 +2092,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -2100,7 +2110,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_wasm"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "base64 0.22.1",
  "cosmian_kms_client_utils",
@@ -2118,7 +2128,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_crypto"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df22427cc548304b81465bb720b951f0995da47353126eb53c9fb96c8466dbac"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2143,7 +2154,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_interfaces"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8c82f652d92d41bdee121a508a11bfd01e6ef1f1594a526ba19ab86719cbcd9"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2158,7 +2170,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b76b219ea368cf669b4a6f2ec51d26e44d49faf1a6f9a400f80e2318bfad7f1"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2212,7 +2225,8 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server_database"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e93a1dad2a73c74bf6d73638868648308eb2576cc84bd94fb2274b6922e01293"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
@@ -2271,18 +2285,18 @@ dependencies = [
 
 [[package]]
 name = "cosmian_pkcs11"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "cosmian_cli",
  "cosmian_crypto_core 10.1.0",
  "cosmian_kmip",
  "cosmian_logger 0.2.0",
  "cosmian_pkcs11_module",
+ "cosmian_pkcs11_sys",
  "etcetera",
  "hex",
  "p256",
  "pkcs1",
- "pkcs11_sys",
  "serde_json",
  "serial_test",
  "sha3",
@@ -2299,17 +2313,17 @@ dependencies = [
 
 [[package]]
 name = "cosmian_pkcs11_module"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "bincode",
  "const-oid",
  "cosmian_logger 0.2.0",
+ "cosmian_pkcs11_sys",
  "hex",
  "log",
  "once_cell",
  "p256",
  "pkcs1",
- "pkcs11_sys",
  "rand 0.9.1",
  "rsa",
  "serial_test",
@@ -2318,6 +2332,12 @@ dependencies = [
  "tracing",
  "zeroize",
 ]
+
+[[package]]
+name = "cosmian_pkcs11_sys"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ee5887bc331eba06478add7025fbc0ed12f6b89e0ad4d67dd3638ac7778a43d"
 
 [[package]]
 name = "cpufeatures"
@@ -2369,6 +2389,8 @@ dependencies = [
  "num-traits",
  "once_cell",
  "oorandom",
+ "plotters",
+ "rayon",
  "regex",
  "serde",
  "serde_derive",
@@ -2386,6 +2408,25 @@ checksum = "6b50826342786a51a89e2da3a28f1c32b06e387201bc2d19791f622c673706b1"
 dependencies = [
  "cast",
  "itertools 0.10.5",
+]
+
+[[package]]
+name = "crossbeam-deque"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51"
+dependencies = [
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-epoch"
+version = "0.9.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
+dependencies = [
+ "crossbeam-utils",
 ]
 
 [[package]]
@@ -4354,7 +4395,8 @@ dependencies = [
 [[package]]
 name = "kmip-derive"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f09fc18967a62572fdaf82f2577cd4440d1e337cff30d8b01c846fe00e12f85"
 dependencies = [
  "quote",
  "syn 2.0.101",
@@ -5543,11 +5585,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pkcs11_sys"
-version = "0.2.17"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
-
-[[package]]
 name = "pkcs5"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5579,6 +5616,34 @@ name = "pkg-config"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+
+[[package]]
+name = "plotters"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5aeb6f403d7a4911efb1e33402027fc44f29b5bf6def3effcc22d7bb75f2b747"
+dependencies = [
+ "num-traits",
+ "plotters-backend",
+ "plotters-svg",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "plotters-backend"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df42e13c12958a16b3f7f4386b9ab1f3e7933914ecea48da7139435263a4172a"
+
+[[package]]
+name = "plotters-svg"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51bae2ac328883f7acdfea3d66a7c35751187f870bc81f94563733a154d7a670"
+dependencies = [
+ "plotters-backend",
+]
 
 [[package]]
 name = "png"
@@ -5756,12 +5821,13 @@ dependencies = [
 [[package]]
 name = "proteccio_pkcs11_loader"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb3b270a4fc9051507a0a59c92c05f70b7d2bf8cd2d33329f41c9cd025bf830f"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
+ "cosmian_pkcs11_sys",
  "libloading 0.8.6",
- "pkcs11_sys",
  "tracing",
  "uuid",
 ]
@@ -5895,6 +5961,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_distr"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8615d50dcf34fa31f7ab52692afec947c4dd0ab803cc87cb3b0b4570ff7463"
+dependencies = [
+ "num-traits",
+ "rand 0.9.1",
+]
+
+[[package]]
 name = "raw-window-handle"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5905,6 +5981,26 @@ name = "rawsql"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f70b36c8415361d34d90adf494f45bc18e568f909b5946d27c79559ddd812fa8"
+
+[[package]]
+name = "rayon"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b418a60154510ca1a002a752ca9714984e21e4241e804d32555251faf8b78ffa"
+dependencies = [
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
+dependencies = [
+ "crossbeam-deque",
+ "crossbeam-utils",
+]
 
 [[package]]
 name = "redis"
@@ -7219,7 +7315,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 
 [[package]]
 name = "test_findex_server"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "actix-server",
  "cosmian_findex_client",
@@ -7233,7 +7329,7 @@ dependencies = [
 
 [[package]]
 name = "test_kms_server"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "actix-server",
  "cosmian_cli",
@@ -7890,12 +7986,13 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utimaco_pkcs11_loader"
 version = "5.0.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#1734014b5a672d2cb72d4e485147e1cd6d9c0721"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31ad933f257540e2cb2185f54e5bddf8dccc99aaf56363ced7e86c515387f429"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
+ "cosmian_pkcs11_sys",
  "libloading 0.8.6",
- "pkcs11_sys",
  "tracing",
  "uuid",
 ]
