@@ -19,9 +19,9 @@ fips = ["cosmian_cli/fips", "test_kms_server/fips"]
 
 [dependencies]
 cosmian_kmip = { workspace = true }
-cosmian_cli = { path = "../../cli" }
+cosmian_cli = { workspace = true }
 cosmian_crypto_core = { workspace = true }
-cosmian_pkcs11_module = { path = "../module" }
+cosmian_pkcs11_module = { workspace = true }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
@@ -47,4 +47,4 @@ tracing-journald = "0.3.1"
 [dev-dependencies]
 cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
-test_kms_server = { path = "../../test_kms_server" }
+test_kms_server = { workspace = true }

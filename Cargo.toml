@@ -53,9 +53,18 @@ base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
 cosmian_cover_crypt = { version = "15.0", default-features = false }
-cosmian_cli = { path = "crate/cli" }
+
+# Local crates have been also declared here to simplify publishing - centralizing the versions
 cosmian_kms_client_utils = { path = "crate/client_utils" }
 cosmian_kms_client_wasm = { path = "crate/wasm" }
+cosmian_findex_client = { path = "crate/findex_client" }
+cosmian_kms_client = { path = "crate/kms_client" }
+cosmian_cli = { path = "crate/cli" }
+cosmian_pkcs11_module = { path = "crate/pkcs11/module" }
+cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
+test_findex_server = { path = "crate/test_findex_server" }
+test_kms_server = { path = "crate/test_kms_server" }
+
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
 ] }
