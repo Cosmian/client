@@ -13,10 +13,10 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
     A graphical version of the CLI is also available as a separate tool called `cosmian_gui`.
 
 - [Cosmian Command Line Interface (CLI)](#cosmian-command-line-interface-cli)
-    - [Version correspondence](#version-correspondence)
-    - [Installation](#installation)
-    - [Configuration](#configuration)
-    - [Usage](#usage)
+  - [Version correspondence](#version-correspondence)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
 
 !!! info "Download cosmian and cosmian_gui"
 
@@ -36,7 +36,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 | 0.2.0       | 4.22.*           | 0.2.0                 |
 | 0.3.0       | 4.23.*           | 0.3.0                 |
 | 0.3.1       | 4.24.*           | 0.3.0                 |
-| 0.4.0       | 5.0.*           | 0.3.0                 |
+| 0.4.0       | 5.0.*            | 0.3.0                 |
 
 ## Installation
 
