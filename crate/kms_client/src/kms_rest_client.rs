@@ -1,22 +1,16 @@
 use cosmian_http_client::HttpClient;
 // re-export the kmip module as kmip
-use cosmian_kms_client_utils::reexport::cosmian_kmip::kmip_2_1::{
-    kmip_operations::{
-        Certify, CertifyResponse, Create, CreateKeyPair, CreateKeyPairResponse, CreateResponse,
-        Decrypt, DecryptResponse, Destroy, DestroyResponse, Encrypt, EncryptResponse, Export,
-        ExportResponse, Get, GetAttributes, GetAttributesResponse, GetResponse, Import,
-        ImportResponse, Locate, LocateResponse, ReKeyKeyPair, ReKeyKeyPairResponse, Revoke,
-        RevokeResponse, StatusResponse, Validate, ValidateResponse,
-    },
-    ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
+use cosmian_kms_client_utils::reexport::cosmian_kmip::kmip_2_1::kmip_operations::{
+    Certify, CertifyResponse, Create, CreateKeyPair, CreateKeyPairResponse, CreateResponse,
+    Decrypt, DecryptResponse, Destroy, DestroyResponse, Encrypt, EncryptResponse, Export,
+    ExportResponse, Get, GetAttributes, GetAttributesResponse, GetResponse, Import, ImportResponse,
+    Locate, LocateResponse, ReKeyKeyPair, ReKeyKeyPairResponse, Revoke, RevokeResponse,
+    StatusResponse, Validate, ValidateResponse,
 };
 use cosmian_kms_client_utils::reexport::{
-    cosmian_kmip::kmip_2_1::{
-        kmip_messages::{Message, MessageResponse},
-        kmip_operations::{
-            DeleteAttribute, DeleteAttributeResponse, Hash, HashResponse, Mac, MacResponse, ReKey,
-            ReKeyResponse, SetAttribute, SetAttributeResponse,
-        },
+    cosmian_kmip::kmip_2_1::kmip_operations::{
+        DeleteAttribute, DeleteAttributeResponse, Hash, HashResponse, MAC, MACResponse, ReKey,
+        ReKeyResponse, SetAttribute, SetAttributeResponse,
     },
     cosmian_kms_access::access::{
         Access, AccessRightsObtainedResponse, ObjectOwnedResponse, SuccessResponse,
@@ -25,10 +19,14 @@ use cosmian_kms_client_utils::reexport::{
 };
 use reqwest::{Response, StatusCode};
 use serde::Serialize;
-use tracing::trace;
+use tracing::{info, trace};
 
 use crate::{
     KmsClientConfig,
+    cosmian_kmip::{
+        kmip_0::kmip_messages::{RequestMessage, ResponseMessage},
+        ttlv::{TTLV, from_ttlv, to_ttlv},
+    },
     error::{KmsClientError, result::KmsClientResultHelper},
 };
 
@@ -99,7 +97,8 @@ impl KmsClient {
     /// Request conflicts with the attributes specified in the Attributes, then the
     /// information in the Certificate Request takes precedence.
     pub async fn certify(&self, request: Certify) -> Result<CertifyResponse, KmsClientError> {
-        self.post_ttlv::<Certify, CertifyResponse>(&request).await
+        self.post_ttlv_2_1::<Certify, CertifyResponse>(&request)
+            .await
     }
 
     /// This operation requests the server to generate a new symmetric key or
@@ -113,7 +112,7 @@ impl KmsClient {
     /// copy the Unique Identifier returned by this operation into the ID
     /// Placeholder variable.
     pub async fn create(&self, request: Create) -> Result<CreateResponse, KmsClientError> {
-        self.post_ttlv::<Create, CreateResponse>(&request).await
+        self.post_ttlv_2_1::<Create, CreateResponse>(&request).await
     }
 
     /// This operation requests the server to generate a new public/private key
@@ -135,7 +134,7 @@ impl KmsClient {
         &self,
         request: CreateKeyPair,
     ) -> Result<CreateKeyPairResponse, KmsClientError> {
-        self.post_ttlv::<CreateKeyPair, CreateKeyPairResponse>(&request)
+        self.post_ttlv_2_1::<CreateKeyPair, CreateKeyPairResponse>(&request)
             .await
     }
 
@@ -158,7 +157,8 @@ impl KmsClient {
     /// The success or failure of the operation is indicated by the Result
     /// Status (and if failure the Result Reason) in the response header.
     pub async fn decrypt(&self, request: Decrypt) -> Result<DecryptResponse, KmsClientError> {
-        self.post_ttlv::<Decrypt, DecryptResponse>(&request).await
+        self.post_ttlv_2_1::<Decrypt, DecryptResponse>(&request)
+            .await
     }
 
     /// This operation is used to indicate to the server that the key material
@@ -167,7 +167,8 @@ impl KmsClient {
     /// the server.  Objects SHALL only be destroyed if they are in either
     /// Pre-Active or Deactivated state.
     pub async fn destroy(&self, request: Destroy) -> Result<DestroyResponse, KmsClientError> {
-        self.post_ttlv::<Destroy, DestroyResponse>(&request).await
+        self.post_ttlv_2_1::<Destroy, DestroyResponse>(&request)
+            .await
     }
 
     /// This operation requests the server to perform an encryption operation on
@@ -193,7 +194,8 @@ impl KmsClient {
     /// The success or failure of the operation is indicated by the Result
     /// Status (and if failure the Result Reason) in the response header.
     pub async fn encrypt(&self, request: Encrypt) -> Result<EncryptResponse, KmsClientError> {
-        self.post_ttlv::<Encrypt, EncryptResponse>(&request).await
+        self.post_ttlv_2_1::<Encrypt, EncryptResponse>(&request)
+            .await
     }
 
     /// This operation requests that the server returns a Managed Object specified by its Unique Identifier,
@@ -205,7 +207,7 @@ impl KmsClient {
     /// The server SHALL copy the Unique Identifier returned by this operations
     /// into the ID Placeholder variable.
     pub async fn export(&self, request: Export) -> Result<ExportResponse, KmsClientError> {
-        self.post_ttlv::<Export, ExportResponse>(&request).await
+        self.post_ttlv_2_1::<Export, ExportResponse>(&request).await
     }
 
     /// This operation requests that the server returns the Managed Object
@@ -230,7 +232,7 @@ impl KmsClient {
     /// public key's PKCS#12 Certificate Link to get the base certificate, and
     /// then using each certificate's Ce
     pub async fn get(&self, request: Get) -> Result<GetResponse, KmsClientError> {
-        self.post_ttlv::<Get, GetResponse>(&request).await
+        self.post_ttlv_2_1::<Get, GetResponse>(&request).await
     }
 
     /// This operation requests one or more attributes associated with a Managed
@@ -247,7 +249,7 @@ impl KmsClient {
         &self,
         request: GetAttributes,
     ) -> Result<GetAttributesResponse, KmsClientError> {
-        self.post_ttlv::<GetAttributes, GetAttributesResponse>(&request)
+        self.post_ttlv_2_1::<GetAttributes, GetAttributesResponse>(&request)
             .await
     }
 
@@ -261,7 +263,7 @@ impl KmsClient {
     /// The success or failure of the operation is indicated by the Result Status
     /// (and if failure the Result Reason) in the response header.
     pub async fn hash(&self, request: Hash) -> Result<HashResponse, KmsClientError> {
-        self.post_ttlv::<Hash, HashResponse>(&request).await
+        self.post_ttlv_2_1::<Hash, HashResponse>(&request).await
     }
 
     /// This operation requests the server to either add or modify an attribute. The request contains the Unique Identifier of the Managed Object to which the attribute pertains, along with the attribute and value. If the object did not have any instances of the attribute, one is created. If the object had exactly one instance, then it is modified. If it has more than one instance an error is raised. Read-Only attributes SHALL NOT be added or modified using this operation.
@@ -269,7 +271,7 @@ impl KmsClient {
         &self,
         request: SetAttribute,
     ) -> Result<SetAttributeResponse, KmsClientError> {
-        self.post_ttlv::<SetAttribute, SetAttributeResponse>(&request)
+        self.post_ttlv_2_1::<SetAttribute, SetAttributeResponse>(&request)
             .await
     }
 
@@ -278,7 +280,7 @@ impl KmsClient {
         &self,
         request: DeleteAttribute,
     ) -> Result<DeleteAttributeResponse, KmsClientError> {
-        self.post_ttlv::<DeleteAttribute, DeleteAttributeResponse>(&request)
+        self.post_ttlv_2_1::<DeleteAttribute, DeleteAttributeResponse>(&request)
             .await
     }
 
@@ -292,7 +294,7 @@ impl KmsClient {
     /// assigned by the server. The server SHALL copy the Unique Identifier
     /// returned by this operations into the ID Placeholder variable.
     pub async fn import(&self, request: Import) -> Result<ImportResponse, KmsClientError> {
-        self.post_ttlv::<Import, ImportResponse>(&request).await
+        self.post_ttlv_2_1::<Import, ImportResponse>(&request).await
     }
 
     /// This operation requests that the server search for one or more Managed
@@ -386,7 +388,7 @@ impl KmsClient {
     /// unless the Storage Status Mask field includes the Archived Storage
     /// indicator.
     pub async fn locate(&self, request: Locate) -> Result<LocateResponse, KmsClientError> {
-        self.post_ttlv::<Locate, LocateResponse>(&request).await
+        self.post_ttlv_2_1::<Locate, LocateResponse>(&request).await
     }
 
     /// This operation requests the server to perform message authentication code (MAC)
@@ -402,8 +404,8 @@ impl KmsClient {
     ///
     /// The success or failure of the operation is indicated by the Result Status (and if failure the Result
     /// Reason) in the response header.
-    pub async fn mac(&self, request: Mac) -> Result<MacResponse, KmsClientError> {
-        self.post_ttlv::<Mac, MacResponse>(&request).await
+    pub async fn mac(&self, request: MAC) -> Result<MACResponse, KmsClientError> {
+        self.post_ttlv_2_1::<MAC, MACResponse>(&request).await
     }
 
     // This request is used to generate a replacement key pair for an existing
@@ -435,7 +437,7 @@ impl KmsClient {
         &self,
         request: ReKeyKeyPair,
     ) -> Result<ReKeyKeyPairResponse, KmsClientError> {
-        self.post_ttlv::<ReKeyKeyPair, ReKeyKeyPairResponse>(&request)
+        self.post_ttlv_2_1::<ReKeyKeyPair, ReKeyKeyPairResponse>(&request)
             .await
     }
 
@@ -449,7 +451,7 @@ impl KmsClient {
     ///
     /// An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key. If no Offset is specified, the Activation Date, Process Start Date, Protect Stop Date and Deactivation Date values are copied from the existing key.
     pub async fn rekey(&self, request: ReKey) -> Result<ReKeyResponse, KmsClientError> {
-        self.post_ttlv::<ReKey, ReKeyResponse>(&request).await
+        self.post_ttlv_2_1::<ReKey, ReKeyResponse>(&request).await
     }
 
     /// This operation requests the server to revoke a Managed Cryptographic
@@ -465,12 +467,13 @@ impl KmsClient {
     /// compromise", the object is placed into the "deactivated" state, and the
     /// Deactivation Date is set to the current date and time.
     pub async fn revoke(&self, request: Revoke) -> Result<RevokeResponse, KmsClientError> {
-        self.post_ttlv::<Revoke, RevokeResponse>(&request).await
+        self.post_ttlv_2_1::<Revoke, RevokeResponse>(&request).await
     }
 
     /// This operation requests the server to validate a Managed Certificate Chain.
     pub async fn validate(&self, request: Validate) -> Result<ValidateResponse, KmsClientError> {
-        self.post_ttlv::<Validate, ValidateResponse>(&request).await
+        self.post_ttlv_2_1::<Validate, ValidateResponse>(&request)
+            .await
     }
 
     /// This operation requests the server to send a message, which is a list of operations,
@@ -482,14 +485,12 @@ impl KmsClient {
     /// The field contents are also determined by whether the message is a request or a response.
     /// The message payload is determined by the specific operation being requested
     /// or to which is being replied.
-    pub async fn message(&self, request: Message) -> Result<MessageResponse, KmsClientError> {
-        self.post_ttlv::<Message, MessageResponse>(&request).await
-    }
-
-    /// This operation requests the server to create a new database.
-    /// The returned secrets could be shared between several users.
-    pub async fn new_database(&self) -> Result<String, KmsClientError> {
-        self.post_no_ttlv("/new_database", None::<&()>).await
+    pub async fn message(
+        &self,
+        request: RequestMessage,
+    ) -> Result<ResponseMessage, KmsClientError> {
+        // This uses the /kmip endpoint, which is the default endpoint for the KMS server
+        self.post_message(&request).await
     }
 
     /// This operation requests the server to grant an access on an object to a user
@@ -549,6 +550,7 @@ impl KmsClient {
         O: Serialize + Sync,
     {
         let server_url = format!("{}{endpoint}", self.client.server_url);
+        info!("GET {server_url}");
         let response = match data {
             Some(d) => self.client.client.get(server_url).query(d).send().await?,
             None => self.client.client.get(server_url).send().await?,
@@ -625,7 +627,7 @@ impl KmsClient {
     }
 
     #[allow(clippy::print_stdout)]
-    pub async fn post_ttlv<O, R>(&self, kmip_request: &O) -> Result<R, KmsClientError>
+    pub async fn post_ttlv_2_1<O, R>(&self, kmip_request: &O) -> Result<R, KmsClientError>
     where
         O: Serialize + Sync,
         R: serde::de::DeserializeOwned + Sized + 'static,
@@ -660,7 +662,50 @@ impl KmsClient {
                 "<==\n{}",
                 serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
             );
-            return from_ttlv(&ttlv).map_err(|e| KmsClientError::ResponseFailed(e.to_string()))
+            return from_ttlv(ttlv).map_err(|e| KmsClientError::ResponseFailed(e.to_string()))
+        }
+
+        // process error
+        let p = handle_error(endpoint, response).await?;
+        Err(KmsClientError::RequestFailed(p))
+    }
+
+    #[allow(clippy::print_stdout)]
+    pub async fn post_message(
+        &self,
+        request_message: &RequestMessage,
+    ) -> Result<ResponseMessage, KmsClientError> {
+        let endpoint = "/kmip";
+        let server_url = format!("{}{endpoint}", self.client.server_url);
+        let mut request = self.client.client.post(&server_url);
+        let ttlv = to_ttlv(request_message)?;
+        if self.print_json {
+            println!(
+                "\nKMIP Request ==>\n{}",
+                serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
+            );
+        }
+        trace!(
+            "==>\n{}",
+            serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
+        );
+        request = request.json(&ttlv);
+
+        let response = request.send().await?;
+        let status_code = response.status();
+        if status_code.is_success() {
+            let ttlv = response.json::<TTLV>().await?;
+            if self.print_json {
+                println!(
+                    "\nKMIP Response <==\n{}\n",
+                    serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
+                );
+            }
+            trace!(
+                "<==\n{}",
+                serde_json::to_string_pretty(&ttlv).unwrap_or_else(|_| "[N/A]".to_owned())
+            );
+            return from_ttlv(ttlv).map_err(|e| KmsClientError::ResponseFailed(e.to_string()))
         }
 
         // process error

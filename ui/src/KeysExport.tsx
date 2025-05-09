@@ -196,7 +196,7 @@ const KeyExportForm: React.FC<KeyExportFormProps> = (props: KeyExportFormProps) 
                     <Card>
                         <h3 className="text-m font-bold mb-4">Unwrapping Options</h3>
 
-                        <Form.Item name="unwrap" valuePropName="checked" label="Unwrap" help="Unwrap if it is wrapped before export">
+                        <Form.Item name="unwrap" valuePropName="checked" help="Unwrap if it is wrapped before export">
                             <Checkbox>Unwrap key before export</Checkbox>
                         </Form.Item>
 

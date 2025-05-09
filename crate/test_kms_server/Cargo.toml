@@ -21,10 +21,8 @@ harness = false
 
 [dependencies]
 actix-server = { workspace = true }
-base64 = { workspace = true }
 cosmian_cli = { path = "../cli" }
 cosmian_kms_server = { workspace = true, features = ["insecure"] }
-cosmian_kms_server_database = { workspace = true }
 cosmian_logger = { workspace = true }
 serde_json = { workspace = true }
 tempfile = "3.19"

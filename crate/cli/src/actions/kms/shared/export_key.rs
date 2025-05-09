@@ -4,6 +4,10 @@ use base64::Engine;
 use clap::Parser;
 use cosmian_kms_client::{
     ExportObjectParams, KmsClient, export_object,
+    kmip_2_1::{
+        kmip_data_structures::{KeyMaterial, KeyValue},
+        kmip_objects::Object,
+    },
     reexport::cosmian_kms_client_utils::export_utils::{
         ExportKeyFormat, WrappingAlgorithm, der_to_pem, prepare_key_export_elements,
     },
@@ -13,7 +17,10 @@ use cosmian_kms_client::{
 use super::get_key_uid;
 use crate::{
     actions::{console, kms::labels::KEY_ID},
-    error::result::{CosmianResult, CosmianResultHelper},
+    error::{
+        CosmianError,
+        result::{CosmianResult, CosmianResultHelper},
+    },
 };
 
 /// Export a key from the KMS
@@ -135,15 +142,21 @@ impl ExportKeyAction {
             prepare_key_export_elements(&self.key_format, &self.wrapping_algorithm)?;
 
         // export the object
-        let (id, object, _) = export_object(kms_rest_client, &id, ExportObjectParams {
-            unwrap: self.unwrap,
-            wrapping_key_id: self.wrap_key_id.as_deref(),
-            allow_revoked: self.allow_revoked,
-            key_format_type,
-            encode_to_ttlv,
-            wrapping_cryptographic_parameters,
-            authenticated_encryption_additional_data: self.authenticated_additional_data.clone(),
-        })
+        let (id, object, _) = export_object(
+            kms_rest_client,
+            &id,
+            ExportObjectParams {
+                unwrap: self.unwrap,
+                wrapping_key_id: self.wrap_key_id.as_deref(),
+                allow_revoked: self.allow_revoked,
+                key_format_type,
+                encode_to_ttlv,
+                wrapping_cryptographic_parameters,
+                authenticated_encryption_additional_data: self
+                    .authenticated_additional_data
+                    .clone(),
+            },
+        )
         .await?;
 
         // write the object to a file
@@ -153,13 +166,13 @@ impl ExportKeyAction {
         } else if self.key_format == ExportKeyFormat::Base64 {
             // export the key bytes in base64
             let base64_key = base64::engine::general_purpose::STANDARD
-                .encode(object.key_block()?.key_bytes()?)
+                .encode(get_object_bytes(&object)?)
                 .to_lowercase();
             write_bytes_to_file(base64_key.as_bytes(), &self.key_file)?;
         } else {
             // export the bytes only
             let bytes = {
-                let mut bytes = object.key_block()?.key_bytes()?;
+                let mut bytes = get_object_bytes(&object)?;
                 if encode_to_pem {
                     bytes = der_to_pem(
                         bytes.as_slice(),
@@ -167,7 +180,8 @@ impl ExportKeyAction {
                             "Server Error: the Key Format Type should be known at this stage",
                         )?,
                         object.object_type(),
-                    )?;
+                    )?
+                    .to_vec();
                 }
                 bytes
             };
@@ -178,12 +192,35 @@ impl ExportKeyAction {
             "The key {} of type {} was exported to {:?}",
             &id,
             object.object_type(),
-            &self.key_file
+            self.key_file.display()
         );
         let mut stdout = console::Stdout::new(&stdout);
         stdout.set_unique_identifier(id);
         stdout.write()?;
 
         Ok(())
+    }
+}
+
+fn get_object_bytes(object: &Object) -> CosmianResult<Vec<u8>> {
+    let key_block = object.key_block()?;
+    match key_block
+        .key_value
+        .as_ref()
+        .ok_or_else(|| CosmianError::Default("Key value is missing".to_owned()))?
+    {
+        KeyValue::ByteString(v) => Ok(v.to_vec()),
+        KeyValue::Structure { key_material, .. } => match key_material {
+            KeyMaterial::ByteString(v) => Ok(v.to_vec()),
+            KeyMaterial::TransparentSymmetricKey { key } => Ok(key.to_vec()),
+            KeyMaterial::TransparentECPrivateKey { .. }
+            | KeyMaterial::TransparentECPublicKey { .. } => key_block
+                .ec_raw_bytes()
+                .map(|v| v.to_vec())
+                .map_err(Into::into),
+            x => Err(CosmianError::Default(format!(
+                "Unsupported key material type: {x:?}"
+            ))),
+        },
     }
 }

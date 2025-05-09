@@ -2,6 +2,7 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm;
+use cosmian_logger::log_init;
 use test_kms_server::{
     start_default_test_kms_server_with_cert_auth,
     start_default_test_kms_server_with_privileged_users,
@@ -351,6 +352,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     // the client conf will use the owner cert
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
@@ -432,9 +434,12 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     );
 
     // this will not error
-    revoke_access(&ctx.owner_client_conf_path, Some(&key_id), "BAD USER", &[
-        "get",
-    ])?;
+    revoke_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "BAD USER",
+        &["get"],
+    )?;
 
     Ok(())
 }
@@ -472,6 +477,7 @@ pub(crate) async fn test_list_access_rights_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
@@ -483,13 +489,13 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
         &["get"],
     )?;
 
-    // the owner should have the object in the list
-    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
-    assert!(owner_list.contains(&key_id));
-
     // The user is not the owner and thus should not have the object in the list
     let user_list = list_owned_objects(&ctx.user_client_conf_path)?;
     assert!(!user_list.contains(&key_id));
+
+    // the owner should have the object in the list
+    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
+    assert!(owner_list.contains(&key_id));
 
     // create a key using the user
     let user_key_id = gen_key(&ctx.user_client_conf_path)?;
@@ -509,6 +515,7 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
@@ -593,12 +600,18 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant encrypt and decrypt access to user
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "encrypt",
-    ])?;
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "decrypt",
-    ])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["encrypt"],
+    )?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["decrypt"],
+    )?;
 
     // switch to user
     // the user should still not be able to export
@@ -654,9 +667,12 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant destroy access to user
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "destroy",
-    ])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["destroy"],
+    )?;
 
     // switch to user
     // destroy the key

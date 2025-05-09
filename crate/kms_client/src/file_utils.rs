@@ -9,9 +9,9 @@ use cosmian_kms_client_utils::export_utils::tag_from_object;
 use serde::{Serialize, de::DeserializeOwned};
 
 use crate::{
-    cosmian_kmip::kmip_2_1::{
-        kmip_objects::Object,
-        ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
+    cosmian_kmip::{
+        kmip_2_1::kmip_objects::Object,
+        ttlv::{TTLV, from_ttlv, to_ttlv},
     },
     error::{KmsClientError, result::KmsClientResultHelper},
 };
@@ -49,7 +49,7 @@ pub fn read_object_from_json_ttlv_bytes(bytes: &[u8]) -> Result<Object, KmsClien
     let ttlv = serde_json::from_slice::<TTLV>(bytes)
         .with_context(|| "failed parsing the object from the bytes")?;
     // Deserialize the object
-    let object: Object = from_ttlv(&ttlv)?;
+    let object: Object = from_ttlv(ttlv)?;
     Ok(object)
 }
 
@@ -67,9 +67,9 @@ pub fn read_object_from_json_ttlv_file(object_file: &PathBuf) -> Result<Object, 
 pub fn write_bytes_to_file(bytes: &[u8], file: &impl AsRef<Path>) -> Result<(), KmsClientError> {
     fs::write(file, bytes).with_context(|| {
         format!(
-            "failed writing {} bytes to {:?}",
+            "failed writing {} bytes to {}",
             bytes.len(),
-            file.as_ref()
+            file.as_ref().display()
         )
     })
 }
@@ -213,7 +213,8 @@ pub fn write_bulk_decrypted_data(
             Some(output_file) if nb_chunks > 1 => {
                 let file_name = input_file.file_name().ok_or_else(|| {
                     KmsClientError::Conversion(format!(
-                        "cannot get file name from input file {input_file:?}",
+                        "cannot get file name from input file {}",
+                        input_file.display()
                     ))
                 })?;
                 output_file.join(PathBuf::from(file_name).with_extension("plain"))
@@ -272,7 +273,8 @@ pub fn write_bulk_encrypted_data(
             Some(output_file) if nb_chunks > 1 => {
                 let file_name = input_file.file_name().ok_or_else(|| {
                     KmsClientError::Conversion(format!(
-                        "cannot get file name from input file {input_file:?}",
+                        "cannot get file name from input file {}",
+                        input_file.display()
                     ))
                 })?;
                 output_file.join(PathBuf::from(file_name).with_extension("enc"))

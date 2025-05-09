@@ -1,13 +1,14 @@
 #![allow(dead_code)]
 use cosmian_cli::reexport::cosmian_kms_client::{
     KmsClient, KmsClientError,
-    reexport::cosmian_kmip::kmip_2_1::{
+    kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask},
+    kmip_2_1::{
         extra::BulkData,
+        kmip_attributes::Attributes,
         kmip_objects::ObjectType,
         kmip_operations::{Create, Decrypt, Encrypt},
         kmip_types::{
-            Attributes, BlockCipherMode, CryptographicAlgorithm, CryptographicParameters,
-            CryptographicUsageMask, KeyFormatType, UniqueIdentifier,
+            CryptographicAlgorithm, CryptographicParameters, KeyFormatType, UniqueIdentifier,
         },
     },
 };
@@ -183,10 +184,7 @@ pub(crate) fn bench_encrypt(
 
     let mut group = c.benchmark_group("Symmetric encryption");
     group.bench_function(
-        format!(
-            "{} {}bit encryption of {} plaintext(s)",
-            name, num_bits, num_plaintexts
-        ),
+        format!("{name} {num_bits}bit encryption of {num_plaintexts} plaintext(s)"),
         |b| {
             b.to_async(&runtime).iter(|| async {
                 let _ = encrypt(
@@ -214,7 +212,7 @@ pub(crate) async fn encrypt(
     // Query the KMS with your kmip data and get the key pair ids
     let encrypt_response = kms_rest_client.encrypt(encrypt_request).await?;
 
-    let nonce = encrypt_response.iv_counter_nonce;
+    let nonce = encrypt_response.i_v_counter_nonce;
     let data = encrypt_response
         .data
         .ok_or_else(|| KmsClientError::UnexpectedError("No data".to_owned()))?;
@@ -231,7 +229,7 @@ fn encrypt_request(
         unique_identifier: Some(key_id),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(data),
-        iv_counter_nonce: None,
+        i_v_counter_nonce: None,
         correlation_value: None,
         init_indicator: None,
         final_indicator: None,
@@ -360,7 +358,7 @@ fn decrypt_request(
         unique_identifier: Some(key_id),
         cryptographic_parameters: Some(cryptographic_parameters),
         data: Some(data),
-        iv_counter_nonce: nonce,
+        i_v_counter_nonce: nonce,
         correlation_value: None,
         init_indicator: None,
         final_indicator: None,
@@ -431,7 +429,7 @@ pub(crate) fn bench_encrypt_parametrized(
             group.throughput(Throughput::Elements(num_plaintexts as u64));
             group.bench_with_input(
                 BenchmarkId::new(
-                    format!("{}-bit key encrypt", num_bits),
+                    format!("{num_bits}-bit key encrypt"),
                     parameter_name.clone(),
                 ),
                 &plaintext,
@@ -449,7 +447,7 @@ pub(crate) fn bench_encrypt_parametrized(
                 },
             );
             group.bench_with_input(
-                BenchmarkId::new(format!("{}-bit key decrypt", num_bits), parameter_name),
+                BenchmarkId::new(format!("{num_bits}-bit key decrypt"), parameter_name),
                 &ciphertext,
                 |b, ct| {
                     b.to_async(&runtime).iter(|| async {

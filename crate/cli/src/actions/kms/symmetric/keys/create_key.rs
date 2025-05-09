@@ -2,6 +2,7 @@ use clap::Parser;
 use cosmian_kms_client::{
     KmsClient,
     kmip_2_1::{
+        kmip_attributes::Attributes,
         kmip_types::UniqueIdentifier,
         requests::{
             create_symmetric_key_kmip_object, import_object_request, symmetric_key_create_request,
@@ -64,11 +65,11 @@ pub struct CreateKeyAction {
     #[clap(long = "sensitive", default_value = "false")]
     pub sensitive: bool,
 
-    /// The key to wrap this new key with.
+    /// The key encryption key (KEK) used to wrap this new key with.
     /// If the wrapping key is:
-    /// -  a symmetric key, AES-GCM will be used
-    /// -  a RSA key, RSA-OAEP will be used
-    /// -  a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
     #[clap(
         long = "wrapping-key-id",
         short = 'w',
@@ -89,8 +90,13 @@ impl CreateKeyAction {
                 .with_context(|| "failed preparing key elements")?;
 
         let unique_identifier = if let Some(key_bytes) = key_bytes {
-            let mut object =
-                create_symmetric_key_kmip_object(key_bytes.as_slice(), algorithm, self.sensitive)?;
+            let mut object = create_symmetric_key_kmip_object(
+                key_bytes.as_slice(),
+                &Attributes {
+                    cryptographic_algorithm: Some(algorithm),
+                    ..Default::default()
+                },
+            )?;
             if let Some(wrapping_key_id) = &self.wrapping_key_id {
                 let attributes = object.attributes_mut()?;
                 attributes.set_wrapping_key_id(wrapping_key_id);

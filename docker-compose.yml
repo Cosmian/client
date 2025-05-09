@@ -26,7 +26,7 @@ services:
 
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:4.24.0
+    image: ghcr.io/cosmian/kms:develop
     ports:
       - 19998:9998
     environment:

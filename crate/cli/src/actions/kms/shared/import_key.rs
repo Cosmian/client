@@ -80,13 +80,18 @@ pub struct ImportKeyAction {
     #[clap(long)]
     key_usage: Option<Vec<KeyUsage>>,
 
-    /// Optional authenticated encryption additional data to use for AES256GCM authenticated encryption unwrapping
+    /// The key encryption key (KEK) used to wrap this imported key with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
     #[clap(
-        long,
-        short = 'd',
-        default_value = None,
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
     )]
-    authenticated_additional_data: Option<String>,
+    pub wrapping_key_id: Option<String>,
 }
 
 impl ImportKeyAction {
@@ -109,6 +114,7 @@ impl ImportKeyAction {
     /// [`CosmianError`]: ../error/result/enum.CosmianError.html
     pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
         let key_bytes = read_bytes_from_file(&self.key_file)?;
+
         let (object, import_attributes) = prepare_key_import_elements(
             &self.key_usage,
             &self.key_format,
@@ -116,8 +122,7 @@ impl ImportKeyAction {
             &self.certificate_id,
             &self.private_key_id,
             &self.public_key_id,
-            self.unwrap,
-            &self.authenticated_additional_data,
+            self.wrapping_key_id.as_ref(),
         )?;
         let object_type: ObjectType = object.object_type();
 
@@ -137,8 +142,10 @@ impl ImportKeyAction {
 
         // print the response
         let stdout = format!(
-            "The {:?} in file {:?} was imported with id: {}",
-            object_type, &self.key_file, unique_identifier,
+            "The {:?} in file {} was imported with id: {}",
+            object_type,
+            self.key_file.display(),
+            unique_identifier,
         );
         let mut stdout = console::Stdout::new(&stdout);
         stdout.set_tags(Some(&self.tags));

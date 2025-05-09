@@ -9,6 +9,7 @@ interface RsaKeyCreateFormData {
     sizeInBits: number;
     tags: string[];
     sensitive: boolean;
+    wrappingKeyId?: string;
 }
 
 type CreateKeyPairResponse = {
@@ -33,7 +34,13 @@ const RsaKeyCreateForm: React.FC = () => {
         setIsLoading(true);
         setRes(undefined);
         try {
-            const request = create_rsa_key_pair_ttlv_request(values.privateKeyId, values.tags, values.sizeInBits, values.sensitive);
+            const request = create_rsa_key_pair_ttlv_request(
+                values.privateKeyId,
+                values.tags,
+                values.sizeInBits,
+                values.sensitive,
+                values.wrappingKeyId
+            );
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const result: CreateKeyPairResponse = await parse_create_keypair_ttlv_response(result_str);
@@ -93,6 +100,14 @@ const RsaKeyCreateForm: React.FC = () => {
 
                         <Form.Item name="tags" label="Tags" help="Optional: Add tags to help retrieve the keys later">
                             <Select mode="tags" placeholder="Enter tags" open={false} />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="wrappingKeyId"
+                            label="Wrapping Key ID"
+                            help="Optional: ID of the key to wrap this new keypair with"
+                        >
+                            <Input placeholder="Enter wrapping key ID" />
                         </Form.Item>
 
                         <Form.Item name="sensitive" valuePropName="checked" help="If set, the private key will not be exportable">

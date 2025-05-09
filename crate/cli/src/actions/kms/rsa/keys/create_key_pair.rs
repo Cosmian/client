@@ -12,9 +12,9 @@ use crate::{
 /// Create a new RSA key pair
 ///
 ///  - The public is used to encrypt or verify a signature
-///      and can be safely shared.
+///    and can be safely shared.
 ///  - The private key is used to decrypt or sign
-///      and must be kept secret.
+///    and must be kept secret.
 ///
 /// Tags can later be used to retrieve the keys. Tags are optional.
 #[derive(Parser)]
@@ -42,6 +42,19 @@ pub struct CreateKeyPairAction {
     /// Sensitive: if set, the private key will not be exportable
     #[clap(long = "sensitive", default_value = "false")]
     pub sensitive: bool,
+
+    /// The key encryption key (KEK) used to wrap the keypair with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
 }
 
 impl Default for CreateKeyPairAction {
@@ -51,6 +64,7 @@ impl Default for CreateKeyPairAction {
             tags: Vec::new(),
             private_key_id: None,
             sensitive: false,
+            wrapping_key_id: None,
         }
     }
 }
@@ -80,8 +94,13 @@ impl CreateKeyPairAction {
             .private_key_id
             .as_ref()
             .map(|id| UniqueIdentifier::TextString(id.clone()));
-        let create_key_pair_request =
-            create_rsa_key_pair_request(private_key_id, &self.tags, self.key_size, self.sensitive)?;
+        let create_key_pair_request = create_rsa_key_pair_request(
+            private_key_id,
+            &self.tags,
+            self.key_size,
+            self.sensitive,
+            self.wrapping_key_id.as_ref(),
+        )?;
 
         // Query the KMS with your kmip data and get the key pair ids
         let create_key_pair_response = kms_rest_client
