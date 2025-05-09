@@ -71,9 +71,9 @@ cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
 # cosmian_findex_client = "0.4"
 # cosmian_cli = "0.4"
 # test_kms_server = "0.4"
-# test_findex_server = { path = "crate/test_findex_server" }
-# cosmian_pkcs11_module = { path = "crate/pkcs11/module" }
-# cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
+# test_findex_server = "0.4"
+# cosmian_pkcs11_module = "0.4"
+# cosmian_pkcs11_provider = "0.4"
 
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
