@@ -30,7 +30,7 @@ p256 = { version = "0.13.2", default-features = false, features = [
   "std",
 ] }
 pkcs1 = "0.7.5"
-pkcs11_sys = { workspace = true }
+cosmian_pkcs11_sys = { workspace = true }
 serde_json = { workspace = true }
 sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }

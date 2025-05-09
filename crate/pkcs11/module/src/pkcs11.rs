@@ -21,8 +21,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use log::debug;
-use pkcs11_sys::{
+use cosmian_pkcs11_sys::{
     CK_ATTRIBUTE_PTR, CK_BBOOL, CK_BYTE_PTR, CK_C_INITIALIZE_ARGS_PTR, CK_FLAGS, CK_FUNCTION_LIST,
     CK_INFO, CK_INFO_PTR, CK_MECHANISM_INFO, CK_MECHANISM_INFO_PTR, CK_MECHANISM_PTR,
     CK_MECHANISM_TYPE, CK_MECHANISM_TYPE_PTR, CK_NOTIFY, CK_OBJECT_HANDLE, CK_OBJECT_HANDLE_PTR,
@@ -34,6 +33,7 @@ use pkcs11_sys::{
     CKF_USER_PIN_INITIALIZED, CKF_WRITE_PROTECTED, CKR_OK, CKS_RO_USER_FUNCTIONS,
     CKS_RW_USER_FUNCTIONS, CRYPTOKI_VERSION_MAJOR, CRYPTOKI_VERSION_MINOR,
 };
+use log::debug;
 use rand::RngCore;
 use tracing::{error, info, trace};
 
@@ -80,7 +80,7 @@ macro_rules! cryptoki_fn {
     (unsafe fn $name:ident ( $($arg:ident : $type:ty),* $(,)?) $body:block) => {
         #[tracing::instrument(level = tracing::Level::TRACE, ret)]
         #[unsafe(no_mangle)]
-        pub unsafe extern "C" fn $name($($arg: $type),*) -> pkcs11_sys::CK_RV {
+        pub unsafe extern "C" fn $name($($arg: $type),*) -> cosmian_pkcs11_sys::CK_RV {
             use $crate::pkcs11::result_to_rv;
             result_to_rv(stringify!($name), || $body)
         }

@@ -22,7 +22,7 @@ use std::{
     sync::{self, Arc, atomic::Ordering},
 };
 
-use pkcs11_sys::{
+use cosmian_pkcs11_sys::{
     CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
     CK_ULONG_PTR,
 };
@@ -132,7 +132,7 @@ impl Session {
             SearchOptions::All => {
                 self.clear_find_objects_ctx();
                 let res = match search_class {
-                    pkcs11_sys::CKO_CERTIFICATE => {
+                    cosmian_pkcs11_sys::CKO_CERTIFICATE => {
                         attributes.ensure_X509_or_none()?;
                         backend()
                             .find_all_certificates()?
@@ -142,24 +142,24 @@ impl Session {
                             })
                             .collect::<ModuleResult<Vec<_>>>()?
                     }
-                    pkcs11_sys::CKO_PUBLIC_KEY => backend()
+                    cosmian_pkcs11_sys::CKO_PUBLIC_KEY => backend()
                         .find_all_public_keys()?
                         .into_iter()
                         .map(|c| self.update_find_objects_context(Arc::new(Object::PublicKey(c))))
                         .collect::<ModuleResult<Vec<_>>>()?,
-                    pkcs11_sys::CKO_PRIVATE_KEY => backend()
+                    cosmian_pkcs11_sys::CKO_PRIVATE_KEY => backend()
                         .find_all_private_keys()?
                         .into_iter()
                         .map(|c| self.update_find_objects_context(Arc::new(Object::PrivateKey(c))))
                         .collect::<ModuleResult<Vec<_>>>()?,
-                    pkcs11_sys::CKO_SECRET_KEY => backend()
+                    cosmian_pkcs11_sys::CKO_SECRET_KEY => backend()
                         .find_all_symmetric_keys()?
                         .into_iter()
                         .map(|c| {
                             self.update_find_objects_context(Arc::new(Object::SymmetricKey(c)))
                         })
                         .collect::<ModuleResult<Vec<_>>>()?,
-                    pkcs11_sys::CKO_DATA => backend()
+                    cosmian_pkcs11_sys::CKO_DATA => backend()
                         .find_all_data_objects()?
                         .into_iter()
                         .map(|c| self.update_find_objects_context(Arc::new(Object::DataObject(c))))
@@ -174,7 +174,7 @@ impl Session {
             }
 
             SearchOptions::Id(cka_id) => {
-                if search_class == pkcs11_sys::CKO_CERTIFICATE {
+                if search_class == cosmian_pkcs11_sys::CKO_CERTIFICATE {
                     let id = String::from_utf8(cka_id)?;
                     // Find certificates which have this CKA_ID as private key ID
                     let find_ctx = OBJECTS_STORE.read()?;

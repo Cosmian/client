@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
+use cosmian_pkcs11_sys::{CK_KEY_TYPE, CKK_AES, CKK_EC, CKK_RSA};
 use pkcs1::ObjectIdentifier;
-use pkcs11_sys::{CK_KEY_TYPE, CKK_AES, CKK_EC, CKK_RSA};
 
 use crate::ModuleResult;
 

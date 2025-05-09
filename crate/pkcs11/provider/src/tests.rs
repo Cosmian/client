@@ -14,7 +14,7 @@ use cosmian_pkcs11_module::{
     test_decrypt, test_encrypt, test_generate_key,
     traits::Backend,
 };
-use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
+use cosmian_pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
 use serial_test::serial;
 use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
