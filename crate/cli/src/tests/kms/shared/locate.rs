@@ -1,6 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
+use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server_with_cert_auth;
 
 #[cfg(not(feature = "fips"))]
@@ -70,9 +71,9 @@ pub(crate) fn locate(
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
-    // init the test server
+    log_init(option_env!("RUST_LOG"));
 
-    use tracing::trace;
+    // init the test server
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
     // generate a new master key pair
@@ -84,9 +85,6 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
         false,
     )?;
 
-    trace!("master_private_key_id: {master_private_key_id}");
-    trace!("master_public_key_id: {master_public_key_id}");
-
     // Locate with Tags
     let ids = locate(
         &ctx.owner_client_conf_path,
@@ -95,7 +93,6 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
         None,
         None,
     )?;
-    trace!("ids: {ids:?}");
     assert_eq!(ids.len(), 2);
     assert!(ids.contains(&master_private_key_id));
     assert!(ids.contains(&master_public_key_id));
@@ -164,6 +161,7 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     assert!(ids.contains(&master_private_key_id));
     assert!(ids.contains(&master_public_key_id));
     assert!(ids.contains(&user_key_id));
+
     //locate using tags and cryptographic algorithm and key format type
     let ids = locate(
         &ctx.owner_client_conf_path,
@@ -219,6 +217,7 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_locate_elliptic_curve() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     // init the test server
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
@@ -247,7 +246,7 @@ pub(crate) async fn test_locate_elliptic_curve() -> CosmianResult<()> {
     let ids = locate(
         &ctx.owner_client_conf_path,
         Some(&["test_ec"]),
-        Some("Ec"),
+        Some("ECDH"),
         None,
         None,
     )?;
@@ -279,7 +278,7 @@ pub(crate) async fn test_locate_elliptic_curve() -> CosmianResult<()> {
     let ids = locate(
         &ctx.owner_client_conf_path,
         Some(&["test_ec"]),
-        Some("eC"),
+        Some("eCdH"),
         None,
         Some("TransparentECPrivateKey"),
     )?;
@@ -315,10 +314,13 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
     // generate a new key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        tags: vec!["test_sym".to_string()],
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            tags: vec!["test_sym".to_string()],
+            ..Default::default()
+        },
+    )?;
 
     // Locate with Tags
     let ids = locate(
@@ -453,7 +455,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     // Grant access to the user decryption key
     grant_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;
@@ -472,7 +474,7 @@ pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     //revoke the access
     revoke_access(
         &ctx.owner_client_conf_path,
-        &user_key_id,
+        Some(&user_key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;

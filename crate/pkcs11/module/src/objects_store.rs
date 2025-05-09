@@ -4,7 +4,7 @@ use std::{
     sync::{self, Arc, Weak},
 };
 
-use pkcs11_sys::CK_OBJECT_HANDLE;
+use cosmian_pkcs11_sys::CK_OBJECT_HANDLE;
 use tracing::debug;
 
 use crate::core::object::{Object, ObjectType};

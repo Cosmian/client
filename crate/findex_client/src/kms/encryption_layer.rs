@@ -1,7 +1,10 @@
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
 use cosmian_kms_client::{
     KmsClient,
-    kmip_2_1::{kmip_messages::MessageResponse, kmip_types::ResultStatusEnumeration},
+    cosmian_kmip::kmip_0::{
+        kmip_messages::{ResponseMessage, ResponseMessageBatchItemVersioned},
+        kmip_types::ResultStatusEnumeration,
+    },
 };
 use tracing::trace;
 
@@ -42,12 +45,13 @@ impl<
         }
     }
 
-    fn extract_words(message_response: &MessageResponse) -> ClientResult<Vec<[u8; WORD_LENGTH]>> {
-        if !message_response
-            .items
-            .iter()
-            .all(|item| item.result_status == ResultStatusEnumeration::Success)
-        {
+    fn extract_words(message_response: &ResponseMessage) -> ClientResult<Vec<[u8; WORD_LENGTH]>> {
+        if !message_response.batch_item.iter().all(|item| {
+            if let ResponseMessageBatchItemVersioned::V21(item) = item {
+                return item.result_status == ResultStatusEnumeration::Success
+            }
+            false
+        }) {
             return Err(ClientError::Default(
                 "One or more operations failed in the batch".to_owned(),
             ));
@@ -64,14 +68,13 @@ impl<
     }
 
     /// Compute multiple HMAC on given memory addresses.
-    pub(crate) async fn hmac(
+    pub(crate) async fn batch_permute<'a>(
         &self,
-        addresses: Vec<Memory::Address>,
+        addresses: impl Iterator<Item = &'a Memory::Address>,
     ) -> ClientResult<Vec<Memory::Address>> {
-        trace!("hmac: Computing HMAC on addresses: {:?}", addresses);
         let tokens = self
             .kms_client
-            .message(self.build_mac_message_request(&addresses)?)
+            .message(self.build_mac_message_request(addresses)?)
             .await?
             .extract_items_data()?
             .into_iter()
@@ -93,29 +96,27 @@ impl<
     }
 
     /// Bulk encrypts the given words using AES-XTS-512 and the given memory addresses as tweak.
-    pub(crate) async fn encrypt(
+    pub(crate) async fn batch_encrypt<'a>(
         &self,
-        words: &[[u8; WORD_LENGTH]],
-        tokens: &[Memory::Address],
+        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
     ) -> ClientResult<Vec<[u8; WORD_LENGTH]>> {
         Self::extract_words(
             &self
                 .kms_client
-                .message(self.build_encrypt_message_request(words, tokens)?)
+                .message(self.build_encrypt_message_request(bindings)?)
                 .await?,
         )
     }
 
     /// Decrypts these ciphertexts using the given addresses as tweak.
-    pub(crate) async fn decrypt(
+    pub(crate) async fn batch_decrypt<'a>(
         &self,
-        words: &[[u8; WORD_LENGTH]],
-        tokens: &[Memory::Address],
+        bindings: impl Iterator<Item = (&'a Memory::Address, &'a [u8; WORD_LENGTH])>,
     ) -> ClientResult<Vec<[u8; WORD_LENGTH]>> {
         Self::extract_words(
             &self
                 .kms_client
-                .message(self.build_decrypt_message_request(words, tokens)?)
+                .message(self.build_decrypt_message_request(bindings)?)
                 .await?,
         )
     }

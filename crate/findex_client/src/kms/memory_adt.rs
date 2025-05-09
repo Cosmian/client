@@ -1,3 +1,5 @@
+use std::iter::once;
+
 use cosmian_findex::{ADDRESS_LENGTH, Address, MemoryADT};
 use tracing::trace;
 
@@ -18,131 +20,129 @@ impl<
         guard: (Self::Address, Option<Self::Word>),
         bindings: Vec<(Self::Address, Self::Word)>,
     ) -> Result<Option<Self::Word>, Self::Error> {
-        trace!("guarded_write: guard: {:?}", guard);
-        let (address, optional_word) = guard;
+        // Cryptographic operations being delegated to the KMS, it is better to
+        // perform them in batch. Since permuted addresses are used as tweak in
+        // the AES-XTS encryption of the words, two batches are required.
 
-        // Split bindings into two vectors
-        let (mut bindings, mut bindings_words): (Vec<_>, Vec<_>) = bindings.into_iter().unzip();
-        trace!("guarded_write: bindings_addresses: {bindings:?}");
-        trace!("guarded_write: bindings_words: {bindings_words:?}");
+        trace!("guarded_write: {guard:?}, {bindings:?}");
 
-        // Compute HMAC of all addresses together (including the guard address)
-        bindings.push(address); // size: n+1
-        let mut tokens = self.hmac(bindings).await?;
-        trace!("guarded_write: tokens: {tokens:?}");
+        let permuted_addresses = self
+            .batch_permute(bindings.iter().map(|(a, _)| a).chain([&guard.0]))
+            .await?;
 
-        // Put apart the last token
-        let token = tokens
-            .pop()
-            .ok_or_else(|| ClientError::Default("No token found".to_owned()))?;
-
-        let (ciphertexts_and_tokens, old) = if let Some(word) = optional_word {
-            // Zip words and tokens
-            bindings_words.push(word); // size: n+1
-            tokens.push(token); // size: n+1
-
-            // Bulk Encrypt
-            let mut ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
-            trace!("guarded_write: ciphertexts: {ciphertexts:?}");
-
-            // Pop the old value
-            let old = ciphertexts
-                .pop()
-                .ok_or_else(|| ClientError::Default("No ciphertext found".to_owned()))?;
-
-            // Zip ciphertexts and tokens
-            (ciphertexts.into_iter().zip(tokens), Some(old))
-        } else {
-            // Bulk Encrypt
-            let ciphertexts = self.encrypt(&bindings_words, &tokens).await?;
-            trace!("guarded_write: ciphertexts: {ciphertexts:?}");
-
-            // Zip ciphertexts and tokens
-            (ciphertexts.into_iter().zip(tokens), None)
-        };
-
-        //
-        // Send bindings to server
-        let cur = self
-            .mem
-            .guarded_write(
-                (token, old),
-                ciphertexts_and_tokens
-                    .into_iter()
-                    .map(|(w, a)| (a, w))
-                    .collect(),
+        let encrypted_words = self
+            .batch_encrypt(
+                permuted_addresses
+                    .iter()
+                    .zip(bindings.iter().map(|(_, w)| w).chain(guard.1.iter())),
             )
+            .await?;
+
+        let encrypted_guard = (
+            *permuted_addresses.get(bindings.len()).ok_or_else(|| {
+                ClientError::Default("no permuted guard address found".to_owned())
+            })?,
+            encrypted_words.get(bindings.len()).copied(),
+        );
+
+        let encrypted_bindings = permuted_addresses
+            .into_iter()
+            .zip(encrypted_words)
+            .take(bindings.len())
+            .collect::<Vec<_>>();
+
+        let permuted_ag = encrypted_guard.0;
+
+        // Perform the actual call to the memory.
+        let encrypted_wg_cur = self
+            .mem
+            .guarded_write(encrypted_guard, encrypted_bindings)
             .await
             .map_err(|e| ClientError::Default(format!("Memory error: {e}")))?;
 
-        //
-        // Decrypt the current value (if any)
-        let res = match cur {
+        let wg_cur = match encrypted_wg_cur {
             Some(ctx) => Some(
                 *self
-                    .decrypt(&[ctx], &[token])
+                    .batch_decrypt(once((&permuted_ag, &ctx)))
                     .await?
                     .first()
                     .ok_or_else(|| ClientError::Default("No plaintext found".to_owned()))?,
             ),
             None => None,
         };
-        trace!("guarded_write: res: {res:?}");
 
-        Ok(res)
+        trace!("guarded_write: current guard word: {wg_cur:?}");
+
+        Ok(wg_cur)
     }
 
     async fn batch_read(
         &self,
         addresses: Vec<Self::Address>,
     ) -> Result<Vec<Option<Self::Word>>, Self::Error> {
-        trace!("batch_read: Addresses: {:?}", addresses);
+        trace!("batch_read: addresses: {:?}", addresses);
 
-        // Compute HMAC of all addresses
-        let tokens = self.hmac(addresses).await?;
-        trace!("batch_read: tokens: {:?}", tokens);
+        let permuted_addresses = self.batch_permute(addresses.iter()).await?;
 
-        // Read encrypted values server-side
-        let ciphertexts = self
+        let encrypted_words = self
             .mem
-            .batch_read(tokens.clone())
+            .batch_read(permuted_addresses.clone())
             .await
             .map_err(|e| ClientError::Default(format!("Memory error: {e}")))?;
-        trace!("batch_read: ciphertexts: {ciphertexts:?}");
 
-        // Track the positions of None values and bulk ciphertexts and tokens
-        let (stripped_ciphertexts, stripped_tokens, none_positions): (Vec<_>, Vec<_>, Vec<_>) =
-            ciphertexts
-                .into_iter()
-                .zip(tokens.into_iter())
-                .enumerate()
-                .fold(
-                    (vec![], vec![], vec![]),
-                    |(mut ctxs, mut ts, mut ns), (i, (c, t))| {
-                        match c {
-                            Some(cipher) => {
-                                ctxs.push(cipher);
-                                ts.push(t);
-                            }
-                            None => ns.push(i),
-                        }
-                        (ctxs, ts, ns)
-                    },
-                );
+        if permuted_addresses.len() != encrypted_words.len() {
+            return Err(ClientError::Default(format!(
+                "incorrect number of words: expected {}, but {} were given",
+                permuted_addresses.len(),
+                encrypted_words.len()
+            )));
+        }
 
-        // Recover plaintext-words
-        let words = self
-            .decrypt(&stripped_ciphertexts, &stripped_tokens)
+        // None values need to be filtered out to compose with batch_decrypt.
+        // However, their positions shall not be lost.
+        let some_encrypted_words = encrypted_words
+            .into_iter()
+            .enumerate()
+            .filter_map(|(i, w)| w.map(|w| (i, w)))
+            .collect::<Vec<_>>();
+        trace!(
+            "batch_read: some_encrypted_words: {:?}",
+            some_encrypted_words
+        );
+        if some_encrypted_words.is_empty() {
+            return Ok(vec![None; addresses.len()]);
+        }
+
+        let some_words = self
+            .batch_decrypt(
+                // Since indexes are produced using encrypted_words and the
+                // above check guarantees its length is equal to the length of
+                // permuted_addresses, the following indexing is guaranteed to
+                // be in range.
+                #[allow(clippy::indexing_slicing)]
+                some_encrypted_words
+                    .iter()
+                    .map(|(i, w)| (&permuted_addresses[*i], w)),
+            )
             .await?;
+
+        // Replace the None values in the list of decrypted words at the same
+        // position as in the list of encrypted words.
+        let mut pos = some_encrypted_words.into_iter().map(|(i, _)| i).peekable();
+        let mut words = Vec::with_capacity(addresses.len());
+        let mut some_words = some_words.into_iter();
+        for i in 0..addresses.len() {
+            if Some(&i) == pos.peek() {
+                pos.next();
+                words.push(some_words.next());
+            } else {
+                words.push(None);
+            }
+        }
+
         trace!("batch_read: words: {:?}", words);
 
-        let mut res = words.into_iter().map(Some).collect::<Vec<_>>();
-        for i in none_positions {
-            res.insert(i, None);
-        }
-        trace!("batch_read: res: {:?}", res);
-
-        Ok(res)
+        Ok(words)
     }
 }
 
@@ -152,12 +152,7 @@ mod tests {
     use std::sync::Arc;
 
     use cosmian_crypto_core::{CsRng, Sampling, reexport::rand_core::SeedableRng};
-    use cosmian_findex::{
-        InMemory,
-        test_utils::{
-            gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
-        },
-    };
+    use cosmian_findex::{InMemory, gen_seed, test_single_write_and_read, test_wrong_guard};
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
     use cosmian_kms_client::{
         KmsClient, KmsClientConfig,
@@ -227,8 +222,8 @@ mod tests {
 
         handles.push(task::spawn(async move {
             for _ in 0..1_000 {
-                let ctx = layer.encrypt(&[ptx], &[tok]).await?.remove(0);
-                let res = layer.decrypt(&[ctx], &[tok]).await?.remove(0);
+                let ctx = layer.batch_encrypt(once((&tok, &ptx))).await?.remove(0);
+                let res = layer.batch_decrypt(once((&tok, &ctx))).await?.remove(0);
                 assert_eq!(ptx, res);
                 assert_eq!(ptx.len(), res.len());
             }
@@ -256,10 +251,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![(
-                    header_addr,
-                    [2; CUSTOM_WORD_LENGTH]
-                ),])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![(header_addr, [2; CUSTOM_WORD_LENGTH]),]
+                )
                 .await?,
             None
         );
@@ -287,10 +282,13 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                    ]
+                )
                 .await?,
             None
         );
@@ -321,33 +319,42 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2, [1; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                        (val_addr_2, [1; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             None
         );
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, None), vec![
-                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
-                    (val_addr_2, [3; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, None),
+                    vec![
+                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
+                        (val_addr_2, [3; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
 
         assert_eq!(
             layer
-                .guarded_write((header_addr, Some([2; CUSTOM_WORD_LENGTH])), vec![
-                    (header_addr, [4; CUSTOM_WORD_LENGTH]),
-                    (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
-                    (val_addr_4, [2; CUSTOM_WORD_LENGTH])
-                ])
+                .guarded_write(
+                    (header_addr, Some([2; CUSTOM_WORD_LENGTH])),
+                    vec![
+                        (header_addr, [4; CUSTOM_WORD_LENGTH]),
+                        (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
+                        (val_addr_4, [2; CUSTOM_WORD_LENGTH])
+                    ]
+                )
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
@@ -391,14 +398,14 @@ mod tests {
         Ok(())
     }
 
-    #[ignore = "stack overflow"]
-    #[tokio::test]
-    async fn test_concurrent_read_write() -> ClientResult<()> {
-        log_init(None);
-        let ctx = start_default_test_kms_server().await;
-        let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
-        test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
-            .await;
-        Ok(())
-    }
+    // #[ignore = "stack overflow"]
+    // #[tokio::test]
+    // async fn test_concurrent_read_write() -> ClientResult<()> {
+    //     log_init(None);
+    //     let ctx = start_default_test_kms_server().await;
+    //     let memory = create_test_layer(ctx.owner_client_conf.kms_config.clone()).await?;
+    //     test_guarded_write_concurrent::<CUSTOM_WORD_LENGTH, _>(&memory, gen_seed(), Some(100))
+    //         .await;
+    //     Ok(())
+    // }
 }

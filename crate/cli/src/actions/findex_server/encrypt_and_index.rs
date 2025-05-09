@@ -15,7 +15,7 @@ use cosmian_findex_structs::Value;
 use cosmian_kms_client::{
     KmsClient, reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
 };
-use tracing::trace;
+use tracing::{debug, trace};
 
 use super::findex::parameters::FindexParameters;
 use crate::{
@@ -285,6 +285,10 @@ impl EncryptAndIndexAction {
             self.data_encryption_key_id.clone(),
         ) {
             (Some(key_encryption_key_id), None) => {
+                debug!(
+                    "Findex: Client-side encryption with key encryption key: \
+                     {key_encryption_key_id}"
+                );
                 self.client_side_encrypt_entries(
                     self.csv.clone(),
                     kms_rest_client,
@@ -295,6 +299,10 @@ impl EncryptAndIndexAction {
                 .await?
             }
             (None, Some(data_encryption_key_id)) => {
+                debug!(
+                    "Findex: Server-side encryption with data encryption key: \
+                     {data_encryption_key_id}"
+                );
                 self.server_side_encrypt_entries(
                     self.csv.clone(),
                     kms_rest_client,
@@ -309,6 +317,10 @@ impl EncryptAndIndexAction {
             }
         };
 
+        debug!(
+            "Findex: Adding entries to the index: {}",
+            self.findex_parameters.index_id
+        );
         rest_client
             .add_entries(&self.findex_parameters.index_id, &encrypted_entries)
             .await?;

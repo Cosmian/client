@@ -1,15 +1,18 @@
 use base64::{Engine, engine::general_purpose};
 use clap::Parser;
 use cosmian_kms_client::{
-    ExportObjectParams, KmsClient, export_object,
+    ExportObjectParams, KmsClient,
+    cosmian_kmip::kmip_0::kmip_types::BlockCipherMode,
+    export_object,
     kmip_2_1::{
         extra::{VENDOR_ATTR_X509_EXTENSION, VENDOR_ID_COSMIAN},
-        kmip_objects::{Object, ObjectType},
+        kmip_attributes::Attributes,
+        kmip_objects::{Certificate, Object, ObjectType},
         kmip_operations::{Certify, GetAttributes},
         kmip_types::{
-            Attributes, BlockCipherMode, CertificateAttributes, CryptographicAlgorithm,
-            CryptographicParameters, KeyFormatType, Link, LinkType, LinkedObjectIdentifier,
-            UniqueIdentifier, VendorAttribute,
+            CertificateAttributes, CryptographicAlgorithm, CryptographicParameters, KeyFormatType,
+            Link, LinkType, LinkedObjectIdentifier, UniqueIdentifier, VendorAttribute,
+            VendorAttributeValue,
         },
         requests::create_rsa_key_pair_request,
     },
@@ -54,6 +57,19 @@ pub struct CreateKeyPairsAction {
     /// Sensitive: if set, the key will not be exportable
     #[clap(long = "sensitive", default_value = "false")]
     sensitive: bool,
+
+    /// The key encryption key (KEK) used to wrap the keypair with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
 
     /// Dry run mode. If set, the action will not be executed.
     #[clap(long, default_value = "false")]
@@ -119,7 +135,7 @@ impl CreateKeyPairsAction {
             let attributes_response = kms_rest_client
                 .get_attributes(GetAttributes {
                     unique_identifier: Some(UniqueIdentifier::TextString(id.to_string())),
-                    attribute_references: None,
+                    attribute_reference: None,
                 })
                 .await?;
             if attributes_response.attributes.object_type == Some(ObjectType::PrivateKey) {
@@ -146,6 +162,7 @@ impl CreateKeyPairsAction {
                     Vec::<String>::new(),
                     RSA_4096,
                     self.sensitive,
+                    self.wrapping_key_id.as_ref(),
                 )?)
                 .await?;
             (
@@ -155,8 +172,10 @@ impl CreateKeyPairsAction {
         };
 
         // Export wrapped private key with google CSE key
-        let (_, wrapped_private_key, _attributes) =
-            export_object(kms_rest_client, &private_key_id, ExportObjectParams {
+        let (_, wrapped_private_key, _attributes) = export_object(
+            kms_rest_client,
+            &private_key_id,
+            ExportObjectParams {
                 wrapping_key_id: Some(&self.cse_key_id),
                 wrapping_cryptographic_parameters: Some(CryptographicParameters {
                     cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
@@ -164,17 +183,18 @@ impl CreateKeyPairsAction {
                     ..CryptographicParameters::default()
                 }),
                 ..ExportObjectParams::default()
-            })
-            .await?;
+            },
+        )
+        .await?;
 
-        let wrapped_key_bytes = wrapped_private_key.key_block()?.key_bytes()?;
+        let wrapped_key_bytes = wrapped_private_key.key_block()?.wrapped_key_bytes()?;
 
         // Sign created public key with the issuer private key
         let attributes = Attributes {
             object_type: Some(ObjectType::Certificate),
-            certificate_attributes: Some(Box::new(CertificateAttributes::parse_subject_line(
+            certificate_attributes: Some(CertificateAttributes::parse_subject_line(
                 &self.subject_name,
-            )?)),
+            )?),
             link: Some(vec![Link {
                 link_type: LinkType::PrivateKeyLink,
                 linked_object_identifier: LinkedObjectIdentifier::TextString(
@@ -184,7 +204,7 @@ impl CreateKeyPairsAction {
             vendor_attributes: Some(vec![VendorAttribute {
                 vendor_identification: VENDOR_ID_COSMIAN.to_string(),
                 attribute_name: VENDOR_ATTR_X509_EXTENSION.to_string(),
-                attribute_value: EXTENSION_CONFIG.to_vec(),
+                attribute_value: VendorAttributeValue::ByteString(EXTENSION_CONFIG.to_vec()),
             }]),
             ..Attributes::default()
         };
@@ -212,9 +232,9 @@ impl CreateKeyPairsAction {
         )
         .await?;
 
-        if let Object::Certificate {
+        if let Object::Certificate(Certificate {
             certificate_value, ..
-        } = &pkcs7_object
+        }) = &pkcs7_object
         {
             trace!(
                 "pkcs7_object: {:?}",
@@ -231,9 +251,9 @@ impl CreateKeyPairsAction {
         } else {
             let email = &self.user_id;
             println!("[{email}] - Pushing new keypair to Gmail API");
-            if let Object::Certificate {
+            if let Object::Certificate(Certificate {
                 certificate_value, ..
-            } = pkcs7_object
+            }) = pkcs7_object
             {
                 tracing::info!("Processing {email:?}.");
                 Self::post_keypair(

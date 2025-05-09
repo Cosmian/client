@@ -6,6 +6,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
+description = "HSM PKCS#11 provider for Cosmian KMS"
 
 [lib]
 name = "cosmian_pkcs11"
@@ -19,9 +20,9 @@ fips = ["cosmian_cli/fips", "test_kms_server/fips"]
 
 [dependencies]
 cosmian_kmip = { workspace = true }
-cosmian_cli = { path = "../../cli" }
+cosmian_cli = { workspace = true }
 cosmian_crypto_core = { workspace = true }
-cosmian_pkcs11_module = { path = "../module" }
+cosmian_pkcs11_module = { workspace = true }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
@@ -30,7 +31,7 @@ p256 = { version = "0.13.2", default-features = false, features = [
   "std",
 ] }
 pkcs1 = "0.7.5"
-pkcs11_sys = { workspace = true }
+cosmian_pkcs11_sys = { workspace = true }
 serde_json = { workspace = true }
 sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }
@@ -47,4 +48,4 @@ tracing-journald = "0.3.1"
 [dev-dependencies]
 cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
-test_kms_server = { path = "../../test_kms_server" }
+test_kms_server = { workspace = true }

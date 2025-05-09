@@ -99,6 +99,7 @@ const RevokeForm: React.FC<RevokeFormProps> = (props: RevokeFormProps) => {
                         {props.objectType === "certificate" && <p>Revoking a certificate does not revoke its associated private key.</p>}
                     </div>
                 </div>
+                <div>Revoking a key from a keypair will revoke both the public and private keys.</div>
             </div>
 
             <Form form={form} onFinish={onFinish} layout="vertical">

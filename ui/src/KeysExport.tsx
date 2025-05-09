@@ -157,6 +157,7 @@ const KeyExportForm: React.FC<KeyExportFormProps> = (props: KeyExportFormProps) 
 
             <div className="mb-8 space-y-2">
                 <p>Export {key_type_string} key from the KMS. The key can be identified using either its ID or associated tags.</p>
+                <p>When exporting a key pair using its ID, only the public key is exported.</p>
                 <p>The key can optionally be unwrapped and/or wrapped when exported.</p>
                 <p className="text-sm text-yellow-600">Note: Wrapping a key that is already wrapped is an error.</p>
             </div>
@@ -195,7 +196,7 @@ const KeyExportForm: React.FC<KeyExportFormProps> = (props: KeyExportFormProps) 
                     <Card>
                         <h3 className="text-m font-bold mb-4">Unwrapping Options</h3>
 
-                        <Form.Item name="unwrap" valuePropName="checked" label="Unwrap" help="Unwrap if it is wrapped before export">
+                        <Form.Item name="unwrap" valuePropName="checked" help="Unwrap if it is wrapped before export">
                             <Checkbox>Unwrap key before export</Checkbox>
                         </Form.Item>
 

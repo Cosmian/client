@@ -20,27 +20,31 @@ use cosmian_kms_client_utils::{
         prepare_key_import_elements, read_object_from_json_ttlv_bytes,
     },
     locate_utils::build_locate_request,
-    reexport::cosmian_kmip::kmip_2_1::{
-        kmip_objects::{Object, ObjectType},
-        kmip_operations::{
-            CertifyResponse, CreateKeyPair, CreateKeyPairResponse, CreateResponse, Decrypt,
-            DecryptResponse, DeleteAttribute, DeleteAttributeResponse, Destroy, DestroyResponse,
-            EncryptResponse, ExportResponse, GetAttributes, GetAttributesResponse, ImportResponse,
-            LocateResponse, RevokeResponse, SetAttribute, SetAttributeResponse, Validate,
-            ValidateResponse,
+    reexport::cosmian_kmip::{
+        kmip_0::kmip_types::CertificateType,
+        kmip_2_1::{
+            kmip_attributes::Attributes,
+            kmip_data_structures::{KeyMaterial, KeyValue},
+            kmip_objects::{Certificate as KmipCertificate, Object, ObjectType, PrivateKey},
+            kmip_operations::{
+                CertifyResponse, CreateKeyPair, CreateKeyPairResponse, CreateResponse, Decrypt,
+                DecryptResponse, DeleteAttribute, DeleteAttributeResponse, Destroy,
+                DestroyResponse, EncryptResponse, ExportResponse, GetAttributes,
+                GetAttributesResponse, ImportResponse, LocateResponse, RevokeResponse,
+                SetAttribute, SetAttributeResponse, Validate, ValidateResponse,
+            },
+            kmip_types::{
+                AttributeReference, CryptographicAlgorithm, CryptographicParameters, KeyFormatType,
+                LinkType, LinkedObjectIdentifier, RecommendedCurve, Tag, UniqueIdentifier,
+            },
+            requests::{
+                build_revoke_key_request, create_ec_key_pair_request, create_rsa_key_pair_request,
+                create_symmetric_key_kmip_object, decrypt_request, encrypt_request,
+                get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
+                get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
+            },
         },
-        kmip_types::{
-            AttributeReference, CertificateType, CryptographicAlgorithm, CryptographicParameters,
-            KeyFormatType, LinkType, LinkedObjectIdentifier, RecommendedCurve, Tag,
-            UniqueIdentifier,
-        },
-        requests::{
-            build_revoke_key_request, create_ec_key_pair_request, create_rsa_key_pair_request,
-            create_symmetric_key_kmip_object, decrypt_request, encrypt_request,
-            get_ec_private_key_request, get_ec_public_key_request, get_rsa_private_key_request,
-            get_rsa_public_key_request, import_object_request, symmetric_key_create_request,
-        },
-        ttlv::{TTLV, deserializer::from_ttlv, serializer::to_ttlv},
+        ttlv::{TTLV, from_ttlv, to_ttlv},
     },
     rsa_utils::{HashFn, RsaEncryptionAlgorithm},
     symmetric_utils::{DataEncryptionAlgorithm, parse_decrypt_elements},
@@ -58,7 +62,7 @@ fn parse_ttlv_response<T: DeserializeOwned + Serialize>(
     response: &str,
 ) -> Result<JsValue, JsValue> {
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
-    let parsed: T = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
+    let parsed: T = from_ttlv(ttlv).map_err(|e| JsValue::from(e.to_string()))?;
     serde_wasm_bindgen::to_value(&parsed).map_err(|e| JsValue::from(e.to_string()))
 }
 
@@ -120,16 +124,23 @@ pub fn parse_locate_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
 
 // Create keys Requests
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_rsa_key_pair_ttlv_request(
     private_key_id: Option<String>,
     tags: Vec<String>,
     cryptographic_length: usize,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let private_key_id = private_key_id.map(UniqueIdentifier::TextString);
-    let request: CreateKeyPair =
-        create_rsa_key_pair_request(private_key_id, tags, cryptographic_length, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
+    let request: CreateKeyPair = create_rsa_key_pair_request(
+        private_key_id,
+        tags,
+        cryptographic_length,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -138,19 +149,26 @@ pub fn create_rsa_key_pair_ttlv_request(
 }
 
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_ec_key_pair_ttlv_request(
     private_key_id: Option<String>,
     tags: Vec<String>,
     recommended_curve: &str,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let private_key_id = private_key_id.map(UniqueIdentifier::TextString);
     let recommended_curve: RecommendedCurve = Curve::from_str(recommended_curve)
         .map_err(|e| JsValue::from_str(&format!("Invalid recommended curve: {e}")))?
         .into();
-    let request: CreateKeyPair =
-        create_ec_key_pair_request(private_key_id, tags, recommended_curve, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
+    let request: CreateKeyPair = create_ec_key_pair_request(
+        private_key_id,
+        tags,
+        recommended_curve,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Key pair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -182,9 +200,14 @@ pub fn create_sym_key_ttlv_request(
         })?;
 
     if let Some(key_bytes) = key_bytes {
-        let mut object =
-            create_symmetric_key_kmip_object(key_bytes.as_slice(), algorithm, sensitive)
-                .map_err(|e| JsValue::from_str(&format!("Error creating symmetric key: {e}")))?;
+        let mut object = create_symmetric_key_kmip_object(
+            key_bytes.as_slice(),
+            &Attributes {
+                cryptographic_algorithm: Some(algorithm),
+                ..Default::default()
+            },
+        )
+        .map_err(|e| JsValue::from_str(&format!("Error creating symmetric key: {e}")))?;
         if let Some(wrapping_key_id) = &wrap_key_id {
             let attributes = object.attributes_mut().map_err(|e| {
                 JsValue::from_str(&format!("Error creating symmetric key attributes: {e}"))
@@ -437,10 +460,10 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
     let key_format = ExportKeyFormat::from_str(key_format)
         .map_err(|e| JsValue::from_str(&format!("Invalid export key format type: {e}")))?;
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
-    let response: ExportResponse = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
+    let response: ExportResponse = from_ttlv(ttlv).map_err(|e| JsValue::from(e.to_string()))?;
     let data = match key_format {
         ExportKeyFormat::JsonTtlv => {
-            let kmip_object = Object::post_fix(response.object_type, response.object);
+            let kmip_object = response.object;
             let mut ttlv = to_ttlv(&kmip_object).map_err(|e| JsValue::from(e.to_string()))?;
             ttlv.tag = tag_from_object(&kmip_object);
             let bytes = serde_json::to_vec::<TTLV>(&ttlv)
@@ -448,29 +471,17 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
             JsValue::from(Uint8Array::from(bytes.as_slice()))
         }
         ExportKeyFormat::Base64 => {
-            let kmip_object = Object::post_fix(response.object_type, response.object);
-            let key_block = kmip_object
-                .key_block()
-                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+            let kmip_object = response.object;
             let string = base64::engine::general_purpose::STANDARD
-                .encode(
-                    key_block
-                        .key_bytes()
-                        .map_err(|e| JsValue::from_str(&format!("{e}")))?,
-                )
+                .encode(get_object_bytes(&kmip_object)?)
                 .to_lowercase();
             JsValue::from(string)
         }
         _ => {
-            let kmip_object = Object::post_fix(response.object_type, response.object);
-            let key_block = kmip_object
-                .key_block()
-                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+            let kmip_object = response.object;
             let object_type = kmip_object.object_type();
             let bytes = {
-                let mut bytes = key_block
-                    .key_bytes()
-                    .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+                let mut bytes = get_object_bytes(&kmip_object)?;
                 let (key_format_type, encode_to_pem) = get_export_key_format_type(&key_format);
 
                 if encode_to_pem {
@@ -483,7 +494,8 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
                         })
                         .map_err(|e| JsValue::from_str(&e.to_string()))?;
                     bytes = der_to_pem(bytes.as_slice(), format_type, object_type)
-                        .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+                        .map_err(|e| JsValue::from_str(&format!("{e}")))?
+                        .to_vec();
                 }
                 bytes
             };
@@ -491,6 +503,31 @@ pub fn parse_export_ttlv_response(response: &str, key_format: &str) -> Result<Js
         }
     };
     Ok(data)
+}
+
+fn get_object_bytes(object: &Object) -> Result<Vec<u8>, JsValue> {
+    let key_block = object
+        .key_block()
+        .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+    match key_block
+        .key_value
+        .as_ref()
+        .ok_or_else(|| JsValue::from_str("Key value is missing"))?
+    {
+        KeyValue::ByteString(v) => Ok(v.to_vec()),
+        KeyValue::Structure { key_material, .. } => match key_material {
+            KeyMaterial::ByteString(v) => Ok(v.to_vec()),
+            KeyMaterial::TransparentSymmetricKey { key } => Ok(key.to_vec()),
+            KeyMaterial::TransparentECPrivateKey { .. }
+            | KeyMaterial::TransparentECPublicKey { .. } => key_block
+                .ec_raw_bytes()
+                .map(|v| v.to_vec())
+                .map_err(|e| JsValue::from_str(&e.to_string())),
+            x => Err(JsValue::from_str(&format!(
+                "Unsupported key material type: {x:?}"
+            ))),
+        },
+    }
 }
 
 // Get requests
@@ -549,7 +586,7 @@ pub fn import_ttlv_request(
     replace_existing: bool,
     tags: Vec<String>,
     key_usage: Option<Vec<String>>,
-    authenticated_additional_data: Option<String>,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let key_usage = key_usage.map(|vec| {
         vec.into_iter()
@@ -566,8 +603,7 @@ pub fn import_ttlv_request(
         &certificate_id,
         &private_key_id,
         &public_key_id,
-        unwrap,
-        &authenticated_additional_data,
+        wrapping_key_id.as_ref(),
     )
     .map_err(|e| JsValue::from(e.to_string()))?;
     let request = import_object_request(
@@ -613,15 +649,20 @@ pub fn parse_revoke_ttlv_response(response: &str) -> Result<JsValue, JsValue> {
 
 // Covercrypt requests
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_cc_master_keypair_ttlv_request(
     access_structure: &str,
     tags: Vec<String>,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
-    let request = build_create_covercrypt_master_keypair_request(access_structure, tags, sensitive)
-        .map_err(|e| {
-            JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}"))
-        })?;
+    let request = build_create_covercrypt_master_keypair_request(
+        access_structure,
+        tags,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Covercrypt master keypair creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -630,15 +671,22 @@ pub fn create_cc_master_keypair_ttlv_request(
 }
 
 #[wasm_bindgen]
+#[allow(clippy::needless_pass_by_value)]
 pub fn create_cc_user_key_ttlv_request(
     master_secret_key_id: &str,
     access_policy: &str,
     tags: Vec<String>,
     sensitive: bool,
+    wrapping_key_id: Option<String>,
 ) -> Result<JsValue, JsValue> {
-    let request =
-        build_create_covercrypt_usk_request(access_policy, master_secret_key_id, tags, sensitive)
-            .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
+    let request = build_create_covercrypt_usk_request(
+        access_policy,
+        master_secret_key_id,
+        tags,
+        sensitive,
+        wrapping_key_id.as_ref(),
+    )
+    .map_err(|e| JsValue::from_str(&format!("Covercrypt user key creation failed: {e}")))?;
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
         .and_then(|objects| {
@@ -737,12 +785,12 @@ pub fn import_certificate_ttlv_request(
         CertificateInputFormat::Pem => {
             let certificate = Certificate::from_pem(&certificate_bytes)
                 .map_err(|e| JsValue::from(e.to_string()))?;
-            let object = Object::Certificate {
+            let object = Object::Certificate(KmipCertificate {
                 certificate_type: CertificateType::X509,
                 certificate_value: certificate
                     .to_der()
                     .map_err(|e| JsValue::from(e.to_string()))?,
-            };
+            });
             import_object_request(
                 certificate_id,
                 object,
@@ -755,12 +803,12 @@ pub fn import_certificate_ttlv_request(
         CertificateInputFormat::Der => {
             let certificate = Certificate::from_der(&certificate_bytes)
                 .map_err(|e| JsValue::from(e.to_string()))?;
-            let object = Object::Certificate {
+            let object = Object::Certificate(KmipCertificate {
                 certificate_type: CertificateType::X509,
                 certificate_value: certificate
                     .to_der()
                     .map_err(|e| JsValue::from(e.to_string()))?,
-            };
+            });
             import_object_request(
                 certificate_id,
                 object,
@@ -845,13 +893,13 @@ pub fn parse_export_certificate_ttlv_response(
     let output_format = CertificateExportFormat::from_str(output_format)
         .map_err(|e| JsValue::from(e.to_string()))?;
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
-    let response: ExportResponse = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
-    let object = Object::post_fix(response.object_type, response.object);
+    let response: ExportResponse = from_ttlv(ttlv).map_err(|e| JsValue::from(e.to_string()))?;
+    let object = response.object;
     let object_type = response.object_type;
     match &object {
-        Object::Certificate {
+        Object::Certificate(KmipCertificate {
             certificate_value, ..
-        } => {
+        }) => {
             let data = match output_format {
                 CertificateExportFormat::JsonTtlv => {
                     let mut ttlv = to_ttlv(&object).map_err(|e| JsValue::from(e.to_string()))?;
@@ -889,9 +937,9 @@ pub fn parse_export_certificate_ttlv_response(
             Ok(data)
         }
         // PKCS12 is exported as a private key object
-        Object::PrivateKey { key_block } => {
+        Object::PrivateKey(PrivateKey { key_block }) => {
             let p12_bytes = key_block
-                .key_bytes()
+                .pkcs_der_bytes()
                 .map_err(|e| JsValue::from(e.to_string()))?
                 .to_vec();
             Ok(JsValue::from(Uint8Array::from(p12_bytes.as_slice())))
@@ -1035,7 +1083,7 @@ pub fn get_attributes_ttlv_request(unique_identifier: String) -> Result<JsValue,
     let unique_identifier = UniqueIdentifier::TextString(unique_identifier);
     let request = GetAttributes {
         unique_identifier: Some(unique_identifier),
-        attribute_references: None,
+        attribute_reference: None,
     };
     to_ttlv(&request)
         .map_err(|e| JsValue::from(e.to_string()))
@@ -1050,15 +1098,12 @@ pub fn parse_get_attributes_ttlv_response(
     response: &str,
     selected_attributes: Vec<String>,
 ) -> Result<JsValue, JsValue> {
-    let selected_attributes: Vec<&str> = selected_attributes
-        .iter()
-        .map(std::string::String::as_str)
-        .collect();
+    let selected_attributes: Vec<&str> = selected_attributes.iter().map(String::as_str).collect();
     let ttlv: TTLV = serde_json::from_str(response).map_err(|e| JsValue::from(e.to_string()))?;
     let GetAttributesResponse {
         unique_identifier: _,
         attributes,
-    } = from_ttlv(&ttlv).map_err(|e| JsValue::from(e.to_string()))?;
+    } = from_ttlv(ttlv).map_err(|e| JsValue::from(e.to_string()))?;
     let results = parse_selected_attributes_flatten(&attributes, &selected_attributes)
         .map_err(|e| JsValue::from(e.to_string()))?;
     Ok(serde_wasm_bindgen::to_value(&results)?)

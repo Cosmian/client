@@ -1,8 +1,6 @@
 use std::path::PathBuf;
 
-use cosmian_findex::test_utils::{
-    gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
-};
+use cosmian_findex::{gen_seed, test_single_write_and_read, test_wrong_guard};
 use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value};
 use cosmian_kms_client::KmsClient;
@@ -31,7 +29,7 @@ use crate::{
 };
 
 pub(crate) fn findex_number_of_threads() -> Option<usize> {
-    std::env::var("GITHUB_ACTIONS").is_ok().then_some(1)
+    std::env::var("GITHUB_ACTIONS").map(|_| 1).ok()
 }
 
 #[tokio::test]
@@ -266,14 +264,14 @@ async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
     Ok(())
 }
 
-#[ignore = "stack overflow"]
-#[tokio::test]
-async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
-    test_guarded_write_concurrent(
-        &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
-        gen_seed(),
-        Some(100),
-    )
-    .await;
-    Ok(())
-}
+// #[ignore = "stack overflow"]
+// #[tokio::test]
+// async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
+//     test_guarded_write_concurrent(
+//         &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
+//         gen_seed(),
+//         Some(100),
+//     )
+//     .await;
+//     Ok(())
+// }

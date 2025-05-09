@@ -360,11 +360,13 @@ async fn test_rsa_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     fs::remove_file(&output_file).ok();
     assert!(!output_file.exists());
 
-    let (private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+    let (private_key_id, public_key_id) = create_rsa_key_pair(
+        &ctx.owner_client_conf_path,
+        &RsaKeyPairOptions {
             tags: HashSet::from(["tag_rsa".to_string()]),
             ..Default::default()
-        })?;
+        },
+    )?;
 
     encrypt(
         &ctx.owner_client_conf_path,

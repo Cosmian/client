@@ -18,7 +18,7 @@ fips = ["cosmian_cli/fips"]
 
 [dependencies]
 clap = "4.5"
-cosmian_cli = { path = "../cli" }
+cosmian_cli = { workspace = true }
 klask = { git = "https://github.com/Cosmian/klask.git" }
 tokio = { workspace = true, features = ["full"] }
 

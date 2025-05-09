@@ -59,6 +59,19 @@ pub struct CreateMasterKeyPairAction {
     /// Sensitive: if set, the private key will not be exportable
     #[clap(long = "sensitive", default_value = "false")]
     sensitive: bool,
+
+    /// The key encryption key (KEK) used to wrap the keypair with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
 }
 
 impl CreateMasterKeyPairAction {
@@ -72,6 +85,7 @@ impl CreateMasterKeyPairAction {
                 &access_structure,
                 &self.tags,
                 self.sensitive,
+                self.wrapping_key_id.as_ref(),
             )?)
             .await
             .with_context(|| "failed creating a Covercrypt Master Key Pair")?;

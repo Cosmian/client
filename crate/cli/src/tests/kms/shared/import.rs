@@ -7,6 +7,8 @@ use cosmian_kms_client::{
     reexport::cosmian_kms_client_utils::import_utils::{ImportKeyFormat, KeyUsage},
 };
 #[cfg(not(feature = "fips"))]
+use cosmian_logger::log_init;
+#[cfg(not(feature = "fips"))]
 use test_kms_server::start_default_test_kms_server;
 
 #[cfg(not(feature = "fips"))]
@@ -109,40 +111,54 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
+    use tempfile::TempDir;
+
     let ctx = start_default_test_kms_server().await;
 
-    let import_params = ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
-        sub_command: "cc".to_string(),
-        key_file: "../../test_data/ttlv_public_key.json".to_string(),
-        ..Default::default()
-    };
+    // generate a new master key pair
+    let (_master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
+        &ctx.owner_client_conf_path,
+        "--specification",
+        "../../test_data/access_structure_specifications.json",
+        &[],
+        false,
+    )?;
 
-    let uid: String = import_key(import_params)?;
-    assert_eq!(uid.len(), 36);
+    // create a temp dir
+    let tmp_dir = TempDir::new()?;
+    let tmp_path = tmp_dir.path();
+    let public_key_path = format!("{}", tmp_path.join("public_key.json").display());
+
+    export_key(ExportKeyParams {
+        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        sub_command: "cc".to_owned(),
+        key_id: master_public_key_id.clone(),
+        key_file: public_key_path.clone(),
+        ..Default::default()
+    })?;
 
     // reimporting the same key  with the same id should fail
     assert!(
         import_key(ImportKeyParams {
             cli_conf_path: ctx.owner_client_conf_path.clone(),
             sub_command: "cc".to_string(),
-            key_file: "../../test_data/ttlv_public_key.json".to_string(),
-            key_id: Some(uid.clone()),
+            key_file: public_key_path.clone(),
+            key_id: Some(master_public_key_id.clone()),
             ..Default::default()
         })
         .is_err()
     );
 
     //...unless we force it with replace_existing
-    let uid_: String = import_key(ImportKeyParams {
+    let master_public_key_id_: String = import_key(ImportKeyParams {
         cli_conf_path: ctx.owner_client_conf_path.clone(),
         sub_command: "cc".to_string(),
-        key_file: "../../test_data/ttlv_public_key.json".to_string(),
-        key_id: Some(uid.clone()),
+        key_file: public_key_path,
+        key_id: Some(master_public_key_id.clone()),
         replace_existing: true,
         ..Default::default()
     })?;
-    assert_eq!(uid_, uid);
+    assert_eq!(master_public_key_id_, master_public_key_id);
 
     Ok(())
 }
@@ -152,8 +168,9 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
 pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     use crate::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 
-    cosmian_logger::log_init(None);
-    // cosmian_logger::log_init(Some("cosmian_kms_server=debug,cosmian_kms_utils=debug"));
+    log_init(option_env!("RUST_LOG"));
+    // log_init(Some("info,cosmian_kms_server=debug"));
+
     let ctx = start_default_test_kms_server().await;
 
     // Covercrypt import/export test
@@ -210,7 +227,16 @@ pub(crate) fn export_import_test(
     })?;
 
     let object = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output.export"))?;
-    let key_bytes = object.key_block()?.key_bytes()?;
+    let key_bytes = match algorithm {
+        CryptographicAlgorithm::AES => object.key_block()?.symmetric_key_bytes()?,
+        CryptographicAlgorithm::ECDH => object.key_block()?.ec_raw_bytes()?,
+        CryptographicAlgorithm::CoverCrypt => object.key_block()?.covercrypt_key_bytes()?,
+        x => {
+            return Err(CosmianError::Default(format!(
+                "unsupported algorithm for export: {x:?}"
+            )))
+        }
+    };
 
     // import and re-export
     let import_params = ImportKeyParams {
@@ -229,7 +255,17 @@ pub(crate) fn export_import_test(
         ..Default::default()
     })?;
     let object2 = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output2.export"))?;
-    assert_eq!(object2.key_block()?.key_bytes()?, key_bytes);
+    let object2_key_bytes = match algorithm {
+        CryptographicAlgorithm::AES => object2.key_block()?.symmetric_key_bytes()?,
+        CryptographicAlgorithm::ECDH => object2.key_block()?.ec_raw_bytes()?,
+        CryptographicAlgorithm::CoverCrypt => object2.key_block()?.covercrypt_key_bytes()?,
+        x => {
+            return Err(CosmianError::Default(format!(
+                "unsupported algorithm for export: {x:?}"
+            )))
+        }
+    };
+    assert_eq!(object2_key_bytes, key_bytes);
     assert_eq!(
         object2.key_block()?.cryptographic_algorithm,
         Some(algorithm)

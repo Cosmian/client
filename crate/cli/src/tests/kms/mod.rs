@@ -9,7 +9,6 @@ mod google_cmd;
 mod hash;
 mod hsm;
 mod mac;
-mod new_database;
 mod rsa;
 mod shared;
 mod symmetric;

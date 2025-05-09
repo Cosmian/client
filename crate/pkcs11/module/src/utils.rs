@@ -1,4 +1,4 @@
-use pkcs11_sys::{
+use cosmian_pkcs11_sys::{
     CK_ATTRIBUTE, CK_BBOOL, CK_INVALID_HANDLE, CK_KEY_TYPE, CK_MECHANISM, CK_MECHANISM_PTR,
     CK_OBJECT_HANDLE, CK_TRUE, CK_ULONG, CK_VOID_PTR, CKA_EXTRACTABLE, CKA_KEY_TYPE, CKA_LABEL,
     CKA_SENSITIVE, CKA_VALUE_LEN, CKK_AES, CKM_AES_CBC_PAD, CKM_AES_KEY_GEN, CKR_OK,
@@ -17,7 +17,7 @@ pub fn test_generate_key(session_h: CK_ULONG) -> CK_OBJECT_HANDLE {
         pParameter: [0_u8; 16].as_mut_ptr().cast::<std::ffi::c_void>(),
         ulParameterLen: 16,
     };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
+    let pMechanism: CK_MECHANISM_PTR = &raw mut mechanism;
 
     let mut sym_key_template = vec![
         CK_ATTRIBUTE {
@@ -55,7 +55,7 @@ pub fn test_generate_key(session_h: CK_ULONG) -> CK_OBJECT_HANDLE {
                 pMechanism,
                 sym_key_template.as_mut_ptr(),
                 sym_key_template.len() as CK_ULONG,
-                &mut key_handle,
+                &raw mut key_handle,
             )
         },
         CKR_OK
@@ -79,7 +79,7 @@ pub fn test_encrypt(
         pParameter: [0_u8; AES_IV_SIZE].as_mut_ptr().cast::<std::ffi::c_void>(),
         ulParameterLen: AES_IV_SIZE as CK_ULONG,
     };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
+    let pMechanism: CK_MECHANISM_PTR = &raw mut mechanism;
 
     let mut encrypted_data = vec![0_u8; plaintext.len() + AES_IV_SIZE];
     let mut encrypted_data_len = encrypted_data.len() as CK_ULONG;
@@ -97,7 +97,7 @@ pub fn test_encrypt(
                 pt.as_mut_ptr(),
                 pt.len() as CK_ULONG,
                 encrypted_data.as_mut_ptr(),
-                &mut encrypted_data_len,
+                &raw mut encrypted_data_len,
             )
         },
         CKR_OK
@@ -125,7 +125,7 @@ pub fn test_decrypt(
         pParameter: [0_u8; AES_IV_SIZE].as_mut_ptr().cast::<std::ffi::c_void>(),
         ulParameterLen: AES_IV_SIZE as CK_ULONG,
     };
-    let pMechanism: CK_MECHANISM_PTR = &mut mechanism;
+    let pMechanism: CK_MECHANISM_PTR = &raw mut mechanism;
 
     let mut encrypted_data = encrypted_data;
     let mut decrypted_data = vec![0_u8; encrypted_data.len()];
@@ -143,7 +143,7 @@ pub fn test_decrypt(
                 encrypted_data.as_mut_ptr(),
                 encrypted_data.len() as CK_ULONG,
                 decrypted_data.as_mut_ptr(),
-                &mut decrypted_data_len,
+                &raw mut decrypted_data_len,
             )
         },
         CKR_OK

@@ -9,6 +9,7 @@ interface ECKeyCreateFormData {
     curve: string;
     tags: string[];
     sensitive: boolean;
+    wrappingKeyId?: string;
 }
 
 type CreateKeyPairResponse = {
@@ -33,7 +34,13 @@ const ECKeyCreateForm: React.FC = () => {
         setIsLoading(true);
         setRes(undefined);
         try {
-            const request = create_ec_key_pair_ttlv_request(values.privateKeyId, values.tags, values.curve, values.sensitive);
+            const request = create_ec_key_pair_ttlv_request(
+                values.privateKeyId,
+                values.tags,
+                values.curve,
+                values.sensitive,
+                values.wrappingKeyId
+            );
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const result: CreateKeyPairResponse = await parse_create_keypair_ttlv_response(result_str);
@@ -58,6 +65,7 @@ const ECKeyCreateForm: React.FC = () => {
                     <li>The public key is used to encrypt or verify a signature and can be safely shared.</li>
                     <li>The private key is used to decrypt or sign and must be kept secret.</li>
                 </ul>
+                <p>When creating a key pair with a specified tag, the tag is applied to both keys.</p>
             </div>
 
             <Form
@@ -99,6 +107,14 @@ const ECKeyCreateForm: React.FC = () => {
 
                         <Form.Item name="tags" label="Tags" help="Optional: Add tags to help retrieve the keys later">
                             <Select mode="tags" placeholder="Enter tags" open={false} />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="wrappingKeyId"
+                            label="Wrapping Key ID"
+                            help="Optional: ID of the key to wrap this new keypair with"
+                        >
+                            <Input placeholder="Enter wrapping key ID" />
                         </Form.Item>
 
                         <Form.Item name="sensitive" valuePropName="checked" help="If set, the private key will not be exportable">

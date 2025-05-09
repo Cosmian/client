@@ -6,6 +6,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
+description = "Cosmian KMS REST Client"
 
 [lib]
 # doc test linking as a separate binary is extremely slow
@@ -18,7 +19,7 @@ fips = ["cosmian_kms_client_utils/fips"]
 [dependencies]
 cosmian_crypto_core = { workspace = true }
 cosmian_http_client = { workspace = true }
-cosmian_kms_client_utils = { path = "../client_utils" }
+cosmian_kms_client_utils = { workspace = true }
 der = { workspace = true }
 pem = { workspace = true }
 reqwest = { workspace = true, features = ["default", "json", "native-tls"] }

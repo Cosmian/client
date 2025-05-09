@@ -11,7 +11,7 @@ use test_findex_server::{
     start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
 };
 use test_kms_server::start_default_test_kms_server;
-use tracing::trace;
+use tracing::{info, trace};
 use uuid::Uuid;
 
 use crate::{
@@ -80,9 +80,11 @@ impl TestsCliContext {
             FindexParameters::new(self.index_id, &self.kms, true, Some(1)).await?;
 
         // Index
+        info!("==> Indexing dataset");
         let uuids = self.index(&findex_parameters).await?;
 
         // Search
+        info!("==> Searching for keywords");
         let results = self.search(&findex_parameters).await?;
         assert!(
             results
@@ -91,9 +93,11 @@ impl TestsCliContext {
         );
 
         // Delete
+        info!("==> Deleting entries");
         self.delete(&uuids).await?;
 
         // Verify deletion
+        info!("==> Verifying deletion");
         let results = self.search(&findex_parameters).await?;
         assert!(results.is_empty());
 
@@ -163,6 +167,7 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_and_index_cert_auth() -> CosmianResult<()> {
     log_init(None);
+    // log_init(Some("info,cosmian_kms_server=debug"));
 
     let findex_ctx = start_default_test_findex_server_with_cert_auth().await;
     let kms_ctx = start_default_test_kms_server().await;

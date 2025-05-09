@@ -2,14 +2,17 @@
 
 use cosmian_cli::reexport::cosmian_kms_client::{
     KmsClient,
-    kmip_2_1::requests::{create_rsa_key_pair_request, decrypt_request, encrypt_request},
-    reexport::cosmian_kmip::kmip_2_1::{
-        kmip_messages::{Message, MessageBatchItem, MessageHeader, MessageResponse},
-        kmip_operations::Operation,
-        kmip_types::{
-            CryptographicAlgorithm, CryptographicParameters, HashingAlgorithm, PaddingMethod,
-            ProtocolVersion,
+    kmip_0::{
+        kmip_messages::{
+            RequestMessage, RequestMessageBatchItemVersioned, RequestMessageHeader, ResponseMessage,
         },
+        kmip_types::{HashingAlgorithm, PaddingMethod, ProtocolVersion},
+    },
+    kmip_2_1::{
+        kmip_messages::RequestMessageBatchItem,
+        kmip_operations::Operation,
+        kmip_types::{CryptographicAlgorithm, CryptographicParameters},
+        requests::{create_rsa_key_pair_request, decrypt_request, encrypt_request},
     },
 };
 use criterion::{BenchmarkId, Criterion, Throughput};
@@ -264,7 +267,7 @@ pub(crate) async fn create_rsa_keypair(
     cryptographic_length: usize,
 ) -> (String, String) {
     let create_key_pair_request =
-        create_rsa_key_pair_request(None, ["bench"], cryptographic_length, false).unwrap();
+        create_rsa_key_pair_request(None, ["bench"], cryptographic_length, false, None).unwrap();
     // Query the KMS with your kmip data and get the key pair ids
     let response = kms_rest_client
         .create_key_pair(create_key_pair_request)
@@ -332,7 +335,7 @@ pub(crate) async fn message_encrypt(
     plaintext: &[u8],
     num_plaintexts: usize,
     cryptographic_parameters: &CryptographicParameters,
-) -> MessageResponse {
+) -> ResponseMessage {
     // Create the kmip query
     let encrypt_request = encrypt_request(
         pk,
@@ -345,17 +348,21 @@ pub(crate) async fn message_encrypt(
     .unwrap();
 
     // Create the kmip query
-    let message_request = Message {
-        header: MessageHeader {
+    let message_request = RequestMessage {
+        request_header: RequestMessageHeader {
             protocol_version: ProtocolVersion {
-                protocol_version_major: 1,
-                protocol_version_minor: 0,
+                protocol_version_major: 2,
+                protocol_version_minor: 1,
             },
-            batch_count: num_plaintexts as u32,
+            batch_count: num_plaintexts as i32,
             ..Default::default()
         },
-        items: (0..num_plaintexts)
-            .map(|_| MessageBatchItem::new(Operation::Encrypt(encrypt_request.clone())))
+        batch_item: (0..num_plaintexts)
+            .map(|_| {
+                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(
+                    Operation::Encrypt(encrypt_request.clone()),
+                ))
+            })
             .collect(),
     };
 
@@ -368,7 +375,7 @@ pub(crate) async fn message_decrypt(
     ciphertext: &[u8],
     num_ciphertexts: usize,
     cryptographic_parameters: &CryptographicParameters,
-) -> MessageResponse {
+) -> ResponseMessage {
     // Create the kmip query
     let decrypt_request = decrypt_request(
         sk,
@@ -380,17 +387,21 @@ pub(crate) async fn message_decrypt(
     );
 
     // Create the kmip query
-    let message_request = Message {
-        header: MessageHeader {
+    let message_request = RequestMessage {
+        request_header: RequestMessageHeader {
             protocol_version: ProtocolVersion {
-                protocol_version_major: 1,
-                protocol_version_minor: 0,
+                protocol_version_major: 2,
+                protocol_version_minor: 1,
             },
-            batch_count: num_ciphertexts as u32,
+            batch_count: num_ciphertexts as i32,
             ..Default::default()
         },
-        items: (0..num_ciphertexts)
-            .map(|_| MessageBatchItem::new(Operation::Decrypt(decrypt_request.clone())))
+        batch_item: (0..num_ciphertexts)
+            .map(|_| {
+                RequestMessageBatchItemVersioned::V21(RequestMessageBatchItem::new(
+                    Operation::Decrypt(decrypt_request.clone()),
+                ))
+            })
             .collect(),
     };
 
@@ -435,7 +446,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
             group.throughput(Throughput::Elements(num_plaintexts as u64));
             group.bench_with_input(
                 BenchmarkId::new(
-                    format!("{}-bit key encrypt", key_size),
+                    format!("{key_size}-bit key encrypt"),
                     parameter_name.clone(),
                 ),
                 &vec![0_u8; 32],
@@ -453,7 +464,7 @@ pub(crate) fn bench_encrypt_decrypt_parametrized(
                 },
             );
             group.bench_with_input(
-                BenchmarkId::new(format!("{}-bit key decrypt", key_size), parameter_name),
+                BenchmarkId::new(format!("{key_size}-bit key decrypt"), parameter_name),
                 &ciphertext,
                 |b, ct| {
                     b.to_async(&runtime).iter(|| async {

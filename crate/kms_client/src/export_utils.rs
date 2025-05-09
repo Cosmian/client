@@ -1,6 +1,7 @@
 use cosmian_kms_client_utils::{
     export_utils::{export_request, get_request},
     reexport::cosmian_kmip::kmip_2_1::{
+        kmip_attributes::Attributes,
         kmip_operations::{GetAttributes, Operation},
         kmip_types::{AttributeReference, CryptographicParameters},
     },
@@ -11,7 +12,7 @@ use crate::{
     batch_utils::batch_operations,
     cosmian_kmip::kmip_2_1::{
         kmip_objects::Object,
-        kmip_types::{Attributes, KeyFormatType, UniqueIdentifier},
+        kmip_types::{KeyFormatType, UniqueIdentifier},
     },
     error::result::{KmsClientResult, KmsClientResultHelper},
 };
@@ -68,7 +69,7 @@ pub async fn export_object(
     object_id_or_tags: &str,
     params: ExportObjectParams<'_>,
 ) -> Result<(UniqueIdentifier, Object, Option<Attributes>), KmsClientError> {
-    let (id, object, object_type, attributes) = if params.allow_revoked {
+    let (id, object, _, attributes) = if params.allow_revoked {
         //use the KMIP export function to get revoked objects
         let export_response = kms_rest_client
             .export(export_request(
@@ -110,7 +111,7 @@ pub async fn export_object(
         )
     };
     // Return the object after post fixing the object type
-    Ok((id, Object::post_fix(object_type, object), attributes))
+    Ok((id, object, attributes))
 }
 
 /// Export a batch of Objects from the KMS
@@ -185,7 +186,7 @@ async fn batch_get(
                 )),
                 Operation::GetAttributes(GetAttributes {
                     unique_identifier: Some(UniqueIdentifier::TextString(id.clone())),
-                    attribute_references: None, //all attributes
+                    attribute_reference: None, //all attributes
                 }),
             ]
         })
@@ -199,7 +200,7 @@ async fn batch_get(
                 Operation::GetResponse(get),
                 Operation::GetAttributesResponse(get_attributes_response),
             ] => {
-                let object = Object::post_fix(get.object_type, get.object.clone());
+                let object = get.object.clone();
                 results.push((
                     get.unique_identifier.clone(),
                     object,
@@ -209,7 +210,7 @@ async fn batch_get(
             operations => {
                 let mut errors = String::new();
                 for op in operations {
-                    errors = format!("{errors}, Unexpected operation {op}\n");
+                    errors = format!("{errors}, Unexpected operation {op:?}\n");
                 }
                 return Err(KmsClientError::Default(format!(
                     "Unexpected response from KMS, returning a sequence of non matching \
@@ -248,7 +249,7 @@ async fn batch_export(
                 )),
                 Operation::GetAttributes(GetAttributes {
                     unique_identifier: Some(UniqueIdentifier::TextString(id.clone())),
-                    attribute_references: Some(vec![AttributeReference::tags_reference()]), //tags
+                    attribute_reference: Some(vec![AttributeReference::tags_reference()]), //tags
                 }),
             ]
         })
@@ -262,8 +263,7 @@ async fn batch_export(
                 Operation::ExportResponse(export_response),
                 Operation::GetAttributesResponse(get_attributes_response),
             ] => {
-                let object =
-                    Object::post_fix(export_response.object_type, export_response.object.clone());
+                let object = export_response.object.clone();
                 let mut attributes = export_response.attributes.clone();
                 attributes.set_tags(get_attributes_response.attributes.get_tags())?;
                 results.push((
@@ -275,7 +275,7 @@ async fn batch_export(
             operations => {
                 let mut errors = String::new();
                 for op in operations {
-                    errors = format!("{errors}, Unexpected operation {op}\n");
+                    errors = format!("{errors}, Unexpected operation {op:?}\n");
                 }
                 return Err(KmsClientError::Default(format!(
                     "Unexpected response from KMS, returning a sequence of non matching \

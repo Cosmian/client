@@ -19,13 +19,13 @@
 
 use std::sync::Arc;
 
-use log::error;
-use p256::{elliptic_curve::sec1::ToEncodedPoint, pkcs8::der::Encode};
-use pkcs1::EncodeRsaPrivateKey;
-use pkcs11_sys::{
+use cosmian_pkcs11_sys::{
     CK_CERTIFICATE_CATEGORY_UNSPECIFIED, CK_PROFILE_ID, CKC_X_509, CKO_CERTIFICATE, CKO_DATA,
     CKO_PRIVATE_KEY, CKO_PROFILE, CKO_PUBLIC_KEY,
 };
+use log::error;
+use p256::{elliptic_curve::sec1::ToEncodedPoint, pkcs8::der::Encode};
+use pkcs1::EncodeRsaPrivateKey;
 use rsa::{RsaPrivateKey, pkcs8::DecodePrivateKey, traits::PublicKeyParts};
 use tracing::debug;
 

@@ -35,6 +35,19 @@ pub struct CreateUserKeyAction {
     /// Sensitive: if set, the key will not be exportable
     #[clap(long = "sensitive", default_value = "false")]
     sensitive: bool,
+
+    /// The key encryption key (KEK) used to wrap the keypair with.
+    /// If the wrapping key is:
+    /// - a symmetric key, AES-GCM will be used
+    /// - a RSA key, RSA-OAEP will be used
+    /// - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+    #[clap(
+        long = "wrapping-key-id",
+        short = 'w',
+        required = false,
+        verbatim_doc_comment
+    )]
+    pub wrapping_key_id: Option<String>,
 }
 
 impl CreateUserKeyAction {
@@ -47,6 +60,7 @@ impl CreateUserKeyAction {
             &self.master_secret_key_id,
             &self.tags,
             self.sensitive,
+            self.wrapping_key_id.as_ref(),
         )?;
 
         let response = kms_rest_client

@@ -2,10 +2,19 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm;
-use test_kms_server::start_default_test_kms_server_with_cert_auth;
+use cosmian_logger::log_init;
+use test_kms_server::{
+    start_default_test_kms_server_with_cert_auth,
+    start_default_test_kms_server_with_privileged_users,
+};
 use tracing::trace;
 
-use super::{KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs};
+use super::{
+    KMS_SUBCOMMAND,
+    rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
+    symmetric::create_key::create_symmetric_key,
+    utils::recover_cmd_logs,
+};
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
@@ -13,7 +22,7 @@ use crate::{
     tests::{
         PROG_NAME,
         kms::{
-            shared::{ExportKeyParams, destroy, export_key, revoke},
+            shared::{ExportKeyParams, ImportKeyParams, destroy, export_key, import_key, revoke},
             symmetric::encrypt_decrypt::run_encrypt_decrypt_test,
         },
     },
@@ -26,10 +35,33 @@ fn gen_key(cli_conf_path: &str) -> CosmianResult<String> {
     create_symmetric_key(cli_conf_path, CreateKeyAction::default())
 }
 
+/// Generates a key pair
+fn gen_keypair(cli_conf_path: &str) -> CosmianResult<(String, String)> {
+    create_rsa_key_pair(cli_conf_path, &RsaKeyPairOptions::default())
+}
+
+/// Export and import symmetric key
+fn export_import_sym_key(key_id: &str, cli_conf_path: &str) -> Result<String, CosmianError> {
+    export_key(ExportKeyParams {
+        cli_conf_path: cli_conf_path.to_owned(),
+        sub_command: "sym".to_owned(),
+        key_id: key_id.to_owned(),
+        key_file: "/tmp/output.export".to_owned(),
+        ..Default::default()
+    })?;
+    let import_params = ImportKeyParams {
+        cli_conf_path: cli_conf_path.to_owned(),
+        sub_command: "sym".to_owned(),
+        key_file: "/tmp/output.export".to_string(),
+        ..Default::default()
+    };
+    import_key(import_params)
+}
+
 /// Grants access to a user
 pub(crate) fn grant_access(
     cli_conf_path: &str,
-    object_id: &str,
+    object_id: Option<&str>,
     user: &str,
     operations: &[&str],
 ) -> CosmianResult<()> {
@@ -38,9 +70,12 @@ pub(crate) fn grant_access(
 
     cmd.arg(KMS_SUBCOMMAND)
         .arg(SUB_COMMAND)
-        .args(vec!["grant", user, object_id]);
+        .args(vec!["grant", user]);
     for operation in operations {
         cmd.arg(operation);
+    }
+    if let Some(uid) = object_id {
+        cmd.args(vec!["--object-uid", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
@@ -55,7 +90,7 @@ pub(crate) fn grant_access(
 /// Revoke access to a user
 pub(crate) fn revoke_access(
     cli_conf_path: &str,
-    object_id: &str,
+    object_id: Option<&str>,
     user: &str,
     operations: &[&str],
 ) -> CosmianResult<()> {
@@ -64,9 +99,12 @@ pub(crate) fn revoke_access(
 
     cmd.arg(KMS_SUBCOMMAND)
         .arg(SUB_COMMAND)
-        .args(vec!["revoke", user, object_id]);
+        .args(vec!["revoke", user]);
     for operation in operations {
         cmd.arg(operation);
+    }
+    if let Some(uid) = object_id {
+        cmd.args(vec!["--object-uid", uid]);
     }
 
     let output = recover_cmd_logs(&mut cmd);
@@ -188,15 +226,9 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // grant encrypt and decrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
-        &["encrypt"],
-    )?;
-    grant_access(
-        &ctx.owner_client_conf_path,
-        &key_id,
-        "user.client@acme.com",
-        &["decrypt"],
+        &["decrypt", "encrypt"],
     )?;
 
     // switch to user
@@ -229,7 +261,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // grant encrypt and decrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
@@ -252,7 +284,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // grant revoke access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["revoke"],
     )?;
@@ -265,7 +297,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // grant destroy access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["destroy"],
     )?;
@@ -286,7 +318,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
     assert!(
         grant_access(
             &ctx.owner_client_conf_path,
-            &key_id,
+            Some(&key_id),
             "user.client@acme.com",
             &["BAD_OP"],
         )
@@ -297,7 +329,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
     assert!(
         grant_access(
             &ctx.owner_client_conf_path,
-            "BAD ID",
+            Some("BAD ID"),
             "user.client@acme.com",
             &["get"]
         )
@@ -308,7 +340,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
     assert!(
         grant_access(
             &ctx.owner_client_conf_path,
-            &key_id,
+            Some(&key_id),
             "owner.client@acme.com",
             &["get"]
         )
@@ -320,6 +352,7 @@ pub(crate) async fn test_grant_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     // the client conf will use the owner cert
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
@@ -343,7 +376,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     // grant encrypt and decrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
@@ -362,7 +395,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     // revoke access to user
     revoke_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
@@ -384,7 +417,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     assert!(
         revoke_access(
             &ctx.owner_client_conf_path,
-            &key_id,
+            Some(&key_id),
             "user.client@acme.com",
             &["BAD"]
         )
@@ -393,7 +426,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     assert!(
         revoke_access(
             &ctx.owner_client_conf_path,
-            "BAD KEY",
+            Some("BAD KEY"),
             "user.client@acme.com",
             &["get"]
         )
@@ -401,7 +434,12 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     );
 
     // this will not error
-    revoke_access(&ctx.owner_client_conf_path, &key_id, "BAD USER", &["get"])?;
+    revoke_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "BAD USER",
+        &["get"],
+    )?;
 
     Ok(())
 }
@@ -414,7 +452,7 @@ pub(crate) async fn test_list_access_rights() -> CosmianResult<()> {
     // grant encrypt and decrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
@@ -439,24 +477,25 @@ pub(crate) async fn test_list_access_rights_error() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
     // grant encrypt and decrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
 
-    // the owner should have the object in the list
-    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
-    assert!(owner_list.contains(&key_id));
-
     // The user is not the owner and thus should not have the object in the list
     let user_list = list_owned_objects(&ctx.user_client_conf_path)?;
     assert!(!user_list.contains(&key_id));
+
+    // the owner should have the object in the list
+    let owner_list = list_owned_objects(&ctx.owner_client_conf_path)?;
+    assert!(owner_list.contains(&key_id));
 
     // create a key using the user
     let user_key_id = gen_key(&ctx.user_client_conf_path)?;
@@ -476,6 +515,7 @@ pub(crate) async fn test_list_owned_objects() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
+    log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server_with_cert_auth().await;
     let key_id = gen_key(&ctx.owner_client_conf_path)?;
 
@@ -485,7 +525,7 @@ pub(crate) async fn test_access_right_obtained() -> CosmianResult<()> {
     // grant get access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get"],
     )?;
@@ -560,8 +600,18 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant encrypt and decrypt access to user
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["encrypt"])?;
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["decrypt"])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["encrypt"],
+    )?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["decrypt"],
+    )?;
 
     // switch to user
     // the user should still not be able to export
@@ -591,7 +641,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant encrypt and decrypt access to user
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["get"])?;
+    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &["get"])?;
 
     // switch to user
     // the user should now be able to export
@@ -609,7 +659,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant revoke access to user
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["revoke"])?;
+    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &["revoke"])?;
 
     // switch to user
     // the user should now be able to revoke the key
@@ -617,7 +667,12 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant destroy access to user
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["destroy"])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["destroy"],
+    )?;
 
     // switch to user
     // destroy the key
@@ -636,12 +691,12 @@ pub(crate) async fn test_access_right_obtained_using_wildcard() -> CosmianResult
     assert!(!list.contains(&key_id));
 
     // grant get access to the wildcard user
-    grant_access(&ctx.owner_client_conf_path, &key_id, "*", &["get"])?;
+    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &["get"])?;
 
     // grant encrypt access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["encrypt"],
     )?;
@@ -672,35 +727,158 @@ pub(crate) async fn test_grant_multiple_operations() -> CosmianResult<()> {
     // grant multiple access to user
     grant_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
-        &["get", "revoke", "create", "create"], // double `create` will be dedup
+        &["get", "revoke", "encrypt", "encrypt"], // double `encrypt` will be dedup
     )?;
 
     // the owner can list access rights granted
     let owner_list = list_access(&ctx.owner_client_conf_path, &key_id)?;
-    assert!(owner_list.contains("user.client@acme.com: {create, get, revoke}"));
+    assert!(owner_list.contains("user.client@acme.com: {encrypt, get, revoke}"));
 
     // revoke multiple access to user
     revoke_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get", "revoke", "get"], // double `get` will be dedup
     )?;
 
     let owner_list = list_access(&ctx.owner_client_conf_path, &key_id)?;
-    assert!(owner_list.contains("user.client@acme.com: {create}"));
+    assert!(owner_list.contains("user.client@acme.com: {encrypt}"));
 
     // revoke same, nothing changed
     revoke_access(
         &ctx.owner_client_conf_path,
-        &key_id,
+        Some(&key_id),
         "user.client@acme.com",
         &["get", "revoke", "get"], // double `get` will be dedup
     )?;
     let owner_list = list_access(&ctx.owner_client_conf_path, &key_id)?;
-    assert!(owner_list.contains("user.client@acme.com: {create}"));
+    assert!(owner_list.contains("user.client@acme.com: {encrypt}"));
+
+    Ok(())
+}
+
+#[tokio::test]
+pub(crate) async fn test_grant_with_without_object_uid() -> CosmianResult<()> {
+    let ctx = start_default_test_kms_server_with_cert_auth().await;
+
+    // grant create access to user - without object id
+    let result_grant_create = grant_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.client@acme.com",
+        &["create"],
+    );
+
+    assert!(result_grant_create.is_ok());
+
+    // object_id is required for other operations
+    let result_grant_other = grant_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.client@acme.com",
+        &["create", "get"],
+    );
+
+    assert!(result_grant_other.is_err());
+
+    Ok(())
+}
+
+#[tokio::test]
+pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
+    let ctx = start_default_test_kms_server_with_privileged_users(vec![
+        "tech@cosmian.com".to_owned(),
+        "user.privileged@acme.com".to_owned(),
+    ])
+    .await;
+
+    // by default privileged users can create or import objects
+    let key_id = gen_key(&ctx.owner_client_conf_path);
+    assert!(key_id.is_ok());
+    let binding = key_id.unwrap();
+    let initial_key_id = binding.as_str();
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(initial_key_id),
+        "user.client@acme.com",
+        &["export", "get"],
+    )?;
+    let keypair_id = gen_keypair(&ctx.owner_client_conf_path);
+    assert!(keypair_id.is_ok());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.owner_client_conf_path);
+    assert!(imported_key_id.is_ok());
+
+    // by default non-privileged users can't create or import objects
+    let key_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(key_id_user.is_err());
+    let keypair_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(keypair_id_user.is_err());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_err());
+
+    // privileged user can grant create access
+    let result_grant_create = grant_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.client@acme.com",
+        &["create"],
+    );
+    assert!(result_grant_create.is_ok());
+
+    // then user can create objects
+    let key_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(key_id_user.is_ok());
+    let keypair_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(keypair_id_user.is_ok());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_ok());
+
+    // simple user can't grant create access
+    let result_grant_create = grant_access(
+        &ctx.user_client_conf_path,
+        None,
+        "user2.client@acme.com",
+        &["create"],
+    );
+    assert!(result_grant_create.is_err());
+
+    // privileged user can't grant create access to other privileged user
+    let result_grant_create = grant_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.privileged@acme.com",
+        &["create"],
+    );
+    assert!(result_grant_create.is_err());
+
+    // privileged user can revoke user create access right
+    let result_revoke_create = revoke_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.client@acme.com",
+        &["create"],
+    );
+    assert!(result_revoke_create.is_ok());
+
+    // then user can't create object anymore
+    let key_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(key_id_user.is_err());
+    let keypair_id_user = gen_key(&ctx.user_client_conf_path);
+    assert!(keypair_id_user.is_err());
+    let imported_key_id = export_import_sym_key(initial_key_id, &ctx.user_client_conf_path);
+    assert!(imported_key_id.is_err());
+
+    // privileged user can't revoke create access to other privileged user
+    let result_revoke_create = revoke_access(
+        &ctx.owner_client_conf_path,
+        None,
+        "user.privileged@acme.com",
+        &["create"],
+    );
+    assert!(result_revoke_create.is_err());
 
     Ok(())
 }
