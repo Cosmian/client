@@ -82,13 +82,16 @@ cargo build --target $TARGET $RELEASE
 # shellcheck disable=SC2086
 cargo test --workspace --bins --target $TARGET $RELEASE
 
+export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
+
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   INCLUDE_IGNORED="--include-ignored"
+  ### `cargo test` being to too greedy on release, skip tests of crates except `cosmian_cli` tests`
   # shellcheck disable=SC2086
-  cargo bench --target $TARGET --no-run
+  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES \
+    -p cosmian_cli \
+    -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
+else
+  # shellcheck disable=SC2086
+  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
 fi
-export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
-# shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES \
-  --exclude cosmian_gui \
-  -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
