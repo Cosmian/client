@@ -25,6 +25,8 @@ use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 use uuid::Uuid;
 
+#[cfg(not(feature = "fips"))]
+use crate::tests::kms::certificates::certify::create_self_signed_cert;
 use crate::{
     actions::kms::certificates::Algorithm,
     config::COSMIAN_CLI_CONF_ENV,
@@ -34,9 +36,7 @@ use crate::{
         kms::{
             KMS_SUBCOMMAND,
             certificates::{
-                certify::{
-                    CertifyOp, certify, create_self_signed_cert, import_root_and_intermediate,
-                },
+                certify::{CertifyOp, certify, import_root_and_intermediate},
                 import::{ImportCertificateInput, import_certificate},
             },
             shared::{ExportKeyParams, export_key},
@@ -425,6 +425,7 @@ pub(crate) fn export_certificate(
     ))
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 async fn test_self_signed_export_loop() -> CosmianResult<()> {
     // Create a test server
