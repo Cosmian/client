@@ -8,7 +8,7 @@ members = [
     "crate/pkcs11/module",
     "crate/pkcs11/provider",
     "crate/client_utils",
-    "crate/wasm",
+    "crate/wasm", "crate/sqlserver_ekm",
 ]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.

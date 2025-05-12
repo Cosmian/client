@@ -1,0 +1,23 @@
+[package]
+name = "cosmian_sqlserver_ekm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+license-file.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+name = "cosmian_sqlserver_ekm"
+crate-type = ["cdylib"]
+
+[dependencies]
+winapi = { version = "0.3.9", features = ["wincrypt", "minwindef", ] }
+reqwest = { version = "0.12.15", features = ["blocking"] }
+serde = { version = "1.0.219", features = ["derive"] }
+libc = "1.0.0-alpha.1"
+rand = "0.9.1"
+base64 = "0.22.1"
