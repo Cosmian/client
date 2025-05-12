@@ -1,5 +1,4 @@
 use std::{
-    ffi::{CString, c_void},
     os::raw::{c_char, c_int, c_uchar},
     ptr, slice,
 };
@@ -7,10 +6,9 @@ use std::{
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use winapi::um::wincrypt::{
-    CALG_AES_256, CALG_SHA_256, CRYPT_EXPORTABLE, CRYPT_MACHINE_KEYSET, CRYPT_VERIFYCONTEXT,
-    CryptAcquireContextA, CryptCreateHash, CryptDecrypt, CryptDeriveKey, CryptDestroyHash,
-    CryptDestroyKey, CryptEncrypt, CryptGetHashParam, CryptHashData, CryptReleaseContext,
-    HCRYPTHASH, HCRYPTKEY, HCRYPTPROV, HP_HASHVAL, PROV_RSA_AES,
+    CALG_AES_256, CALG_SHA_256, CRYPT_EXPORTABLE, CRYPT_VERIFYCONTEXT, CryptAcquireContextA,
+    CryptCreateHash, CryptDecrypt, CryptDeriveKey, CryptDestroyHash, CryptDestroyKey, CryptEncrypt,
+    CryptHashData, CryptReleaseContext, HCRYPTHASH, HCRYPTKEY, HCRYPTPROV, PROV_RSA_AES,
 };
 
 #[repr(C)]
@@ -98,10 +96,7 @@ pub extern "C" fn encrypt_key(
         }
     });
 
-    match result {
-        Ok(status) => status,
-        Err(_) => 0, // Panic occurred
-    }
+    result.unwrap_or_else(|_| 0)
 }
 
 #[no_mangle]
@@ -172,10 +167,7 @@ pub extern "C" fn decrypt_key(
         }
     });
 
-    match result {
-        Ok(status) => status,
-        Err(_) => 0, // Panic occurred
-    }
+    result.unwrap_or_else(|_| 0)
 }
 
 fn encrypt_with_mscapi(data: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), String> {
@@ -324,9 +316,9 @@ fn send_to_kms(
 
     let request = KmsRequest {
         key_id: key_id.to_string(),
-        data: base64::encode(data),
-        key: key.map(base64::encode),
-        iv: iv.map(base64::encode),
+        data: base64::Engine::encode(&base64::engine::general_purpose::STANDARD, data),
+        key: key.map(|k| base64::Engine::encode(&base64::engine::general_purpose::STANDARD, k)),
+        iv: iv.map(|i| base64::Engine::encode(&base64::engine::general_purpose::STANDARD, i)),
     };
 
     let kms_url = std::env::var("COSMIAN_KMS_URL")
@@ -355,8 +347,11 @@ fn send_to_kms(
         .json()
         .map_err(|e| format!("Failed to parse response: {}", e))?;
 
-    base64::decode(&response_body.data)
-        .map_err(|e| format!("Failed to decode response data: {}", e))
+    base64::Engine::decode(
+        &base64::engine::general_purpose::STANDARD,
+        &response_body.data,
+    )
+    .map_err(|e| format!("Failed to decode response data: {}", e))
 }
 
 // ```sql
