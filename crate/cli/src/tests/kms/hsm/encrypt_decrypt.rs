@@ -1,28 +1,32 @@
+#[cfg(not(feature = "fips"))]
 use std::{fs, path::PathBuf};
 
+use cosmian_kms_client::reexport::cosmian_kms_client_utils::{
+    create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+};
+#[cfg(not(feature = "fips"))]
 use cosmian_kms_client::{
     read_bytes_from_file,
-    reexport::cosmian_kms_client_utils::{
-        create_utils::SymmetricAlgorithm,
-        rsa_utils::{HashFn, RsaEncryptionAlgorithm},
-        symmetric_utils::DataEncryptionAlgorithm,
-    },
+    reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
 };
 use cosmian_logger::log_init;
+#[cfg(not(feature = "fips"))]
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
+#[cfg(not(feature = "fips"))]
 use tracing::trace;
 use uuid::Uuid;
 
+#[cfg(not(feature = "fips"))]
+use crate::tests::kms::rsa::{
+    create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
+    encrypt_decrypt::{decrypt, encrypt},
+};
 use crate::{
     actions::kms::symmetric::{KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction},
     error::result::CosmianResult,
-    tests::kms::{
-        rsa::{
-            create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
-            encrypt_decrypt::{decrypt, encrypt},
-        },
-        symmetric::{create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test},
+    tests::kms::symmetric::{
+        create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
     },
 };
 
@@ -51,6 +55,7 @@ pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
     )
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     log_init(None);

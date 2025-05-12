@@ -3,20 +3,21 @@ use std::path::Path;
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::{
-    kmip_0::kmip_types::BlockCipherMode,
-    kmip_2_1::kmip_types::KeyFormatType,
-    read_bytes_from_file, read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::export_utils::{ExportKeyFormat, WrappingAlgorithm},
-};
 #[cfg(not(feature = "fips"))]
 use cosmian_kms_client::{
+    kmip_0::kmip_types::BlockCipherMode,
     kmip_2_1::{
         kmip_data_structures::KeyMaterial,
         kmip_types::{CryptographicAlgorithm, RecommendedCurve},
     },
     pad_be_bytes,
 };
+use cosmian_kms_client::{
+    kmip_2_1::kmip_types::KeyFormatType,
+    read_bytes_from_file, read_object_from_json_ttlv_file,
+    reexport::cosmian_kms_client_utils::export_utils::{ExportKeyFormat, WrappingAlgorithm},
+};
+#[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use openssl::pkey::{Id, PKey};
@@ -32,19 +33,20 @@ use crate::tests::kms::cover_crypt::{
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
-    error::{
-        CosmianError,
-        result::{CosmianResult, CosmianResultHelper},
-    },
+    error::{CosmianError, result::CosmianResult},
     tests::{
         PROG_NAME,
         kms::{
-            KMS_SUBCOMMAND,
-            elliptic_curve::create_key_pair::create_ec_key_pair,
-            rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
-            symmetric::create_key::create_symmetric_key,
-            utils::recover_cmd_logs,
+            KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs,
         },
+    },
+};
+#[cfg(not(feature = "fips"))]
+use crate::{
+    error::result::CosmianResultHelper,
+    tests::kms::{
+        elliptic_curve::create_key_pair::create_ec_key_pair,
+        rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
     },
 };
 
@@ -199,6 +201,7 @@ pub(crate) async fn test_export_sym_allow_revoked() -> CosmianResult<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
@@ -622,6 +625,7 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     // create a temp dir
@@ -661,6 +665,7 @@ pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     // create a temp dir
