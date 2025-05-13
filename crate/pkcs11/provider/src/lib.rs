@@ -43,7 +43,8 @@
     clippy::similar_names,
     clippy::cargo_common_metadata,
     clippy::multiple_crate_versions,
-    clippy::redundant_pub_crate
+    clippy::redundant_pub_crate,
+    non_snake_case
 )]
 
 use std::{ptr::addr_of_mut, str::FromStr};
@@ -68,7 +69,7 @@ mod pkcs11_symmetric_key;
 /// This function is the first one called by the PKCS#11 library client
 /// to get the PKCS#11 functions list.
 /// # Panics
-/// When KMS client cannot be instantiated.
+/// When the KMS client cannot be instantiated.
 #[unsafe(no_mangle)]
 #[expect(clippy::expect_used, unsafe_code)]
 pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PTR_PTR) -> CK_RV {

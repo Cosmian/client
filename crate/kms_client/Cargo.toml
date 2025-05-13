@@ -17,7 +17,7 @@ doctest = false
 fips = ["cosmian_kms_client_utils/fips"]
 
 [dependencies]
-cosmian_crypto_core = { workspace = true }
+cosmian_crypto_core = { workspace = true, features = ["ser"] }
 cosmian_http_client = { workspace = true }
 cosmian_kms_client_utils = { workspace = true }
 der = { workspace = true }

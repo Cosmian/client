@@ -101,6 +101,7 @@ cosmian_kms_server_database = "5.0"
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
 leb128 = "0.2"
+libc = { version = "0.2", default-features = false }
 log = { version = "0.4", default-features = false }
 num-format = "0.4"
 pem = "3.0"

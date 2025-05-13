@@ -5,7 +5,6 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
-license-file.workspace = true
 repository.workspace = true
 keywords.workspace = true
 categories.workspace = true
@@ -15,9 +14,17 @@ name = "cosmian_sqlserver_ekm"
 crate-type = ["cdylib"]
 
 [dependencies]
-winapi = { version = "0.3.9", features = ["wincrypt", "minwindef", ] }
-reqwest = { workspace = true, features = ["blocking"] }
-serde = { workspace = true, features = ["derive"] }
+base64 = { workspace = true }
+cosmian_config_utils = { workspace = true }
+cosmian_kmip = { workspace = true }
+cosmian_kms_client = { workspace = true }
+etcetera = "0.10.0"
 libc = { workspace = true }
 rand = { workspace = true }
-base64 = { workspace = true }
+reqwest = { workspace = true, features = ["blocking"] }
+serde = { workspace = true, features = ["derive"] }
+snafu = { workspace = true }
+tracing = { workspace = true }
+tracing-error = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+winapi = { version = "0.3.9", features = ["wincrypt", "minwindef", ] }

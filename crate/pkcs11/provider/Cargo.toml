@@ -26,9 +26,9 @@ cosmian_pkcs11_module = { workspace = true }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
-  "arithmetic",
-  "pkcs8",
-  "std",
+    "arithmetic",
+    "pkcs8",
+    "std",
 ] }
 pkcs1 = "0.7.5"
 cosmian_pkcs11_sys = { workspace = true }
@@ -37,7 +37,7 @@ sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread"] }
 tracing = { workspace = true }
-tracing-error = "0.2.1"
+tracing-error = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 x509-cert = { version = "0.2", default-features = false }
 zeroize = { workspace = true }
