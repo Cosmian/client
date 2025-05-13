@@ -31,7 +31,7 @@ use crate::{
 pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server_with_cert_auth().await;
-    let owner_rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
+    let owner_rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
 
     let search_options = SearchOptions {
         dataset_path: SMALL_DATASET.into(),
@@ -46,8 +46,8 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
     let index_id = create_index_id(owner_rest_client).await?;
     trace!("index_id: {index_id}");
 
-    let owner_rest_client = RestClient::new(&ctx.owner_client_conf)?;
-    let user_rest_client = RestClient::new(&ctx.user_client_conf)?;
+    let owner_rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
+    let user_rest_client = RestClient::new(ctx.user_client_conf.clone())?;
     let ctx_kms = start_default_test_kms_server().await;
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
 

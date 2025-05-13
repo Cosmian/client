@@ -119,13 +119,13 @@ pub async fn cosmian_main() -> CosmianResult<()> {
 
     match &cli.command {
         CliCommands::Markdown(action) => {
-            let command = <Cli as CommandFactory>::command();
-            action.process(&command)?;
+            action.process(&<Cli as CommandFactory>::command())?;
             return Ok(());
         }
         CliCommands::Kms(kms_actions) => {
-            let new_config = Box::pin(kms_actions.process(kms_rest_client)).await?;
-            if config.kms_config != new_config {
+            let new_kms_config = Box::pin(kms_actions.process(kms_rest_client)).await?;
+            if config.kms_config != new_kms_config {
+                config.kms_config = new_kms_config;
                 config.save(cli.conf_path.clone())?;
             }
         }
@@ -133,15 +133,11 @@ pub async fn cosmian_main() -> CosmianResult<()> {
             let findex_config = config
                 .findex_config
                 .as_ref()
-                .ok_or_else(|| {
-                    cli_error!("Findex server configuration is missing in the configuration file")
-                })?
-                .clone();
-            let findex_rest_client = RestClient::new(&findex_config)?;
-            let new_findex_config = findex_actions
-                .run(findex_rest_client, kms_rest_client, findex_config)
-                .await?;
-            if config.findex_config != Some(new_findex_config) {
+                .ok_or_else(|| cli_error!("Missing Findex server configuration"))?;
+            let findex_client = RestClient::new(findex_config.clone())?;
+            let new_findex_config = findex_actions.run(findex_client, kms_rest_client).await?;
+            if config.findex_config.as_ref() != Some(&new_findex_config) {
+                config.findex_config = Some(new_findex_config);
                 config.save(cli.conf_path.clone())?;
             }
         }

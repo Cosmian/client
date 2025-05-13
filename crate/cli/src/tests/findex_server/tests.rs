@@ -56,7 +56,7 @@ impl TestsCliContext {
         expected_len: usize,
     ) -> CosmianResult<Self> {
         let kms = KmsClient::new_with_config(client_config.kms_config)?;
-        let findex = RestClient::new(&client_config.findex_config.unwrap())?;
+        let findex = RestClient::new(client_config.findex_config.unwrap())?;
         let kek_id = Some(CreateKeyAction::default().run(kms.clone()).await?);
         let index_id = CreateIndex.run(findex.clone()).await?;
         trace!("index_id: {index_id}");

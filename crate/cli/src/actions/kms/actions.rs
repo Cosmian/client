@@ -7,9 +7,9 @@ use crate::{
     actions::kms::{
         access::AccessAction, attributes::AttributesCommands, bench::BenchAction,
         certificates::CertificatesCommands, elliptic_curves::EllipticCurveCommands,
-        google::GoogleCommands, hash::HashAction, login::LoginAction, logout::LogoutAction,
-        mac::MacAction, rsa::RsaCommands, shared::LocateObjectsAction,
-        symmetric::SymmetricCommands, version::ServerVersionAction,
+        google::GoogleCommands, hash::HashAction, login::LoginAction, mac::MacAction,
+        rsa::RsaCommands, shared::LocateObjectsAction, symmetric::SymmetricCommands,
+        version::ServerVersionAction,
     },
     error::result::CosmianResult,
 };
@@ -33,7 +33,10 @@ pub enum KmsActions {
     Google(GoogleCommands),
     Locate(LocateObjectsAction),
     Login(LoginAction),
-    Logout(LogoutAction),
+    /// Logout from the Identity Provider.
+    ///
+    /// The access token will be removed from the cosmian configuration file.
+    Logout,
     Hash(HashAction),
     Mac(MacAction),
     #[command(subcommand)]
@@ -65,7 +68,7 @@ impl KmsActions {
                 let access_token = action.process(kms_rest_client.config).await?;
                 new_config.http_config.access_token = Some(access_token);
             }
-            Self::Logout(_action) => {
+            Self::Logout => {
                 new_config.http_config.access_token = None;
             }
             Self::Hash(action) => action.process(kms_rest_client).await?,

@@ -58,7 +58,7 @@ async fn dataset_get_entries(
 pub(crate) async fn test_datasets() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
-    let owner_rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
+    let owner_rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
 
     let index_id = Uuid::new_v4();
 

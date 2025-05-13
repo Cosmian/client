@@ -155,7 +155,7 @@ pub(crate) async fn test_findex_huge_dataset_local_crypto() -> CosmianResult<()>
 pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server_with_cert_auth().await;
-    let owner_rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
+    let owner_rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
     let ctx_kms = start_default_test_kms_server().await;
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
 
@@ -196,7 +196,7 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
 
-    let rest_client = RestClient::new(&ctx.owner_client_conf.clone())?;
+    let rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
     let ctx_kms = start_default_test_kms_server().await;
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
 

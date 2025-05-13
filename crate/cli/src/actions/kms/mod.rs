@@ -11,7 +11,6 @@ pub mod google;
 pub mod hash;
 pub(crate) mod labels;
 pub mod login;
-pub mod logout;
 pub mod mac;
 pub mod rsa;
 pub mod shared;
