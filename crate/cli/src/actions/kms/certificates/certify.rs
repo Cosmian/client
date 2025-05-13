@@ -175,7 +175,7 @@ pub struct CertifyAction {
 }
 
 impl CertifyAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let certificate_signing_request_bytes = self
             .certificate_signing_request
             .as_ref()
@@ -204,7 +204,7 @@ impl CertifyAction {
             &self.tags,
         )?;
 
-        let certificate_unique_identifier = client_connector
+        let certificate_unique_identifier = kms_rest_client
             .certify(certify_request)
             .await
             .map_err(|e| CosmianError::ServerError(format!("failed creating certificate: {e:?}")))?

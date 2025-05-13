@@ -57,7 +57,7 @@ impl TestsCliContext {
     ) -> CosmianResult<Self> {
         let kms = KmsClient::new_with_config(client_config.kms_config)?;
         let findex = RestClient::new(&client_config.findex_config.unwrap())?;
-        let kek_id = Some(CreateKeyAction::default().run(&kms).await?);
+        let kek_id = Some(CreateKeyAction::default().run(kms.clone()).await?);
         let index_id = CreateIndex.run(findex.clone()).await?;
         trace!("index_id: {index_id}");
 
@@ -77,7 +77,7 @@ impl TestsCliContext {
 
     async fn run_test_sequence(&self) -> CosmianResult<()> {
         let findex_parameters =
-            FindexParameters::new(self.index_id, &self.kms, true, Some(1)).await?;
+            FindexParameters::new(self.index_id, self.kms.clone(), true, Some(1)).await?;
 
         // Index
         info!("==> Indexing dataset");
@@ -114,7 +114,7 @@ impl TestsCliContext {
             nonce: None,
             authentication_data: None,
         };
-        let uuids = action.run(self.findex.clone(), &self.kms).await?;
+        let uuids = action.run(self.findex.clone(), self.kms.clone()).await?;
         assert_eq!(uuids.len(), self.search_options.expected_inserted_len);
         Ok(uuids)
     }

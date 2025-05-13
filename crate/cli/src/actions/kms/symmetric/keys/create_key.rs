@@ -84,7 +84,7 @@ impl CreateKeyAction {
     ///
     /// # Errors
     /// Fail in input key parsing fails
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<UniqueIdentifier> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<UniqueIdentifier> {
         let (number_of_bits, key_bytes, algorithm) =
             prepare_sym_key_elements(self.number_of_bits, &self.wrap_key_b64, self.algorithm)
                 .with_context(|| "failed preparing key elements")?;

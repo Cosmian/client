@@ -27,7 +27,7 @@ impl RsaCommands {
     /// # Errors
     ///
     /// Returns an error if there is an issue executing the command.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::Keys(command) => command.process(kms_rest_client).await?,
             Self::Encrypt(action) => action.run(kms_rest_client).await?,

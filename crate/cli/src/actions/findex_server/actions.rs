@@ -46,7 +46,7 @@ impl FindexActions {
     ///
     /// # Errors
     /// Returns an error if the action fails
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub async fn run(
         &self,
         findex_client: RestClient,
@@ -80,7 +80,7 @@ impl FindexActions {
                 Ok(findex_config)
             }
             Self::EncryptAndIndex(action) => {
-                println!("{}", action.run(findex_client, &kms_client).await?);
+                println!("{}", action.run(findex_client, kms_client).await?);
                 Ok(findex_config)
             }
             Self::SearchAndDecrypt(action) => {

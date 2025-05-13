@@ -40,7 +40,7 @@ pub(crate) async fn test_findex_no_auth() -> CosmianResult<()> {
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         true,
         findex_number_of_threads(),
     )
@@ -74,7 +74,7 @@ pub(crate) async fn test_findex_local_encryption() -> CosmianResult<()> {
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         false,
         findex_number_of_threads(),
     )
@@ -107,7 +107,7 @@ async fn run_huge_dataset_test(use_remote_crypto: bool) -> CosmianResult<()> {
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         use_remote_crypto,
         findex_number_of_threads(),
     )
@@ -172,8 +172,13 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
     let index_id = create_index_id(owner_rest_client).await?;
     trace!("index_id: {index_id}");
 
-    let findex_parameters =
-        FindexParameters::new(index_id, &kms_client, true, findex_number_of_threads()).await?;
+    let findex_parameters = FindexParameters::new(
+        index_id,
+        kms_client.clone(),
+        true,
+        findex_number_of_threads(),
+    )
+    .await?;
 
     insert_search_delete(
         &findex_parameters,
@@ -210,7 +215,7 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     };
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         true,
         findex_number_of_threads(),
     )
@@ -229,7 +234,7 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     let search_results = SearchAction {
         findex_parameters: FindexParameters::new(
             Uuid::new_v4(),
-            &kms_client,
+            kms_client.clone(),
             true,
             findex_number_of_threads(),
         )

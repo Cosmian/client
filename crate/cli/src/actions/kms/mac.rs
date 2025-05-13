@@ -10,7 +10,6 @@ use cosmian_kms_client::{
 use crate::{actions::console, error::result::CosmianResult};
 
 #[derive(ValueEnum, Debug, Clone, PartialEq, Eq)]
-#[allow(non_camel_case_types)]
 pub enum CHashingAlgorithm {
     SHA256,
     SHA384,
@@ -101,7 +100,7 @@ impl MacAction {
     /// # Errors
     ///
     /// Returns an error if there was a problem running the action.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let unique_identifier = Some(UniqueIdentifier::TextString(self.mac_key_id.clone()));
 
         let cryptographic_parameters = CryptographicParameters {

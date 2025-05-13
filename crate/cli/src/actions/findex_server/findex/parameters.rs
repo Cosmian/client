@@ -56,15 +56,15 @@ impl FindexParameters {
     ///
     /// # Errors
     /// - if the keys cannot be generate via the KMS client
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub async fn new(
         index_id: Uuid,
-        kms_client: &KmsClient,
+        kms_client: KmsClient,
         server_side_encryption: bool,
         num_threads: Option<usize>,
     ) -> CosmianResult<Self> {
         async fn generate_key(
-            kms_client: &KmsClient,
+            kms_client: KmsClient,
             bits: u32,
             algorithm: SymmetricAlgorithm,
             key_type: &str,
@@ -88,8 +88,13 @@ impl FindexParameters {
             Ok(Self {
                 seed_key_id: None,
                 hmac_key_id: Some(
-                    generate_key(kms_client, HMAC_KEY_SIZE, SymmetricAlgorithm::Sha3, "HMAC")
-                        .await?,
+                    generate_key(
+                        kms_client.clone(),
+                        HMAC_KEY_SIZE,
+                        SymmetricAlgorithm::Sha3,
+                        "HMAC",
+                    )
+                    .await?,
                 ),
                 aes_xts_key_id: Some(
                     generate_key(

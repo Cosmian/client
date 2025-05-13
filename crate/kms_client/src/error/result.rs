@@ -4,7 +4,7 @@ use super::KmsClientError;
 
 pub type KmsClientResult<R> = Result<R, KmsClientError>;
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub(crate) trait KmsClientResultHelper<T> {
     fn context(self, context: &str) -> KmsClientResult<T>;
     fn with_context<D, O>(self, op: O) -> KmsClientResult<T>

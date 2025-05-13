@@ -26,10 +26,10 @@ pub struct ValidateCertificatesAction {
 }
 
 impl ValidateCertificatesAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let request =
             build_validate_certificate_request(&self.certificate_id, self.validity_time.clone())?;
-        let validity_indicator = client_connector.validate(request).await?.validity_indicator;
+        let validity_indicator = kms_rest_client.validate(request).await?.validity_indicator;
         console::Stdout::new(match validity_indicator {
             ValidityIndicator::Valid => "Valid",
             ValidityIndicator::Invalid => "Invalid",

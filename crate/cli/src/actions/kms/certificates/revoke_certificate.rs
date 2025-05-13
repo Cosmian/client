@@ -36,12 +36,12 @@ pub struct RevokeCertificateAction {
 }
 
 impl RevokeCertificateAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(
             self.certificate_id.as_ref(),
             self.tags.as_ref(),
             CERTIFICATE_ID,
         )?;
-        revoke(client_connector, &id, &self.revocation_reason).await
+        revoke(kms_rest_client, &id, &self.revocation_reason).await
     }
 }

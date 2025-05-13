@@ -6,7 +6,7 @@ use super::IDENTITIES_ENDPOINT;
 use crate::{actions::kms::google::gmail_client::GmailClient, error::result::CosmianResult};
 
 #[derive(Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[expect(non_snake_case)]
 struct IdentityInfo {
     primaryKeyPairId: String,
     emailAddress: String,
@@ -30,7 +30,7 @@ pub struct InsertIdentitiesAction {
 }
 
 impl InsertIdentitiesAction {
-    pub async fn run(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn run(&self, config: KmsClientConfig) -> CosmianResult<()> {
         let gmail_client = GmailClient::new(config, &self.user_id);
 
         // Construct identity_info

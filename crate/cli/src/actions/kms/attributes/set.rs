@@ -348,7 +348,7 @@ impl SetAttributesAction {
     ///
     /// - Either `--id` or one or more `--tag` must be specified.
     ///
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         trace!("SetAttributeAction: {:?}", self);
         let id = get_key_uid(
             self.requested_attributes.id.as_ref(),
@@ -362,7 +362,7 @@ impl SetAttributesAction {
         }
 
         for attribute in attributes_to_set {
-            self.set_attribute(kms_rest_client, &id, attribute).await?;
+            self.set_attribute(&kms_rest_client, &id, attribute).await?;
         }
 
         Ok(())

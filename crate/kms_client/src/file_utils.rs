@@ -184,7 +184,7 @@ pub fn read_bytes_from_files_to_bulk(input_files: &[PathBuf]) -> Result<Vec<u8>,
 /// Each chunk of plaintext data is written to its own file.
 /// # Errors
 /// If decryption fails
-#[allow(clippy::indexing_slicing)]
+#[expect(clippy::indexing_slicing)]
 pub fn write_bulk_decrypted_data(
     plaintext: &[u8],
     input_files: &[PathBuf],
@@ -244,7 +244,7 @@ pub fn write_bulk_decrypted_data(
 /// If encryption fails
 /// # Errors
 /// If encryption fails
-#[allow(clippy::indexing_slicing)]
+#[expect(clippy::indexing_slicing)]
 pub fn write_bulk_encrypted_data(
     plaintext: &[u8],
     input_files: &[PathBuf],

@@ -103,7 +103,6 @@ impl From<CLinkType> for LinkType {
     }
 }
 
-#[allow(dead_code)]
 fn add_if_not_empty(tag: Tag, new_value: &str, results: &mut HashMap<String, Value>) {
     if !new_value.is_empty() {
         results.insert(

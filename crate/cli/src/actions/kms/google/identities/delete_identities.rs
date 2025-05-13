@@ -17,7 +17,7 @@ pub struct DeleteIdentitiesAction {
 }
 
 impl DeleteIdentitiesAction {
-    pub async fn run(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn run(&self, config: KmsClientConfig) -> CosmianResult<()> {
         let gmail_client = GmailClient::new(config, &self.user_id);
         let endpoint = [IDENTITIES_ENDPOINT, &self.user_id].concat();
         let response = gmail_client.await?.delete(&endpoint).await?;

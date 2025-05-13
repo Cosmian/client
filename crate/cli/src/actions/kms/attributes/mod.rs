@@ -33,11 +33,11 @@ impl AttributesCommands {
     /// # Errors
     ///
     /// Returns an error if the version query fails or if there is an issue writing to the console.
-    pub async fn process(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
-            Self::Get(action) => action.process(client_connector).await,
-            Self::Set(action) => action.process(client_connector).await,
-            Self::Delete(action) => action.process(client_connector).await,
+            Self::Get(action) => action.process(kms_rest_client).await,
+            Self::Set(action) => action.process(kms_rest_client).await,
+            Self::Delete(action) => action.process(kms_rest_client).await,
         }
     }
 }

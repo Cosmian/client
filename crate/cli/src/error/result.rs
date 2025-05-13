@@ -43,7 +43,7 @@ where
 
 impl<T> CosmianResultHelper<T> for Option<T> {
     fn context(self, context: &str) -> CosmianResult<T> {
-        self.ok_or_else(|| CosmianError::Default(context.to_string()))
+        self.ok_or_else(|| CosmianError::Default(context.to_owned()))
     }
 
     fn with_context<D, O>(self, op: O) -> CosmianResult<T>

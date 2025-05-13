@@ -21,7 +21,7 @@ impl LogoutAction {
     ///
     /// Returns an error if there is an issue loading or saving the configuration file.
     ///
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub fn process(&self, config: &mut KmsClientConfig) -> CosmianResult<()> {
         config.http_config.access_token = None;
         println!("\nThe access token was removed from the KMS configuration file",);

@@ -81,7 +81,7 @@ impl GetAttributesAction {
     /// - There is an error serializing the attributes to JSON.
     /// - There is an error writing the attributes to the output file.
     /// - There is an error writing to the console.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         trace!("GetAttributesAction: {:?}", self);
         let id = get_key_uid(self.id.as_ref(), self.tags.as_ref(), ATTRIBUTE_ID)?;
 

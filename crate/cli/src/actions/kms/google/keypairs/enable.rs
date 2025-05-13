@@ -19,7 +19,7 @@ pub struct EnableKeyPairsAction {
 }
 
 impl EnableKeyPairsAction {
-    pub async fn run(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn run(&self, config: KmsClientConfig) -> CosmianResult<()> {
         let endpoint = [KEY_PAIRS_ENDPOINT, &self.key_pairs_id, ":enable"].concat();
         let gmail_client = GmailClient::new(config, &self.user_id);
         let response = gmail_client.await?.post(&endpoint, String::new()).await?;

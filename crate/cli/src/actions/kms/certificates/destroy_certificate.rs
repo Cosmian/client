@@ -42,12 +42,12 @@ pub struct DestroyCertificateAction {
 }
 
 impl DestroyCertificateAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(
             self.certificate_id.as_ref(),
             self.tags.as_ref(),
             CERTIFICATE_ID,
         )?;
-        destroy(client_connector, &id, self.remove).await
+        destroy(kms_rest_client, &id, self.remove).await
     }
 }

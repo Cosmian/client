@@ -22,7 +22,7 @@ pub struct ObliterateKeyPairsAction {
 }
 
 impl ObliterateKeyPairsAction {
-    pub async fn run(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn run(&self, config: KmsClientConfig) -> CosmianResult<()> {
         let endpoint: String = [KEY_PAIRS_ENDPOINT, &self.key_pairs_id, ":obliterate"].concat();
         let gmail_client = GmailClient::new(config, &self.user_id);
         let response = gmail_client.await?.post(&endpoint, String::new()).await?;

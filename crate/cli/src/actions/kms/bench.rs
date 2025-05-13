@@ -77,8 +77,8 @@ impl BenchAction {
     /// Run the tests
     /// # Errors
     /// Returns an error if the server is not reachable or if the keys can't be created.
-    #[allow(clippy::print_stdout)]
-    pub async fn process(&self, kms_rest_client: Arc<KmsClient>) -> CosmianResult<()> {
+    #[expect(clippy::print_stdout)]
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let version = kms_rest_client
             .version()
             .await
@@ -93,7 +93,7 @@ impl BenchAction {
         } else {
             println!("Algorithm: AES GCM using a 256 bit key");
         }
-        let (key_id, wrapping_key) = self.create_keys(&kms_rest_client).await?;
+        let (key_id, wrapping_key) = self.create_keys(kms_rest_client.clone()).await?;
 
         // u128 formatter
         let format = CustomFormat::builder()
@@ -104,9 +104,9 @@ impl BenchAction {
 
         // the data to encrypt
         let data = if self.batch_size == 1 {
-            Zeroizing::new(vec![1u8; 64])
+            Zeroizing::new(vec![1_u8; 64])
         } else {
-            BulkData::new(vec![Zeroizing::new(vec![1u8; 64]); self.batch_size]).serialize()?
+            BulkData::new(vec![Zeroizing::new(vec![1_u8; 64]); self.batch_size]).serialize()?
         };
 
         // Encryption
@@ -114,18 +114,19 @@ impl BenchAction {
             let mut stdout = io::stdout().lock();
             write!(stdout, "Encrypting")?;
             stdout.flush()?;
-        }
+        };
         let amortized_encryption_time = std::time::Instant::now();
         let counter = Arc::new(AtomicUsize::new(0));
+        let kms_client = Arc::new(kms_rest_client.clone());
         let mut handles = Vec::new();
         for _ in 0..self.num_threads {
-            let kms_rest_client = kms_rest_client.clone();
             let key_id = key_id.clone();
             let data = data.clone();
             let counter = counter.clone();
             let num_batches = self.num_batches;
+            let kms_client = kms_client.clone();
             let handle = tokio::spawn(async move {
-                encrypt(kms_rest_client, key_id, data, counter, num_batches).await
+                encrypt(&kms_client, key_id, data, counter, num_batches).await
             });
             handles.push(handle);
         }
@@ -145,27 +146,29 @@ impl BenchAction {
             let mut stdout = io::stdout().lock();
             writeln!(
                 stdout,
-                ": {}µs",
+                ": {}\u{b5}s",
                 total_encryption_time_amortized.to_formatted_string(&format)
             )?;
-        }
+        };
 
         // Decryption
         {
             let mut stdout = io::stdout().lock();
             write!(stdout, "Decrypting")?;
             stdout.flush()?;
-        }
+        };
         let amortized_decryption_time = std::time::Instant::now();
         let ciphertexts_to_process = Arc::new(Mutex::new(encryption_results));
         let mut handles = Vec::new();
+        let kms_client = Arc::new(kms_rest_client.clone());
         for _ in 0..self.num_threads {
-            let kms_rest_client = kms_rest_client.clone();
             let key_id = key_id.clone();
             let ciphertexts_to_process = ciphertexts_to_process.clone();
-            let handle = tokio::spawn(async move {
-                decrypt(kms_rest_client, key_id, ciphertexts_to_process).await
-            });
+            let kms_client = kms_client.clone();
+            let handle =
+                tokio::spawn(
+                    async move { decrypt(&kms_client, key_id, ciphertexts_to_process).await },
+                );
             handles.push(handle);
         }
 
@@ -184,13 +187,13 @@ impl BenchAction {
             let mut stdout = io::stdout().lock();
             writeln!(
                 stdout,
-                ": {}µs",
+                ": {}\u{b5}s",
                 total_decryption_time_amortized.to_formatted_string(&format)
             )?;
             stdout.flush()?;
-        }
+        };
         // revoke the keys
-        self.revoke_keys(&kms_rest_client, key_id, wrapping_key)
+        self.revoke_keys(kms_rest_client, key_id, wrapping_key)
             .await?;
 
         // Parse results
@@ -203,7 +206,8 @@ impl BenchAction {
                 total_decryption_time += result.decryption_time;
                 if self.verbose {
                     println!(
-                        "{}: encryption: {}µs ({}µs/v), decryption: {}µs ({}µs/v)",
+                        "{}: encryption: {}\u{b5}s ({}\u{b5}s/v), decryption: {}\u{b5}s \
+                         ({}\u{b5}s/v)",
                         result.batch_id,
                         result.encryption_time.to_formatted_string(&format),
                         result.encryption_time / (self.batch_size as u128),
@@ -215,19 +219,20 @@ impl BenchAction {
         }
 
         println!(
-            "Encryption time {}µs => {}µs/batch => {}µs/value",
+            "Encryption time {}\u{b5}s => {}\u{b5}s/batch => {}\u{b5}s/value",
             total_encryption_time.to_formatted_string(&format),
             (total_encryption_time / (self.num_batches as u128)).to_formatted_string(&format),
             total_encryption_time / (self.num_batches * self.batch_size) as u128
         );
         println!(
-            "Decryption time {}µs => {}µs/batch => {}µs/value",
+            "Decryption time {}\u{b5}s => {}\u{b5}s/batch => {}\u{b5}s/value",
             total_decryption_time.to_formatted_string(&format),
             (total_decryption_time / self.num_batches as u128).to_formatted_string(&format),
             total_decryption_time / (self.num_batches * self.batch_size) as u128
         );
         println!(
-            "Amortized encryption time ({} threads): {}µs => {}µs/batch => {}µs/value",
+            "Amortized encryption time ({} threads): {}\u{b5}s => {}\u{b5}s/batch => \
+             {}\u{b5}s/value",
             self.num_threads,
             total_encryption_time_amortized.to_formatted_string(&format),
             (total_encryption_time_amortized / (self.num_batches as u128))
@@ -235,7 +240,8 @@ impl BenchAction {
             total_encryption_time_amortized / (self.num_batches * self.batch_size) as u128
         );
         println!(
-            "Amortized decryption time ({} threads): {}µs => {}µs/batch => {}µs/value",
+            "Amortized decryption time ({} threads): {}\u{b5}s => {}\u{b5}s/batch => \
+             {}\u{b5}s/value",
             self.num_threads,
             total_decryption_time_amortized.to_formatted_string(&format),
             (total_decryption_time_amortized / (self.num_batches as u128))
@@ -248,7 +254,7 @@ impl BenchAction {
 
     async fn create_keys(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
     ) -> CosmianResult<(
         UniqueIdentifier,
         Option<(UniqueIdentifier, UniqueIdentifier)>,
@@ -259,7 +265,7 @@ impl BenchAction {
                 tags: vec!["bench".to_owned()],
                 ..Default::default()
             }
-            .run(kms_rest_client)
+            .run(kms_rest_client.clone())
             .await?;
             let kk = CreateKeyAction {
                 number_of_bits: Some(256),
@@ -283,7 +289,7 @@ impl BenchAction {
 
     async fn revoke_keys(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         symmetric_key: UniqueIdentifier,
         wrapping_key: Option<(UniqueIdentifier, UniqueIdentifier)>,
     ) -> CosmianResult<()> {
@@ -292,7 +298,7 @@ impl BenchAction {
             key_id: Some(symmetric_key.to_string()),
             tags: None,
         }
-        .run(kms_rest_client)
+        .run(kms_rest_client.clone())
         .await?;
         if let Some((sk, _pk)) = wrapping_key {
             // revoking the private key will revoke the public key
@@ -309,7 +315,7 @@ impl BenchAction {
 }
 
 async fn encrypt(
-    kms_rest_client: Arc<KmsClient>,
+    kms_rest_client: &KmsClient,
     key_id: UniqueIdentifier,
     data: Zeroizing<Vec<u8>>,
     counter: Arc<AtomicUsize>,
@@ -325,7 +331,7 @@ async fn encrypt(
             let mut stdout = io::stdout().lock();
             write!(stdout, ".",)?;
             stdout.flush()?;
-        }
+        };
         let encrypt = Encrypt {
             unique_identifier: Some(key_id.clone()),
             cryptographic_parameters: Some(CryptographicParameters {
@@ -360,7 +366,7 @@ async fn encrypt(
 }
 
 async fn decrypt(
-    kms_rest_client: Arc<KmsClient>,
+    kms_rest_client: &KmsClient,
     key_id: UniqueIdentifier,
     encryptions: Arc<Mutex<Vec<EncryptionResult>>>,
 ) -> CosmianResult<Vec<FinalResult>> {
@@ -375,7 +381,7 @@ async fn decrypt(
             let mut stdout = io::stdout().lock();
             write!(stdout, ".",)?;
             stdout.flush()?;
-        }
+        };
         let (iv, data, tag) = match BulkData::deserialize(next.ciphertext.as_ref()) {
             Ok(_data) => (None, Some(next.ciphertext.as_slice()), None),
             Err(_e) => {

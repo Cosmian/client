@@ -51,8 +51,13 @@ pub(crate) async fn test_findex_set_and_revoke_permission() -> CosmianResult<()>
     let ctx_kms = start_default_test_kms_server().await;
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
 
-    let findex_parameters =
-        FindexParameters::new(index_id, &kms_client, true, findex_number_of_threads()).await?;
+    let findex_parameters = FindexParameters::new(
+        index_id,
+        kms_client.clone(),
+        true,
+        findex_number_of_threads(),
+    )
+    .await?;
 
     // Index the dataset as admin
     InsertOrDeleteAction {
@@ -162,7 +167,7 @@ pub(crate) async fn test_findex_no_permission() -> CosmianResult<()> {
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         true,
         findex_number_of_threads(),
     )

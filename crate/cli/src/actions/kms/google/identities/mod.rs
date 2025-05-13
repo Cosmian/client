@@ -27,7 +27,7 @@ pub enum IdentitiesCommands {
 }
 
 impl IdentitiesCommands {
-    pub async fn process(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn process(&self, config: KmsClientConfig) -> CosmianResult<()> {
         match self {
             Self::Get(action) => action.run(config).await,
             Self::List(action) => action.run(config).await,
