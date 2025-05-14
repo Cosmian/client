@@ -44,16 +44,16 @@ impl CertificatesCommands {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn process(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
-            Self::Certify(action) => action.run(client_connector).await,
-            Self::Decrypt(action) => action.run(client_connector).await,
-            Self::Encrypt(action) => action.run(client_connector).await,
-            Self::Export(action) => action.run(client_connector).await,
-            Self::Import(action) => action.run(client_connector).await,
-            Self::Revoke(action) => action.run(client_connector).await,
-            Self::Destroy(action) => action.run(client_connector).await,
-            Self::Validate(action) => action.run(client_connector).await,
+            Self::Certify(action) => action.run(kms_rest_client).await,
+            Self::Decrypt(action) => action.run(kms_rest_client).await,
+            Self::Encrypt(action) => action.run(kms_rest_client).await,
+            Self::Export(action) => action.run(kms_rest_client).await,
+            Self::Import(action) => Box::pin(action.run(kms_rest_client)).await,
+            Self::Revoke(action) => action.run(kms_rest_client).await,
+            Self::Destroy(action) => action.run(kms_rest_client).await,
+            Self::Validate(action) => action.run(kms_rest_client).await,
         }
     }
 }

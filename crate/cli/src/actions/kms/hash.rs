@@ -50,7 +50,7 @@ impl HashAction {
     /// # Errors
     ///
     /// Returns an error if there was a problem running the action.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let cryptographic_parameters = CryptographicParameters {
             hashing_algorithm: Some(self.hashing_algorithm.clone().into()),
             ..Default::default()

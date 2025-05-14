@@ -53,7 +53,7 @@ pub struct EncryptCertificateAction {
 }
 
 impl EncryptCertificateAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Read the file to encrypt
         let data = Zeroizing::from(read_bytes_from_file(&self.input_file)?);
 
@@ -85,7 +85,7 @@ impl EncryptCertificateAction {
         };
 
         // Query the KMS for encryption
-        let encrypt_response = client_connector
+        let encrypt_response = kms_rest_client
             .encrypt(encrypt_request)
             .await
             .with_context(|| "Can't execute the query on the kms server")?;

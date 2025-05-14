@@ -29,10 +29,10 @@ impl GoogleCommands {
     ///
     /// Returns a `CosmianResult` indicating the success or failure of the command.
     ///
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::KeyPairs(command) => command.process(kms_rest_client).await?,
-            Self::Identities(command) => command.process(&kms_rest_client.config).await?,
+            Self::Identities(command) => command.process(kms_rest_client.config).await?,
         }
         Ok(())
     }

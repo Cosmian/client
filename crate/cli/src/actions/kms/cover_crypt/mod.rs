@@ -36,7 +36,7 @@ impl CovercryptCommands {
     ///
     /// This function can return an error if any of the underlying actions encounter an error.
     ///
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::AccessStructure(command) => command.process(kms_rest_client).await?,
             Self::Keys(command) => Box::pin(command.process(kms_rest_client)).await?,

@@ -323,7 +323,6 @@ fn key_block(key_format_type: KeyFormatType, bytes: Vec<u8>) -> KeyBlock {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn prepare_key_import_elements(
     key_usage: &Option<Vec<KeyUsage>>,
     key_format: &ImportKeyFormat,

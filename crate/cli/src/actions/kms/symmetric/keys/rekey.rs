@@ -20,7 +20,7 @@ pub struct ReKeyAction {
 }
 
 impl ReKeyAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let rekey_key_request = ReKey {
             unique_identifier: Some(UniqueIdentifier::TextString(self.key_id.clone())),
             ..ReKey::default()

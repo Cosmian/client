@@ -95,7 +95,7 @@ impl EncryptAndIndexAction {
     pub(crate) async fn _kem_server_side_dem_client_side(
         &self,
         csv: PathBuf,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         key_encryption_key_id: &str,
         key_encryption_algorithm: KeyEncryptionAlgorithm,
         nonce: Option<Vec<u8>>,
@@ -228,12 +228,7 @@ impl EncryptAndIndexAction {
 
             encrypted_entries.insert(
                 new_uuid,
-                [
-                    &encrypted_nonce[..],
-                    &encrypted_data[..],
-                    &encrypted_tag[..],
-                ]
-                .concat(),
+                [(&*encrypted_nonce), (&*encrypted_data), (&*encrypted_tag)].concat(),
             );
 
             let indexed_value = Value::from(new_uuid.as_bytes().to_vec());
@@ -260,11 +255,11 @@ impl EncryptAndIndexAction {
     /// - There is an error converting the CSV file to a hashmap.
     /// - There is an error adding the data to the Findex index.
     /// - There is an error writing the result to the console.
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub async fn run(
         &self,
         rest_client: RestClient,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
     ) -> CosmianResult<Uuids> {
         let nonce = self
             .nonce
@@ -291,7 +286,7 @@ impl EncryptAndIndexAction {
                 );
                 self.client_side_encrypt_entries(
                     self.csv.clone(),
-                    kms_rest_client,
+                    &kms_rest_client,
                     &key_encryption_key_id,
                     nonce,
                     authentication_data,
@@ -305,7 +300,7 @@ impl EncryptAndIndexAction {
                 );
                 self.server_side_encrypt_entries(
                     self.csv.clone(),
-                    kms_rest_client,
+                    &kms_rest_client,
                     &data_encryption_key_id,
                     nonce,
                     authentication_data,
@@ -327,7 +322,7 @@ impl EncryptAndIndexAction {
 
         let findex_instance = FindexInstance::<CUSTOM_WORD_LENGTH>::instantiate_findex(
             rest_client,
-            kms_rest_client.clone(),
+            kms_rest_client,
             self.findex_parameters.clone().instantiate_keys()?,
         )
         .await?;

@@ -119,7 +119,7 @@ impl<
                 // above check guarantees its length is equal to the length of
                 // permuted_addresses, the following indexing is guaranteed to
                 // be in range.
-                #[allow(clippy::indexing_slicing)]
+                #[expect(clippy::indexing_slicing)]
                 some_encrypted_words
                     .iter()
                     .map(|(i, w)| (&permuted_addresses[*i], w)),

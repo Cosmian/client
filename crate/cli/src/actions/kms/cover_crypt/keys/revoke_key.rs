@@ -40,7 +40,7 @@ pub struct RevokeKeyAction {
 }
 
 impl RevokeKeyAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
         revoke(kms_rest_client, &id, &self.revocation_reason).await
     }

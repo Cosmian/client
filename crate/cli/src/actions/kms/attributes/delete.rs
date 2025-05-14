@@ -67,7 +67,7 @@ impl DeleteAttributesAction {
     ///
     /// - Either `--id` or one or more `--tag` must be specified.
     ///
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         trace!("DeleteAttributeAction: {:?}", self);
         let id = get_key_uid(
             self.requested_attributes.id.as_ref(),
@@ -76,7 +76,7 @@ impl DeleteAttributesAction {
         )?;
 
         for attribute in self.requested_attributes.get_attributes_from_args()? {
-            self.delete_attribute(kms_rest_client, &id, Some(attribute), None)
+            self.delete_attribute(&kms_rest_client, &id, Some(attribute), None)
                 .await?;
         }
 
@@ -85,7 +85,7 @@ impl DeleteAttributesAction {
             for tag in tags {
                 references.push(AttributeReference::Standard(tag.to_owned()));
             }
-            self.delete_attribute(kms_rest_client, &id, None, Some(references))
+            self.delete_attribute(&kms_rest_client, &id, None, Some(references))
                 .await?;
         }
 

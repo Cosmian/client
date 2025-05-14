@@ -24,7 +24,7 @@ const GRANT_TYPE_SERVICE_ACCOUNT: &str = "urn:ietf:params:oauth:grant-type:jwt-b
 impl GoogleAuthRequest {
     pub(crate) fn new(assertion: String) -> Self {
         Self {
-            grant_type: GRANT_TYPE_SERVICE_ACCOUNT.to_string(),
+            grant_type: GRANT_TYPE_SERVICE_ACCOUNT.to_owned(),
             assertion,
         }
     }
@@ -49,10 +49,10 @@ pub(crate) fn create_jwt(
 ) -> Result<String, GoogleApiError> {
     let key_pair = RS256KeyPair::from_pem(&service_account.private_key)?;
     let jwt_data = JwtAuth {
-        aud: GOOGLE_AUD_VALUE.to_string(),
+        aud: GOOGLE_AUD_VALUE.to_owned(),
         iss: service_account.client_email.clone(),
-        scope: GMAIL_SCOPE.to_string(),
-        sub: user_email.to_string(),
+        scope: GMAIL_SCOPE.to_owned(),
+        sub: user_email.to_owned(),
     };
 
     let claims = Claims::with_custom_claims(jwt_data, Duration::from_hours(TOKEN_EXPIRATION_TIME));

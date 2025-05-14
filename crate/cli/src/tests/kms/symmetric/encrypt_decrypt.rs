@@ -459,7 +459,7 @@ async fn test_client_side_encryption_with_buffer() -> CosmianResult<()> {
     // Generate an ephemeral key (DEK) and wrap it with the KEK.
     let (dek, encapsulation) = EncryptAction::default()
         .server_side_kem_encapsulation(
-            &kms_rest_client,
+            kms_rest_client.clone(),
             &kek,
             KeyEncryptionAlgorithm::RFC5649,
             DataEncryptionAlgorithm::AesGcm,

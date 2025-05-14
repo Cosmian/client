@@ -29,7 +29,7 @@ pub enum KeysCommands {
 }
 
 impl KeysCommands {
-    pub(crate) async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub(crate) async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::Create(action) => {
                 action.run(kms_rest_client).await?;

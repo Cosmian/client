@@ -43,7 +43,7 @@ pub struct DecryptAction {
 }
 
 impl DecryptAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Read the file(s) to decrypt
         let (cryptographic_algorithm, data) = if self.input_files.len() > 1 {
             (

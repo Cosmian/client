@@ -40,7 +40,7 @@ pub enum AccessStructureCommands {
 }
 
 impl AccessStructureCommands {
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::View(action) => action.run(kms_rest_client).await,
             Self::AddAttribute(action) => action.run(kms_rest_client).await,
@@ -67,10 +67,10 @@ pub struct ViewAction {
     key_file: Option<PathBuf>,
 }
 impl ViewAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let object: Object = if let Some(id) = &self.key_id {
             export_object(
-                kms_rest_client,
+                &kms_rest_client,
                 id,
                 ExportObjectParams {
                     unwrap: true,
@@ -123,7 +123,7 @@ pub struct AddQualifiedAttributeAction {
     tags: Option<Vec<String>>,
 }
 impl AddQualifiedAttributeAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(self.secret_key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         let rekey_query = build_rekey_keypair_request(
@@ -177,7 +177,7 @@ pub struct RenameAttributeAction {
     tags: Option<Vec<String>>,
 }
 impl RenameAttributeAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(
             self.master_secret_key_id.as_ref(),
             self.tags.as_ref(),
@@ -230,7 +230,7 @@ pub struct DisableAttributeAction {
     tags: Option<Vec<String>>,
 }
 impl DisableAttributeAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(
             self.master_secret_key_id.as_ref(),
             self.tags.as_ref(),
@@ -286,7 +286,7 @@ pub struct RemoveAttributeAction {
     tags: Option<Vec<String>>,
 }
 impl RemoveAttributeAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(
             self.master_secret_key_id.as_ref(),
             self.tags.as_ref(),

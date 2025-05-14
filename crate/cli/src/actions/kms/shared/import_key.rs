@@ -112,7 +112,7 @@ impl ImportKeyAction {
     /// - Failed to write the response to stdout.
     ///
     /// [`CosmianError`]: ../error/result/enum.CosmianError.html
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let key_bytes = read_bytes_from_file(&self.key_file)?;
 
         let (object, import_attributes) = prepare_key_import_elements(

@@ -42,7 +42,7 @@ impl KeysCommands {
     /// This function will return an error if:
     /// * The specific key action fails.
     /// * The KMS server query fails.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::Create(action) => {
                 action.run(kms_rest_client).await?;

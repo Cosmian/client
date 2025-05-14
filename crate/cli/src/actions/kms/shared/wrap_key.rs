@@ -77,8 +77,8 @@ impl WrapKeyAction {
     /// - The key block cannot be wrapped with the wrapping key.
     /// - The wrapped key object cannot be written to the output file.
     /// - The console output cannot be written.
-    #[allow(clippy::print_stdout)]
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    #[expect(clippy::print_stdout)]
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // read the key file
         let mut object = read_object_from_json_ttlv_file(&self.key_file_in)?;
 
@@ -123,7 +123,7 @@ impl WrapKeyAction {
             );
             symmetric_key_object
         } else if let Some(key_id) = &self.wrap_key_id {
-            export_object(kms_rest_client, key_id, ExportObjectParams::default())
+            export_object(&kms_rest_client, key_id, ExportObjectParams::default())
                 .await?
                 .1
         } else if let Some(key_file) = &self.wrap_key_file {

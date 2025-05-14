@@ -95,7 +95,7 @@ impl EncryptAction {
     /// * The KMS server query fails.
     /// * The encrypted data is empty.
     /// * The encrypted file cannot be written.
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Read the file to encrypt
         let mut data = read_bytes_from_file(&self.input_file)
             .with_context(|| "Cannot read bytes from the file to encrypt")?;

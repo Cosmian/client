@@ -86,7 +86,7 @@ pub struct ExportCertificateAction {
 
 impl ExportCertificateAction {
     /// Export a certificate from the KMS
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         trace!("Export certificate: {self:?}");
 
         let id = get_key_uid(
@@ -100,7 +100,7 @@ impl ExportCertificateAction {
 
         // export the object
         let (id, object, export_attributes) = export_object(
-            client_connector,
+            &kms_rest_client,
             &id,
             ExportObjectParams {
                 wrapping_key_id: wrapping_key_id.as_deref(),

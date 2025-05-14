@@ -1,6 +1,5 @@
 use clap::Parser;
 use cosmian_findex_client::{RestClientConfig, reexport::cosmian_http_client::LoginState};
-use tracing::info;
 
 use crate::error::{CosmianError, result::CosmianResult};
 
@@ -32,8 +31,8 @@ impl LoginAction {
     /// # Errors
     /// Fails if the configuration file is missing or if the `oauth2_conf` object
     /// Fails if credentials are invalid. No access token could be retrieved.
-    #[allow(clippy::print_stdout)]
-    pub async fn run(&self, mut config: RestClientConfig) -> CosmianResult<RestClientConfig> {
+    #[expect(clippy::print_stdout)]
+    pub async fn run(&self, config: RestClientConfig) -> CosmianResult<String> {
         let login_config = config.http_config.oauth2_conf.as_ref().ok_or_else(|| {
             CosmianError::Default(
                 "ERROR: Login command requires OAuth2 configuration\n\n\
@@ -53,10 +52,8 @@ impl LoginAction {
         println!("Browse to: {}", state.auth_url);
         let access_token = state.finalize().await?;
 
-        config.http_config.access_token = Some(access_token);
+        println!("\nSuccess! The access token was saved in the Findex configuration (in memory)");
 
-        info!("Saving access token in the configuration...",);
-
-        Ok(config)
+        Ok(access_token)
     }
 }

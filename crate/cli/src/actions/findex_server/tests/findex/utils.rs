@@ -27,7 +27,7 @@ pub(crate) async fn insert_search_delete(
     search_options: SearchOptions,
     kms_client: KmsClient,
 ) -> CosmianResult<()> {
-    let rest_client = RestClient::new(config)?;
+    let rest_client = RestClient::new(config.clone())?;
 
     // Index the dataset
     InsertOrDeleteAction {
@@ -76,7 +76,7 @@ pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
     let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_conf.kms_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        &kms_client,
+        kms_client.clone(),
         true,
         findex_number_of_threads(),
     )
@@ -87,7 +87,7 @@ pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
         findex_parameters.hmac_key_id.unwrap(),
         findex_parameters.aes_xts_key_id.unwrap(),
         FindexRestClient::<WORD_LENGTH>::new(
-            RestClient::new(&ctx.owner_client_conf.clone())?,
+            RestClient::new(ctx.owner_client_conf.clone())?,
             findex_parameters.index_id,
         ),
     );

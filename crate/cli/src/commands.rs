@@ -58,7 +58,6 @@ pub struct Cli {
 }
 
 #[derive(Subcommand)]
-#[allow(clippy::large_enum_variant)]
 pub enum CliCommands {
     /// Handle KMS actions
     #[command(subcommand)]
@@ -87,7 +86,6 @@ pub enum CliCommands {
 /// - The command-line arguments cannot be parsed.
 /// - The configuration file cannot be located or loaded.
 /// - Any of the subcommands fail during their execution.
-#[allow(clippy::cognitive_complexity)]
 pub async fn cosmian_main() -> CosmianResult<()> {
     log_init(None);
     info!("Starting Cosmian CLI");
@@ -117,43 +115,32 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     trace!("Configuration: {config:?}");
 
     // Instantiate the KMS client
-    let mut kms_rest_client = KmsClient::new_with_config(config.kms_config.clone())?;
+    let kms_rest_client = KmsClient::new_with_config(config.kms_config.clone())?;
 
     match &cli.command {
         CliCommands::Markdown(action) => {
-            let command = <Cli as CommandFactory>::command();
-            action.process(&command)?;
+            action.process(&Cli::command())?;
             return Ok(());
         }
         CliCommands::Kms(kms_actions) => {
-            kms_actions.process(&mut kms_rest_client).await?;
-            config.kms_config = kms_rest_client.config.clone();
+            let new_kms_config = Box::pin(kms_actions.process(kms_rest_client)).await?;
+            if config.kms_config != new_kms_config {
+                config.kms_config = new_kms_config;
+                config.save(cli.conf_path.clone())?;
+            }
         }
         CliCommands::Findex(findex_actions) => {
             let findex_config = config
                 .findex_config
                 .as_ref()
-                .ok_or_else(|| {
-                    cli_error!("Findex server configuration is missing in the configuration file")
-                })?
-                .clone();
-            let findex_rest_client = RestClient::new(&findex_config)?;
-            let new_findex_config = findex_actions
-                .run(findex_rest_client, kms_rest_client, findex_config)
-                .await?;
-            config.findex_config = Some(new_findex_config);
+                .ok_or_else(|| cli_error!("Missing Findex server configuration"))?;
+            let findex_client = RestClient::new(findex_config.clone())?;
+            let new_findex_config = findex_actions.run(findex_client, kms_rest_client).await?;
+            if config.findex_config.as_ref() != Some(&new_findex_config) {
+                config.findex_config = Some(new_findex_config);
+                config.save(cli.conf_path.clone())?;
+            }
         }
-    }
-
-    // Save the configuration
-    match cli.command {
-        CliCommands::Kms(KmsActions::Login(_) | KmsActions::Logout(_)) => {
-            config.save(cli.conf_path.clone())?;
-        }
-        CliCommands::Findex(FindexActions::Login(_) | FindexActions::Logout(_)) => {
-            config.save(cli.conf_path)?;
-        }
-        _ => {}
     }
 
     Ok(())

@@ -7,7 +7,7 @@ use cosmian_kmip::kmip_2_1::{
 
 use crate::error::UtilsError;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments)]
 pub fn build_locate_request(
     tags: Option<Vec<String>>,
     cryptographic_algorithm: Option<CryptographicAlgorithm>,
