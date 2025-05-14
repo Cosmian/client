@@ -455,7 +455,6 @@ fn generate_server_params(
             ..HttpConfig::default()
         },
         non_revocable_key_id,
-        google_cse_disable_tokens_validation: true,
         hsm_admin: hsm_options
             .as_ref()
             .map_or_else(String::new, |h| h.hsm_admin.clone()),
