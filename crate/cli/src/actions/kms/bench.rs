@@ -75,6 +75,7 @@ pub struct BenchAction {
 
 impl BenchAction {
     /// Run the tests
+    ///
     /// # Errors
     /// Returns an error if the server is not reachable or if the keys can't be created.
     #[expect(clippy::print_stdout)]

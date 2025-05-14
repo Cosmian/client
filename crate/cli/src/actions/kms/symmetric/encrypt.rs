@@ -373,7 +373,7 @@ impl EncryptAction {
     /// - If the cryptographic algorithm is not specified
     pub async fn client_side_kem_encapsulation(
         &self,
-        kms_rest_client: KmsClient,
+        kms_rest_client: &KmsClient,
         kek_id: &str,
         data_encryption_algorithm: DataEncryptionAlgorithm,
     ) -> CosmianResult<(Zeroizing<Vec<u8>>, Vec<u8>)> {
@@ -397,7 +397,7 @@ impl EncryptAction {
 
         // First export the KEK locally
         let wrapping_key = export_object(
-            &kms_rest_client,
+            kms_rest_client,
             kek_id,
             ExportObjectParams {
                 key_format_type: Some(KeyFormatType::TransparentSymmetricKey),

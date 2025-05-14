@@ -60,7 +60,7 @@ impl KmsActions {
             Self::Bench(action) => action.process(kms_rest_client).await?,
             #[cfg(not(feature = "fips"))]
             Self::Cc(action) => action.process(kms_rest_client).await?,
-            Self::Certificates(action) => Box::pin(action.process(kms_rest_client)).await?,
+            Self::Certificates(action) => action.process(kms_rest_client).await?,
             Self::Ec(action) => action.process(kms_rest_client).await?,
             Self::Google(action) => action.process(kms_rest_client).await?,
             Self::Locate(action) => action.process(kms_rest_client).await?,

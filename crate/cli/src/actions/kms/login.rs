@@ -38,7 +38,7 @@ impl LoginAction {
         println!("Browse to: {}", state.auth_url);
         let access_token = state.finalize().await?;
 
-        println!("\nSuccess! The access token was saved in the KMS configuration");
+        println!("\nSuccess! The access token was saved in the KMS configuration (in memory)");
 
         Ok(access_token)
     }

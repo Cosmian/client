@@ -152,7 +152,7 @@ impl EncryptAndIndexAction {
     pub(crate) async fn client_side_encrypt_entries(
         &self,
         csv: PathBuf,
-        kms_rest_client: KmsClient,
+        kms_rest_client: &KmsClient,
         key_encryption_key_id: &str,
         nonce: Option<Vec<u8>>,
         authentication_data: Option<Vec<u8>>,
@@ -204,7 +204,7 @@ impl EncryptAndIndexAction {
     pub(crate) async fn server_side_encrypt_entries(
         &self,
         csv: PathBuf,
-        kms_rest_client: KmsClient,
+        kms_rest_client: &KmsClient,
         data_encryption_key_id: &str,
         nonce: Option<Vec<u8>>,
         authentication_data: Option<Vec<u8>>,
@@ -217,7 +217,7 @@ impl EncryptAndIndexAction {
             let new_uuid = uuid::Uuid::new_v4();
             let (encrypted_nonce, encrypted_data, encrypted_tag) = EncryptAction::default()
                 .server_side_encrypt(
-                    &kms_rest_client,
+                    kms_rest_client,
                     data_encryption_key_id,
                     self.data_encryption_algorithm.into(),
                     nonce.clone(),
@@ -286,7 +286,7 @@ impl EncryptAndIndexAction {
                 );
                 self.client_side_encrypt_entries(
                     self.csv.clone(),
-                    kms_rest_client.clone(),
+                    &kms_rest_client,
                     &key_encryption_key_id,
                     nonce,
                     authentication_data,
@@ -300,7 +300,7 @@ impl EncryptAndIndexAction {
                 );
                 self.server_side_encrypt_entries(
                     self.csv.clone(),
-                    kms_rest_client.clone(),
+                    &kms_rest_client,
                     &data_encryption_key_id,
                     nonce,
                     authentication_data,

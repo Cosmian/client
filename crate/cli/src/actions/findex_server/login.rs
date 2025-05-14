@@ -1,6 +1,5 @@
 use clap::Parser;
 use cosmian_findex_client::{RestClientConfig, reexport::cosmian_http_client::LoginState};
-use tracing::info;
 
 use crate::error::{CosmianError, result::CosmianResult};
 
@@ -53,7 +52,7 @@ impl LoginAction {
         println!("Browse to: {}", state.auth_url);
         let access_token = state.finalize().await?;
 
-        info!("Saving access token in the configuration...",);
+        println!("\nSuccess! The access token was saved in the Findex configuration (in memory)");
 
         Ok(access_token)
     }

@@ -119,7 +119,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
 
     match &cli.command {
         CliCommands::Markdown(action) => {
-            action.process(&<Cli as CommandFactory>::command())?;
+            action.process(&Cli::command())?;
             return Ok(());
         }
         CliCommands::Kms(kms_actions) => {
