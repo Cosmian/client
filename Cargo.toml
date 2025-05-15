@@ -58,8 +58,13 @@ cosmian_kms_client_wasm = { path = "crate/wasm" }
 cosmian_crypto_core = { version = "10.1.0", default-features = false, features = [
   "ser",
 ] }
-cosmian_findex = { git = "https://github.com/Cosmian/findex", default-features = false, rev = "6329b6b2f2b64b033e40b05cd12ca1c9b5ee376f" }
-cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
+cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "fix/downgrate_async_sqlite", features = [
+  "redis-mem",
+  "sqlite-mem",
+  "test-utils",
+] }
+# cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
+cosmian_findex_server = { path = "../crate/server" }
 cosmian_findex_structs = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
 cosmian_http_client = "0.1.1"
 cosmian_logger = "0.1.1"

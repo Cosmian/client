@@ -43,7 +43,7 @@ fn get_sqlite_url(sqlite_url_var_env: &str) -> String {
 
 fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
     let url = get_redis_url(redis_url_var_env);
-    trace!("TESTS: using redis with findex on  {url}");
+    trace!("TESTS: using redis with findex on {url}");
     DBConfig {
         database_type: DatabaseType::Redis,
         clear_database: false,
