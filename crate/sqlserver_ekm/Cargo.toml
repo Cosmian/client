@@ -23,7 +23,7 @@ libc = { workspace = true }
 rand = { workspace = true }
 reqwest = { workspace = true, features = ["blocking"] }
 serde = { workspace = true, features = ["derive"] }
-snafu = { workspace = true }
+snafu = { workspace = true, features = ["std"] }
 toml = { workspace = true }
 tracing = { workspace = true }
 tracing-error = { workspace = true }
