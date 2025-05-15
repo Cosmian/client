@@ -1,3 +1,4 @@
+use cosmian_kms_client::KmsClientError;
 use snafu::{Location, prelude::*};
 
 #[derive(Debug, Snafu)]
@@ -19,6 +20,14 @@ pub enum SError {
     #[snafu(display("Failed to register SQL Server module: {message}"))]
     RegisterModule { message: String, location: Location },
 
+    /// TOML parsing error
+    #[snafu(display("Failed to parse configuration"))]
+    ParseConfig {
+        source: toml::de::Error,
+        #[snafu(implicit)]
+        location: Location,
+    },
+
     /// IO Error
     #[snafu(display("IO error: {message}"))]
     Io {
@@ -39,19 +48,44 @@ pub enum SError {
 
     /// Error when getting the KMS client
     #[snafu(display("Failed to get KMS client: {message}"))]
-    KmsClient { message: String, location: Location },
+    KmsClient {
+        message: String,
+        source: KmsClientError,
+        #[snafu(implicit)]
+        location: Location,
+    },
+
+    /// Error when recovering inputs from the C API
+    #[snafu(display("{message}"))]
+    Inputs {
+        message: String,
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     /// Error when creating a new key
     #[snafu(display("Failed to create key: {message}"))]
-    CreateKey { message: String, location: Location },
+    CreateKey {
+        message: String,
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     /// Error when encrypting data
     #[snafu(display("Failed to encrypt data: {message}"))]
-    EncryptData { message: String, location: Location },
+    EncryptData {
+        message: String,
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     /// Error when decrypting data
     #[snafu(display("Failed to decrypt data: {message}"))]
-    DecryptData { message: String, location: Location },
+    DecryptData {
+        message: String,
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     /// Generic error for unexpected issues
     #[snafu(whatever, display("{message}"))]
