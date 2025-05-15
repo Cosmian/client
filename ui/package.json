@@ -21,6 +21,7 @@
     "react-router-dom": "^7.x",
     "tailwindcss": "^4.1.4",
     "typescript-cookie": "^1.0.6",
+    "ui": "file:",
     "vite-plugin-theme": "^0.8.6"
   },
   "devDependencies": {

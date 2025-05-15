@@ -1,33 +1,35 @@
 mod api;
+mod configuration;
 mod error;
 mod ms_crypto;
 
 use std::{fs, fs::OpenOptions, path::PathBuf, str::FromStr, sync::OnceLock};
-use cosmian_config_utils::ConfigUtils;
+
 use cosmian_kms_client::{KmsClient, KmsClientConfig};
+use error::{IoSnafu, LoggingSnafu};
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use snafu::prelude::*;
-use tracing::{Level, debug};
+use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
     EnvFilter, Registry, fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt,
 };
 
-use crate::error::{InitModuleSnafu, SError};
+use crate::error::SError;
 
 static CLIENT: OnceLock<Result<KmsClient, SError>> = OnceLock::new();
 
 fn get_client() -> &'static Result<KmsClient, SError> {
     CLIENT.get_or_init(|| {
-        init_loging()?;
+        init_logging()?;
         let config = KmsClientConfig::default();
         // KmsClient::new_with_config()
         Ok(())
     })
 }
 
-fn init_loging() -> Result<(), SError> {
+fn init_logging() -> Result<(), SError> {
     let debug_level =
         std::env::var("COSMIAN_PKCS11_LOGGING_LEVEL").unwrap_or_else(|_| "info".to_owned());
     let log_home = etcetera::home_dir()
@@ -45,7 +47,9 @@ fn log_to_file(log_name: &str, level: Level, log_home: &PathBuf) -> Result<(), S
     // if they do not exist.
     let log_home = PathBuf::from(log_home);
     if !log_home.exists() {
-        fs::create_dir_all(&log_home)?;
+        fs::create_dir_all(&log_home).context(IoSnafu {
+            message: format!("Failed to create log directory: {:?}", log_home),
+        })?;
     }
 
     let log_path = log_home.join(format!("{log_name}.log"));
@@ -53,7 +57,11 @@ fn log_to_file(log_name: &str, level: Level, log_home: &PathBuf) -> Result<(), S
     let file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open(log_path)?;
+        .open(&log_path)
+        .context(IoSnafu {
+            message: format!("Failed to open log file: {}", log_path.display()),
+        })?;
+    // Set up the logging configuration
     let env_filter = EnvFilter::new(format!("info,cosmian_cosmian_sqlserver_ekm={level}").as_str());
     Registry::default()
         .with(
@@ -64,46 +72,10 @@ fn log_to_file(log_name: &str, level: Level, log_home: &PathBuf) -> Result<(), S
         .with(env_filter)
         .with(ErrorLayer::default())
         .try_init()
-        .context(InitModuleSnafu {
+        .context(LoggingSnafu {
             message: "Failed to initialize logging",
         })?;
     Ok(())
-}
-
-#[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Clone)]
-pub struct ClientConfig {
-    pub kms_config: KmsClientConfig,
-    // pub findex_config: Option<RestClientConfig>,
-}
-
-impl Default for ClientConfig {
-    fn default() -> Self {
-        Self {
-            kms_config: KmsClientConfig::default(),
-            // findex_config: Some(RestClientConfig::default()),
-        }
-    }
-}
-
-impl ConfigUtils for ClientConfig {}
-
-
-
-/// Load the configuration from a toml file.
-/// # Errors
-/// Return an error if the configuration file is not found or if the file is
-/// not a valid toml file.
-pub fn load(conf_path: Option<PathBuf>) -> Result<KmsClientConfig, SError> {
-    let conf_path_buf = Self::location(conf_path)?;
-    debug!("Loading configuration from: {conf_path_buf:?}");
-
-    KmsClientConfig::load(conf_path_buf.to_str().ok_or_else(
-        || InitModuleSnafu("Unable to convert the configuration path to a string".to_owned()),
-    )?)
-
-    Ok(Self::from_toml(conf_path_buf.to_str().ok_or_else(
-        || InitModuleSnafu("Unable to convert the configuration path to a string".to_owned()),
-    )?)?)
 }
 
 #[derive(Serialize, Deserialize)]

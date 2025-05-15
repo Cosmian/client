@@ -19,6 +19,24 @@ pub enum SError {
     #[snafu(display("Failed to register SQL Server module: {message}"))]
     RegisterModule { message: String, location: Location },
 
+    /// IO Error
+    #[snafu(display("IO error: {message}"))]
+    Io {
+        message: String,
+        source: std::io::Error,
+        #[snafu(implicit)]
+        location: Location,
+    },
+
+    /// Logging error
+    #[snafu(display("Logging error: {message}"))]
+    Logging {
+        message: String,
+        source: tracing_subscriber::util::TryInitError,
+        #[snafu(implicit)]
+        location: Location,
+    },
+
     /// Error when getting the KMS client
     #[snafu(display("Failed to get KMS client: {message}"))]
     KmsClient { message: String, location: Location },
@@ -39,7 +57,7 @@ pub enum SError {
     #[snafu(whatever, display("{message}"))]
     Whatever {
         message: String,
-        #[snafu(source(from(Box<dyn std::error::Error>, Some)))]
-        source: Option<Box<dyn std::error::Error>>,
+        #[snafu(source(from(Box<dyn std::error::Error + Send + Sync>, Some)))]
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 }
