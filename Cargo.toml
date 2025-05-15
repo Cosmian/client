@@ -78,7 +78,12 @@ cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
 ] }
-cosmian_findex = { version = "7.1.0", default-features = false }
+cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "fix/downgrate_async_sqlite", features = [
+  "redis-mem",
+  "sqlite-mem",
+  "test-utils",
+] }
+# cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
 cosmian_findex_server = "0.3"
 cosmian_findex_structs = "0.3"
 cosmian_http_client = "0.2"
@@ -97,6 +102,7 @@ cosmian_kms_server_database = "5.0"
 # cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
 # cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
 # cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+
 
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }

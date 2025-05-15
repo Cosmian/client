@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use cosmian_findex::{gen_seed, test_single_write_and_read, test_wrong_guard};
+use cosmian_findex::{
+    gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
+};
 use cosmian_findex_client::RestClient;
 use cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value};
 use cosmian_kms_client::KmsClient;

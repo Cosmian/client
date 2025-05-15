@@ -19,7 +19,7 @@ fips = ["cosmian_kms_client/fips", "test_kms_server/fips"]
 [dependencies]
 base64 = { workspace = true }
 cosmian_crypto_core = { workspace = true }
-cosmian_findex = { workspace = true, features = ["redis-mem"] }
+cosmian_findex = { workspace = true, features = ["redis-mem", "test-utils"] }
 cosmian_findex_structs = { workspace = true }
 cosmian_http_client = { workspace = true }
 cosmian_kms_client = { workspace = true }
