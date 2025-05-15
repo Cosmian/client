@@ -146,10 +146,8 @@ mod tests {
 
     use cosmian_crypto_core::{CsRng, Sampling, reexport::rand_core::SeedableRng};
     use cosmian_findex::{
-        InMemory,
-        test_utils::{
-            gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
-        },
+        InMemory, gen_seed, test_guarded_write_concurrent, test_single_write_and_read,
+        test_wrong_guard,
     };
     use cosmian_findex_structs::CUSTOM_WORD_LENGTH;
     use cosmian_kms_client::{

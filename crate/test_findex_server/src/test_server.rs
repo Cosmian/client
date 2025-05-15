@@ -23,6 +23,7 @@ use tracing::{info, trace};
 use crate::test_jwt::{AUTH0_TOKEN, get_auth0_jwt_config};
 
 const REDIS_DEFAULT_URL: &str = "redis://localhost:6379";
+const SQLITE_DEFAULT_URL: &str = "../../sqlite-data.db";
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N Findex servers (one per test)
@@ -36,9 +37,13 @@ pub fn get_redis_url(redis_url_var_env: &str) -> String {
     env::var(redis_url_var_env).unwrap_or_else(|_| REDIS_DEFAULT_URL.to_owned())
 }
 
+fn get_sqlite_url(sqlite_url_var_env: &str) -> String {
+    env::var(sqlite_url_var_env).unwrap_or_else(|_| SQLITE_DEFAULT_URL.to_owned())
+}
+
 fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
     let url = get_redis_url(redis_url_var_env);
-    trace!("TESTS: using redis on {url}");
+    trace!("TESTS: using redis with findex on  {url}");
     DBConfig {
         database_type: DatabaseType::Redis,
         clear_database: false,
@@ -46,12 +51,33 @@ fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
     }
 }
 
+fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
+    let url = get_sqlite_url(sqlite_url_var_env);
+    trace!("TESTS: using sqlite with findex on {url}");
+    DBConfig {
+        database_type: DatabaseType::Sqlite,
+        clear_database: false,
+        database_url: url,
+    }
+}
+
+fn get_db_config() -> DBConfig {
+    env::var_os("FINDEX_TEST_DB").map_or_else(
+        || redis_db_config("FINDEX_REDIS_HOST"),
+        |v| match v.to_str().unwrap_or("") {
+            "redis-findex" => redis_db_config("FINDEX_REDIS_HOST"),
+            "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_HOST"),
+            _ => redis_db_config("FINDEX_REDIS_HOST"),
+        },
+    )
+}
+
 /// Start a test Findex server in a thread with the default options:
 /// No TLS, no certificate authentication
 pub async fn start_default_test_findex_server() -> &'static TestsContext {
     trace!("Starting default test server");
     ONCE.get_or_try_init(|| {
-        start_test_server_with_options(redis_db_config("REDIS_URL"), 6668, AuthenticationOptions {
+        start_test_server_with_options(get_db_config(), 6668, AuthenticationOptions {
             use_jwt_token: false,
             use_https: false,
             use_client_cert: false,
@@ -65,15 +91,11 @@ pub async fn start_default_test_findex_server_with_cert_auth() -> &'static Tests
     trace!("Starting test server with cert auth");
     ONCE_SERVER_WITH_AUTH
         .get_or_try_init(|| {
-            start_test_server_with_options(
-                redis_db_config("REDIS_URL"),
-                6660,
-                AuthenticationOptions {
-                    use_jwt_token: false,
-                    use_https: true,
-                    use_client_cert: true,
-                },
-            )
+            start_test_server_with_options(get_db_config(), 6660, AuthenticationOptions {
+                use_jwt_token: false,
+                use_https: true,
+                use_client_cert: true,
+            })
         })
         .await
         .unwrap()
@@ -321,7 +343,7 @@ mod findex_server {
     use tracing::trace;
 
     use crate::{
-        AuthenticationOptions, start_test_server_with_options, test_server::redis_db_config,
+        AuthenticationOptions, start_test_server_with_options, test_server::get_db_config,
     };
 
     #[tokio::test]
@@ -335,16 +357,13 @@ mod findex_server {
         ];
         for (use_https, use_jwt_token, use_client_cert, description) in test_cases {
             trace!("Running test case: {}", description);
-            let context = start_test_server_with_options(
-                redis_db_config("REDIS_URL"),
-                6667,
-                AuthenticationOptions {
+            let context =
+                start_test_server_with_options(get_db_config(), 6667, AuthenticationOptions {
                     use_https,
                     use_jwt_token,
                     use_client_cert,
-                },
-            )
-            .await?;
+                })
+                .await?;
             context.stop_server().await?;
         }
         Ok(())

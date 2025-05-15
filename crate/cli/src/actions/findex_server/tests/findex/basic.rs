@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use cosmian_findex::test_utils::{
+use cosmian_findex::{
     gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
 };
 use cosmian_findex_client::RestClient;
