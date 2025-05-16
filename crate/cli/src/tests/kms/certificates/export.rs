@@ -285,19 +285,14 @@ async fn test_export_pkcs7() -> Result<(), CosmianError> {
     let (root_ca_id, _, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
 
     // Certify the CSR with the intermediate CA
-    let certificate_id = certify(
-        &ctx.owner_client_conf_path,
-        CertifyOp {
-            generate_keypair: true,
-            algorithm: Some(Algorithm::RSA4096),
-            subject_name: Some(
-                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string(),
-            ),
-            issuer_private_key_id: Some(issuer_private_key_id.clone()),
-            tags: Some(vec!["certify_a_csr_test".to_owned()]),
-            ..CertifyOp::default()
-        },
-    )?;
+    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
+        generate_keypair: true,
+        algorithm: Some(Algorithm::RSA4096),
+        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string()),
+        issuer_private_key_id: Some(issuer_private_key_id.clone()),
+        tags: Some(vec!["certify_a_csr_test".to_owned()]),
+        ..CertifyOp::default()
+    })?;
 
     let tmp_exported_pkcs7: std::path::PathBuf = tmp_dir.path().join("exported_p7.p7pem");
 
@@ -465,31 +460,23 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // Generate a self-signed root CA
-    let ca_id = certify(
-        &ctx.owner_client_conf_path,
-        CertifyOp {
-            generate_keypair: true,
-            algorithm: Some(Algorithm::NistP256),
-            subject_name: Some(
-                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test CA".to_string(),
-            ),
-            ..Default::default()
-        },
-    )?;
+    let ca_id = certify(&ctx.owner_client_conf_path, CertifyOp {
+        generate_keypair: true,
+        algorithm: Some(Algorithm::NistP256),
+        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test CA".to_string()),
+        ..Default::default()
+    })?;
 
     // Certify an intermediate CA with the root CA
-    let intermediate_id = certify(
-        &ctx.owner_client_conf_path,
-        CertifyOp {
-            issuer_certificate_id: Some(ca_id),
-            generate_keypair: true,
-            algorithm: Some(Algorithm::NistP256),
-            subject_name: Some(
-                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Intermediate".to_string(),
-            ),
-            ..Default::default()
-        },
-    )?;
+    let intermediate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
+        issuer_certificate_id: Some(ca_id),
+        generate_keypair: true,
+        algorithm: Some(Algorithm::NistP256),
+        subject_name: Some(
+            "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Intermediate".to_string(),
+        ),
+        ..Default::default()
+    })?;
 
     // export the intermediate CA to PKCS#12
     let tmp_dir = TempDir::new()?;
@@ -524,17 +511,12 @@ async fn test_export_import_legacy_p12() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // Generate a self-signed root CA
-    let cert_id = certify(
-        &ctx.owner_client_conf_path,
-        CertifyOp {
-            generate_keypair: true,
-            algorithm: Some(Algorithm::NistP256),
-            subject_name: Some(
-                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Cert".to_string(),
-            ),
-            ..Default::default()
-        },
-    )?;
+    let cert_id = certify(&ctx.owner_client_conf_path, CertifyOp {
+        generate_keypair: true,
+        algorithm: Some(Algorithm::NistP256),
+        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Cert".to_string()),
+        ..Default::default()
+    })?;
 
     // export the certificate to legacy PKCS#12
     let tmp_dir = TempDir::new()?;

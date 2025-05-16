@@ -77,15 +77,11 @@ fn get_db_config() -> DBConfig {
 pub async fn start_default_test_findex_server() -> &'static TestsContext {
     trace!("Starting default test server");
     ONCE.get_or_try_init(|| {
-        start_test_server_with_options(
-            get_db_config(),
-            6668,
-            AuthenticationOptions {
-                use_jwt_token: false,
-                use_https: false,
-                use_client_cert: false,
-            },
-        )
+        start_test_server_with_options(get_db_config(), 6668, AuthenticationOptions {
+            use_jwt_token: false,
+            use_https: false,
+            use_client_cert: false,
+        })
     })
     .await
     .unwrap()
@@ -95,15 +91,11 @@ pub async fn start_default_test_findex_server_with_cert_auth() -> &'static Tests
     trace!("Starting test server with cert auth");
     ONCE_SERVER_WITH_AUTH
         .get_or_try_init(|| {
-            start_test_server_with_options(
-                get_db_config(),
-                6660,
-                AuthenticationOptions {
-                    use_jwt_token: false,
-                    use_https: true,
-                    use_client_cert: true,
-                },
-            )
+            start_test_server_with_options(get_db_config(), 6660, AuthenticationOptions {
+                use_jwt_token: false,
+                use_https: true,
+                use_client_cert: true,
+            })
         })
         .await
         .unwrap()
@@ -356,16 +348,13 @@ mod findex_server {
         ];
         for (use_https, use_jwt_token, use_client_cert, description) in test_cases {
             trace!("Running test case: {}", description);
-            let context = start_test_server_with_options(
-                get_db_config(),
-                6667,
-                AuthenticationOptions {
+            let context =
+                start_test_server_with_options(get_db_config(), 6667, AuthenticationOptions {
                     use_https,
                     use_jwt_token,
                     use_client_cert,
-                },
-            )
-            .await?;
+                })
+                .await?;
             context.stop_server().await?;
         }
         Ok(())

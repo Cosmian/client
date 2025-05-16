@@ -78,12 +78,9 @@ pub(crate) fn create_rsa_key_pair(
 pub(crate) async fn test_rsa_create_key_pair() -> CosmianResult<()> {
     // from specs
     let ctx = start_default_test_kms_server().await;
-    create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
-        &RsaKeyPairOptions {
-            tags: HashSet::from_iter(vec!["tag1".to_owned(), "tag2".to_owned()]),
-            ..Default::default()
-        },
-    )?;
+    create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
+        tags: HashSet::from_iter(vec!["tag1".to_owned(), "tag2".to_owned()]),
+        ..Default::default()
+    })?;
     Ok(())
 }

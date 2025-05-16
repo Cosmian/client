@@ -35,15 +35,12 @@ pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
 
-    let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
-        CreateKeyAction {
-            key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
-            number_of_bits: Some(256),
-            algorithm: SymmetricAlgorithm::Aes,
-            ..Default::default()
-        },
-    )?;
+    let dek = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+        key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
+        number_of_bits: Some(256),
+        algorithm: SymmetricAlgorithm::Aes,
+        ..Default::default()
+    })?;
     run_encrypt_decrypt_test(
         &ctx.owner_client_conf_path,
         &dek,
@@ -72,13 +69,11 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     fs::remove_file(&output_file).ok();
     assert!(!output_file.exists());
 
-    let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
-        &RsaKeyPairOptions {
+    let (private_key_id, public_key_id) =
+        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
-        },
-    )?;
+        })?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
@@ -161,13 +156,11 @@ pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
     fs::remove_file(&output_file).ok();
     assert!(!output_file.exists());
 
-    let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
-        &RsaKeyPairOptions {
+    let (private_key_id, public_key_id) =
+        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
-        },
-    )?;
+        })?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");

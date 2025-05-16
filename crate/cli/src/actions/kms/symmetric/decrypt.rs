@@ -376,13 +376,10 @@ impl DecryptAction {
         ct.read_exact(&mut encapsulation)?;
 
         // Create the KMIP object corresponding to the DEK
-        let mut dek_object = create_symmetric_key_kmip_object(
-            &[],
-            &Attributes {
-                cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-                ..Default::default()
-            },
-        )?;
+        let mut dek_object = create_symmetric_key_kmip_object(&[], &Attributes {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+            ..Default::default()
+        })?;
         let dek_key_block = dek_object.key_block_mut()?;
         dek_key_block.key_value = Some(KeyValue::ByteString(Zeroizing::new(encapsulation)));
         dek_key_block.key_wrapping_data = Some(KeyWrappingData {

@@ -251,10 +251,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr, None),
-                    vec![(header_addr, [2; CUSTOM_WORD_LENGTH]),]
-                )
+                .guarded_write((header_addr, None), vec![(
+                    header_addr,
+                    [2; CUSTOM_WORD_LENGTH]
+                ),])
                 .await?,
             None
         );
@@ -282,13 +282,10 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr, None),
-                    vec![
-                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                    ]
-                )
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                ])
                 .await?,
             None
         );
@@ -319,42 +316,33 @@ mod tests {
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr, None),
-                    vec![
-                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
-                        (val_addr_2, [1; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [1; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2, [1; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             None
         );
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr, None),
-                    vec![
-                        (header_addr, [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
-                        (val_addr_2, [3; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr, None), vec![
+                    (header_addr, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_1, [3; CUSTOM_WORD_LENGTH]),
+                    (val_addr_2, [3; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );
 
         assert_eq!(
             layer
-                .guarded_write(
-                    (header_addr, Some([2; CUSTOM_WORD_LENGTH])),
-                    vec![
-                        (header_addr, [4; CUSTOM_WORD_LENGTH]),
-                        (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
-                        (val_addr_4, [2; CUSTOM_WORD_LENGTH])
-                    ]
-                )
+                .guarded_write((header_addr, Some([2; CUSTOM_WORD_LENGTH])), vec![
+                    (header_addr, [4; CUSTOM_WORD_LENGTH]),
+                    (val_addr_3, [2; CUSTOM_WORD_LENGTH]),
+                    (val_addr_4, [2; CUSTOM_WORD_LENGTH])
+                ])
                 .await?,
             Some([2; CUSTOM_WORD_LENGTH])
         );

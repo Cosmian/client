@@ -99,17 +99,14 @@ impl ExportCertificateAction {
             prepare_certificate_export_elements(&self.output_format, self.pkcs12_password.clone());
 
         // export the object
-        let (id, object, export_attributes) = export_object(
-            &kms_rest_client,
-            &id,
-            ExportObjectParams {
+        let (id, object, export_attributes) =
+            export_object(&kms_rest_client, &id, ExportObjectParams {
                 wrapping_key_id: wrapping_key_id.as_deref(),
                 allow_revoked: self.allow_revoked,
                 key_format_type: Some(key_format_type),
                 ..ExportObjectParams::default()
-            },
-        )
-        .await?;
+            })
+            .await?;
 
         match &object {
             Object::Certificate(Certificate {

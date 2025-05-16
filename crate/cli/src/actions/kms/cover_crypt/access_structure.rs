@@ -69,14 +69,10 @@ pub struct ViewAction {
 impl ViewAction {
     pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let object: Object = if let Some(id) = &self.key_id {
-            export_object(
-                &kms_rest_client,
-                id,
-                ExportObjectParams {
-                    unwrap: true,
-                    ..ExportObjectParams::default()
-                },
-            )
+            export_object(&kms_rest_client, id, ExportObjectParams {
+                unwrap: true,
+                ..ExportObjectParams::default()
+            })
             .await?
             .1
         } else if let Some(key_file) = &self.key_file {

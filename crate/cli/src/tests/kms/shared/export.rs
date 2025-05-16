@@ -602,13 +602,10 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // generate a symmetric key
-    let key_id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
-        CreateKeyAction {
-            sensitive: true,
-            ..Default::default()
-        },
-    )?;
+    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+        sensitive: true,
+        ..Default::default()
+    })?;
 
     // the key should not be exportable
     assert!(
@@ -675,13 +672,11 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // generate an ec key pair
-    let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
-        &RsaKeyPairOptions {
+    let (private_key_id, public_key_id) =
+        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions {
             sensitive: true,
             ..Default::default()
-        },
-    )?;
+        })?;
 
     // the private key should not be exportable
     assert!(

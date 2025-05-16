@@ -86,115 +86,82 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         // AES 256 bit key
         create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
         // AES 128 bit key
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(128),
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(128),
+            ..Default::default()
+        })?;
         //  AES 256 bit key from a base64 encoded key
         rng.fill_bytes(&mut key);
         let key_b64 = general_purpose::STANDARD.encode(&key);
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                wrap_key_b64: Some(key_b64),
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            wrap_key_b64: Some(key_b64),
+            ..Default::default()
+        })?;
     }
 
     #[cfg(not(feature = "fips"))]
     {
         // ChaCha20 256 bit key
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                algorithm: SymmetricAlgorithm::Chacha20,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            algorithm: SymmetricAlgorithm::Chacha20,
+            ..Default::default()
+        })?;
         // ChaCha20 128 bit key
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(128),
-                algorithm: SymmetricAlgorithm::Chacha20,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(128),
+            algorithm: SymmetricAlgorithm::Chacha20,
+            ..Default::default()
+        })?;
         //  ChaCha20 256 bit key from a base64 encoded key
         let mut rng = CsRng::from_entropy();
         let mut key = vec![0u8; 32];
         rng.fill_bytes(&mut key);
         let key_b64 = general_purpose::STANDARD.encode(&key);
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                wrap_key_b64: Some(key_b64),
-                algorithm: SymmetricAlgorithm::Chacha20,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            wrap_key_b64: Some(key_b64),
+            algorithm: SymmetricAlgorithm::Chacha20,
+            ..Default::default()
+        })?;
     }
 
     // Sha3
     {
         // ChaCha20 256 bit salt
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
         // ChaCha20 salts
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(224),
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(256),
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(384),
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                number_of_bits: Some(512),
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(224),
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(384),
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            number_of_bits: Some(512),
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
         //  ChaCha20 256 bit salt from a base64 encoded salt
         let mut rng = CsRng::from_entropy();
         let mut salt = vec![0_u8; 32];
         rng.fill_bytes(&mut salt);
         let key_b64 = general_purpose::STANDARD.encode(&salt);
-        create_symmetric_key(
-            &ctx.owner_client_conf_path,
-            CreateKeyAction {
-                wrap_key_b64: Some(key_b64),
-                algorithm: SymmetricAlgorithm::Sha3,
-                ..Default::default()
-            },
-        )?;
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
+            wrap_key_b64: Some(key_b64),
+            algorithm: SymmetricAlgorithm::Sha3,
+            ..Default::default()
+        })?;
     }
     Ok(())
 }
@@ -206,13 +173,11 @@ pub(crate) async fn test_create_wrapped_symmetric_key() -> CosmianResult<()> {
     let wrapping_key_id =
         create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
     // AES 128 bit key
-    let _wrapped_symmetric_key = create_symmetric_key(
-        &ctx.owner_client_conf_path,
-        CreateKeyAction {
+    let _wrapped_symmetric_key =
+        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
             number_of_bits: Some(128),
             wrapping_key_id: Some(wrapping_key_id),
             ..Default::default()
-        },
-    )?;
+        })?;
     Ok(())
 }
