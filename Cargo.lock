@@ -1975,6 +1975,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_server"
 version = "0.3.0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fsqlite_ineterface#90900c0c90567a79e0aeb583f7d036f151eda822"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1988,7 +1989,7 @@ dependencies = [
  "clap",
  "cosmian_crypto_core 10.1.0",
  "cosmian_findex 7.1.0 (git+https://github.com/Cosmian/findex?rev=08b3989f800b26b9ec3093f6f1b52ee0f739835e)",
- "cosmian_findex_structs 0.3.0",
+ "cosmian_findex_structs 0.3.0 (git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fsqlite_ineterface)",
  "cosmian_logger 0.1.1",
  "dotenvy",
  "futures",
@@ -2009,10 +2010,12 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ae9704419dab9b8e28c30a8a5aa46c0f4e866ddc58ff9083073ce3b25c48b17"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.1.0 (git+https://github.com/Cosmian/findex?rev=08b3989f800b26b9ec3093f6f1b52ee0f739835e)",
+ "cosmian_findex 7.1.0 (git+https://github.com/Cosmian/findex?branch=fix%2Fdowngrate_async_sqlite)",
  "thiserror 2.0.12",
  "tracing",
  "uuid",
@@ -2021,12 +2024,11 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ae9704419dab9b8e28c30a8a5aa46c0f4e866ddc58ff9083073ce3b25c48b17"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=feat%2Fsqlite_ineterface#90900c0c90567a79e0aeb583f7d036f151eda822"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
- "cosmian_findex 7.1.0 (git+https://github.com/Cosmian/findex?branch=fix%2Fdowngrate_async_sqlite)",
+ "cosmian_findex 7.1.0 (git+https://github.com/Cosmian/findex?rev=08b3989f800b26b9ec3093f6f1b52ee0f739835e)",
  "thiserror 2.0.12",
  "tracing",
  "uuid",

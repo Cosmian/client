@@ -88,8 +88,8 @@ cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "fix/down
   "sqlite-mem",
   "test-utils",
 ] }
-# cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "feat/sqlite_ineterface" }
-cosmian_findex_server = { path = "../crate/server" } # TODO: revers
+cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "feat/sqlite_ineterface" }
+# cosmian_findex_server = { path = "../crate/server" } # TODO: revers
 # cosmian_findex_server = "0.3"
 cosmian_findex_structs = "0.3"
 cosmian_http_client = "0.2"
