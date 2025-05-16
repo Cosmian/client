@@ -1,14 +1,19 @@
 [workspace]
-default-members = ["crate/cli", "crate/gui", "crate/pkcs11/provider", "crate/wasm"]
+default-members = [
+  "crate/cli",
+  "crate/gui",
+  "crate/pkcs11/provider",
+  "crate/wasm",
+]
 members = [
-    "crate/cli",
-    "crate/findex_client",
-    "crate/kms_client",
-    "crate/gui",
-    "crate/pkcs11/module",
-    "crate/pkcs11/provider",
-    "crate/client_utils",
-    "crate/wasm",
+  "crate/cli",
+  "crate/findex_client",
+  "crate/kms_client",
+  "crate/gui",
+  "crate/pkcs11/module",
+  "crate/pkcs11/provider",
+  "crate/client_utils",
+  "crate/wasm",
 ]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
@@ -21,8 +26,8 @@ version = "0.4.0"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [
-    "Bruno Grieder <bruno.grieder@cosmian.com>",
-    "Emmanuel Coste <emmanuel.coste@cosmian.com>",
+  "Bruno Grieder <bruno.grieder@cosmian.com>",
+  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
@@ -76,15 +81,16 @@ cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
 # cosmian_pkcs11_provider = "0.4"
 
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
-    "ser",
+  "ser",
 ] }
 cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "fix/downgrate_async_sqlite", features = [
   "redis-mem",
   "sqlite-mem",
   "test-utils",
 ] }
-# cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "develop" }
-cosmian_findex_server = "0.3"
+# cosmian_findex_server = { git = "https://www.github.com/Cosmian/findex-server", branch = "feat/sqlite_ineterface" }
+cosmian_findex_server = { path = "../crate/server" } # TODO: revers
+# cosmian_findex_server = "0.3"
 cosmian_findex_structs = "0.3"
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
@@ -125,3 +131,6 @@ uuid = "=1.11.1"
 x509-cert = { version = "0.2", default-features = false }
 x509-parser = "0.17"
 zeroize = { version = "1.8", default-features = false }
+
+[patch.crates-io]
+cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "fix/downgrate_async_sqlite" }
