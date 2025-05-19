@@ -73,11 +73,7 @@ pub async fn start_default_test_findex_server() -> &'static TestsContext {
     trace!("Starting default test server");
     ONCE.get_or_try_init(|| {
         start_test_server_with_options(
-            DBConfig {
-                database_type: DatabaseType::Redis,
-                clear_database: false,
-                database_url: REDIS_DEFAULT_URL.to_owned(),
-            },
+            get_db_config(),
             6668,
             AuthenticationOptions {
                 use_jwt_token: false,
