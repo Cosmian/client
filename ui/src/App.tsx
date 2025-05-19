@@ -46,7 +46,7 @@ type AppContentProps = {
 };
 
 const AppContent: React.FC<AppContentProps> = ({ isDarkMode, setIsDarkMode }) => {
-    const { setServerUrl, setIdToken } = useAuth();
+    const { setServerUrl, setIdToken, setUserId } = useAuth();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(false);
     const [authMethod, setAuthMethod] = useState<AuthMethod>("None");
@@ -60,9 +60,10 @@ const AppContent: React.FC<AppContentProps> = ({ isDarkMode, setIsDarkMode }) =>
             const authMethod = await fetchAuthMethod(location);
             setAuthMethod(authMethod);
             if (authMethod == "JWT") {
-                const token = await fetchIdToken(location);
-                if (token) {
-                    setIdToken(token);
+                const data = await fetchIdToken(location);
+                if (data) {
+                    setIdToken(data.id_token);
+                    setUserId(data.user_id);
                     setIsAuthenticated(true);
                 }
             }

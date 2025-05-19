@@ -1,5 +1,5 @@
 import { MoonOutlined, SunOutlined } from "@ant-design/icons";
-import { Button, Layout, Spin, Switch } from "antd";
+import { Button, Layout, Spin, Switch, Tag } from "antd";
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "./AuthContext";
@@ -17,7 +17,7 @@ type MainLayoutProps = {
 const MainLayout: React.FC<MainLayoutProps> = ({ isDarkMode, setIsDarkMode, authMethod }) => {
     const [serverVersion, setServerVersion] = useState("");
     const [loading, setLoading] = useState<boolean>(true);
-    const { logout, idToken, serverUrl } = useAuth();
+    const { logout, idToken, serverUrl, userId } = useAuth();
 
     useEffect(() => {
         async function fetchServerVersion() {
@@ -46,20 +46,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isDarkMode, setIsDarkMode, auth
     return (
         <Layout>
             <Layout.Header className="fixed w-full z-10 p-0 h-16 border-b flex items-center justify-between border-gray-300">
-                <div className="flex items-center w-full">
+                <div className="flex items-center w-full h-full">
                     <Header isDarkMode={isDarkMode} />
-                    <div className="flex items-center">
+                    <div className="flex items-center h-full">
                         <Switch
-                            className="w-20 h-[25px]"
+                            className="w-20"
                             checked={isDarkMode}
                             onChange={() => setIsDarkMode(!isDarkMode)}
                             checkedChildren={<MoonOutlined />}
                             unCheckedChildren={<SunOutlined />}
                         />
-                        {authMethod == "JWT" && (
-                            <Button onClick={handleLogout} className="ml-4 w-18">
-                                Logout
-                            </Button>
+                        {authMethod === "JWT" && (
+                            <div className="flex justify-center items-center h-full overflow-hidden ml-4">
+                                {userId && (
+                                    <Tag className="truncate text-sm leading-tight" color="purple">
+                                        {userId}
+                                    </Tag>
+                                )}
+                                <Button onClick={handleLogout} className="w-18 ml-4">
+                                    Logout
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>
