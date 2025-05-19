@@ -33,16 +33,14 @@ const SQLITE_DEFAULT_URL: &str = "../../target/sqlite-data.db";
 pub(crate) static ONCE: OnceCell<TestsContext> = OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_AUTH: OnceCell<TestsContext> = OnceCell::const_new();
 
-pub fn get_redis_url(redis_url_var_env: &str) -> String {
-    env::var(redis_url_var_env).unwrap_or_else(|_| REDIS_DEFAULT_URL.to_owned())
-}
-
-fn get_sqlite_url(sqlite_url_var_env: &str) -> String {
-    env::var(sqlite_url_var_env).unwrap_or_else(|_| SQLITE_DEFAULT_URL.to_owned())
-}
-
-fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
-    let url = get_redis_url(redis_url_var_env);
+fn redis_db_config() -> DBConfig {
+    let url: String = if let Ok(host_env) = env::var("REDIS_HOST") {
+        format!("redis://{host_env}:6379")
+    } else if let Ok(url_env) = env::var("REDIS_URL") {
+        url_env
+    } else {
+        REDIS_DEFAULT_URL.to_owned()
+    };
     trace!("TESTS: using redis with findex on {url}");
     DBConfig {
         database_type: DatabaseType::Redis,
@@ -52,7 +50,7 @@ fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
 }
 
 fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
-    let url = get_sqlite_url(sqlite_url_var_env);
+    let url = env::var(sqlite_url_var_env).unwrap_or_else(|_| SQLITE_DEFAULT_URL.to_owned());
     trace!("TESTS: using sqlite with findex on {url}");
     DBConfig {
         database_type: DatabaseType::Sqlite,
@@ -63,11 +61,11 @@ fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
 
 fn get_db_config() -> DBConfig {
     env::var_os("FINDEX_TEST_DB").map_or_else(
-        || redis_db_config("FINDEX_REDIS_HOST"),
+        || redis_db_config(),
         |v| match v.to_str().unwrap_or("") {
-            "redis-findex" => redis_db_config("FINDEX_REDIS_HOST"),
-            "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_HOST"),
-            _ => redis_db_config("FINDEX_REDIS_HOST"),
+            "redis-findex" => redis_db_config(),
+            "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_URL"),
+            _ => redis_db_config(),
         },
     )
 }
