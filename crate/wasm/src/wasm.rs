@@ -21,7 +21,7 @@ use cosmian_kms_client_utils::{
     },
     locate_utils::build_locate_request,
     reexport::cosmian_kmip::{
-        kmip_0::kmip_types::CertificateType,
+        kmip_0::kmip_types::{CertificateType, RevocationReason},
         kmip_2_1::{
             kmip_attributes::Attributes,
             kmip_data_structures::{KeyMaterial, KeyValue},
@@ -578,7 +578,7 @@ pub fn revoke_ttlv_request(
     unique_identifier: &str,
     revocation_reason: JsValue,
 ) -> Result<JsValue, JsValue> {
-    let revocation_reason = serde_wasm_bindgen::from_value(revocation_reason)?;
+    let revocation_reason = serde_wasm_bindgen::from_value::<RevocationReason>(revocation_reason)?;
     let request = build_revoke_key_request(unique_identifier, revocation_reason)
         .map_err(|e| JsValue::from_str(&format!("Revocation request creation failed: {e}")))?;
     let objects = to_ttlv(&request).map_err(|e| JsValue::from(e.to_string()))?;
