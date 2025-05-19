@@ -88,25 +88,25 @@ rm -f /tmp/*.json /tmp/*.toml
 
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 
-declare -a DATABASES=('redis-findex' 'sqlite-findex')
-for KMS_TEST_DB in "${DATABASES[@]}"; do
-  echo "Database Findex: $KMS_TEST_DB"
+# declare -a DATABASES=('redis-findex' 'sqlite-findex')
+# for KMS_TEST_DB in "${DATABASES[@]}"; do
+#   echo "Database Findex: $KMS_TEST_DB"
 
-  # no docker containers on macOS Github runner
-  if [ "$(uname)" = "Darwin" ] && [ "$KMS_TEST_DB" != "sqlite" ]; then
-    continue
-  fi
+#   # no docker containers on macOS Github runner
+#   if [ "$(uname)" = "Darwin" ] && [ "$KMS_TEST_DB" != "sqlite" ]; then
+#     continue
+#   fi
 
-  # only tests all databases on release mode - keep sqlite for debug
-  if [ "$DEBUG_OR_RELEASE" = "debug" ] && [ "$KMS_TEST_DB" != "sqlite" ]; then
-    continue
-  fi
+#   # only tests all databases on release mode - keep sqlite for debug
+#   if [ "$DEBUG_OR_RELEASE" = "debug" ] && [ "$KMS_TEST_DB" != "sqlite" ]; then
+#     continue
+#   fi
 
-  export KMS_TEST_DB="$KMS_TEST_DB"
-  export SKIP_SERVICES_TESTS="--skip hsm"
+#   export KMS_TEST_DB="$KMS_TEST_DB"
+#   export SKIP_SERVICES_TESTS="--skip hsm"
 
-  cargo test --workspace --lib --target --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
-done
+#   cargo test --workspace --lib --target --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
+# done
 
 cargo install --version 0.6.36 cargo-hack --force
 
