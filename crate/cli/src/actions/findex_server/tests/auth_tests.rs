@@ -11,6 +11,8 @@ use crate::error::result::CosmianResult;
 // let us not make other test cases fail
 const PORT: u16 = 6667;
 
+// TODO(hatem): make those chose their db from the env
+
 #[tokio::test]
 pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     log_init(None);
