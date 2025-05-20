@@ -14,87 +14,96 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     log_init(None);
     let url = get_redis_url("REDIS_URL");
     trace!("TESTS: using redis on {url}");
-    // plaintext no auth
-    info!("Testing server with no auth");
-    let ctx = start_test_server_with_options(
-        DBConfig {
-            database_type: DatabaseType::Redis,
-            clear_database: false,
-            database_url: url.clone(),
-        },
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: false,
-            use_https: false,
-            use_client_cert: false,
-        },
-    )
-    .await?;
-    ctx.stop_server().await?;
 
     let default_db_config = DBConfig {
         database_type: DatabaseType::Redis,
         clear_database: false,
-        database_url: url,
+        database_url: url.clone(),
     };
 
-    // plaintext JWT token auth
-    info!("Testing server with JWT token auth");
-    let ctx = start_test_server_with_options(
-        default_db_config.clone(),
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: true,
-            use_https: false,
-            use_client_cert: false,
-        },
-    )
-    .await?;
+    // SCENARIO 1: plaintext no auth
+    info!("Testing server with no auth");
+    let options = AuthenticationOptions {
+        use_jwt_token: false,
+        use_https: false,
+        use_client_cert: false,
+        use_api_token: false,
+        ..Default::default()
+    };
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
     ctx.stop_server().await?;
 
-    // tls token auth
+    // SCENARIO 2: plaintext JWT token auth - successful auth with token
+    info!("Testing server with JWT token auth - successful");
+    let options = AuthenticationOptions {
+        use_jwt_token: true,
+        use_https: false,
+        use_client_cert: false,
+        use_api_token: false,
+        ..Default::default()
+    };
+    // Default behavior sends valid JWT token
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
+    ctx.stop_server().await?;
+
+    // SCENARIO 3: tls token auth
     info!("Testing server with TLS token auth");
-    let ctx = start_test_server_with_options(
-        default_db_config.clone(),
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: true,
-            use_https: true,
-            use_client_cert: false,
-        },
-    )
-    .await?;
+    let options = AuthenticationOptions {
+        use_jwt_token: true,
+        use_https: true,
+        use_client_cert: false,
+        use_api_token: false,
+        ..Default::default()
+    };
+    // Default behavior sends valid JWT token
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
     ctx.stop_server().await?;
 
-    // tls client cert auth
-    info!("Testing server with TLS client cert auth");
-    let ctx = start_test_server_with_options(
-        default_db_config.clone(),
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: false,
-            use_https: true,
-            use_client_cert: true,
-        },
-    )
-    .await?;
+    // SCENARIO 4: Client Certificates and JWT authentication are enabled, but the user only presents a JWT token.
+    info!("Testing server with both Client Certificates and JWT auth - JWT token only");
+    let options = AuthenticationOptions {
+        use_jwt_token: true,
+        use_https: true,
+        use_client_cert: true,
+        use_api_token: false,
+        with_no_certificate: true, // Don't send the client certificate
+        ..Default::default()
+    };
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
     ctx.stop_server().await?;
 
-    // Good JWT token auth but still cert auth used at first
-    info!(
-        "Testing server with bad API token and good JWT token auth but still cert auth used at \
-         first"
-    );
-    let ctx = start_test_server_with_options(
-        default_db_config,
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: true,
-            use_https: true,
-            use_client_cert: true,
-        },
-    )
-    .await?;
+    // SCENARIO 5: Both Client Certificates and API token authentication are enabled, the user presents an API token only
+    info!("Testing server with both Client Certificates and API token auth - API token only");
+    let options = AuthenticationOptions {
+        use_jwt_token: false,
+        use_https: true,
+        use_client_cert: true,
+        use_api_token: true,
+        with_no_certificate: true, // Don't send client certificate
+        ..Default::default()
+    };
+    // Default behavior sends a valid API token
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
+    ctx.stop_server().await?;
+
+    // SCENARIO 6: Both JWT and API token authentication are enabled, user presents an API token only
+    info!("Testing server with both JWT and API token auth - API token only");
+    let options = AuthenticationOptions {
+        use_jwt_token: true,
+        use_https: false,
+        use_client_cert: false,
+        use_api_token: true,
+        with_invalid_jwt_token: true, // Send invalid JWT token
+        ..Default::default()
+    };
+    // Default behavior sends valid API token
+
+    let ctx = start_test_server_with_options(default_db_config.clone(), PORT, options).await?;
     ctx.stop_server().await?;
 
     Ok(())
