@@ -16,10 +16,13 @@ pub(crate) async fn revoke(
     revocation_reason: &str,
 ) -> CosmianResult<()> {
     // Create the kmip query
-    let revoke_query = build_revoke_key_request(key_id, RevocationReason {
-        revocation_reason_code: RevocationReasonCode::Unspecified,
-        revocation_message: Some(revocation_reason.to_owned()),
-    })?;
+    let revoke_query = build_revoke_key_request(
+        key_id,
+        RevocationReason {
+            revocation_reason_code: RevocationReasonCode::Unspecified,
+            revocation_message: Some(revocation_reason.to_owned()),
+        },
+    )?;
 
     // Query the KMS with your kmip data
     let revoke_response = kms_rest_client

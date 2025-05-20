@@ -317,10 +317,13 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_cert_auth().await;
 
     // generate a new key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        tags: vec!["test_sym".to_string()],
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            tags: vec!["test_sym".to_string()],
+            ..Default::default()
+        },
+    )?;
 
     // Locate with Tags
     let ids = locate(

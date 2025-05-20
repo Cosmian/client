@@ -396,17 +396,24 @@ impl EncryptAction {
         );
 
         // First export the KEK locally
-        let wrapping_key = export_object(kms_rest_client, kek_id, ExportObjectParams {
-            key_format_type: Some(KeyFormatType::TransparentSymmetricKey),
-            ..ExportObjectParams::default()
-        })
+        let wrapping_key = export_object(
+            kms_rest_client,
+            kek_id,
+            ExportObjectParams {
+                key_format_type: Some(KeyFormatType::TransparentSymmetricKey),
+                ..ExportObjectParams::default()
+            },
+        )
         .await?
         .1;
         // Create the KMIP object corresponding to the DEK
-        let mut dek_object = create_symmetric_key_kmip_object(&dek, &Attributes {
-            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-            ..Default::default()
-        })?;
+        let mut dek_object = create_symmetric_key_kmip_object(
+            &dek,
+            &Attributes {
+                cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+                ..Default::default()
+            },
+        )?;
 
         // Wrap the DEK with the KEK
         wrap_key_block(

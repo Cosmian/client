@@ -404,12 +404,15 @@ async fn test_certify_a_csr_without_extensions() -> CosmianResult<()> {
     let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
 
     // Certify the CSR with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        tags: Some(vec!["certify_a_csr_we_test".to_owned()]),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            tags: Some(vec!["certify_a_csr_we_test".to_owned()]),
+            ..Default::default()
+        },
+    )?;
 
     check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
 
@@ -433,15 +436,18 @@ async fn test_certify_a_csr_with_extensions() -> CosmianResult<()> {
     let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
 
     // Certify the CSR with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        tags: Some(vec!["certify_a_csr_test".to_owned()]),
-        certificate_extensions: Some(PathBuf::from(
-            "../../test_data/certificates/openssl/ext.cnf",
-        )),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            tags: Some(vec!["certify_a_csr_test".to_owned()]),
+            certificate_extensions: Some(PathBuf::from(
+                "../../test_data/certificates/openssl/ext.cnf",
+            )),
+            ..Default::default()
+        },
+    )?;
 
     // check the certificate
     let (_, _, cert_x509_der) =
@@ -475,12 +481,17 @@ async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()
         create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        public_key_id_to_certify: Some(public_key_id),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            public_key_id_to_certify: Some(public_key_id),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            ..Default::default()
+        },
+    )?;
 
     // check the certificate
     let (_, attributes, _) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
@@ -513,15 +524,20 @@ async fn test_certify_a_public_key_test_with_extensions() -> CosmianResult<()> {
         create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        public_key_id_to_certify: Some(public_key_id),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        certificate_extensions: Some(PathBuf::from(
-            "../../test_data/certificates/openssl/ext.cnf",
-        )),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            public_key_id_to_certify: Some(public_key_id),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            certificate_extensions: Some(PathBuf::from(
+                "../../test_data/certificates/openssl/ext.cnf",
+            )),
+            ..Default::default()
+        },
+    )?;
 
     // check the certificate
     let (_, attributes, cert_x509_der) =
@@ -553,12 +569,15 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
     let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
 
     // Certify the CSR with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        tags: Some(vec!["certify_a_csr_test".to_owned()]),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            tags: Some(vec!["certify_a_csr_test".to_owned()]),
+            ..Default::default()
+        },
+    )?;
 
     let (_, _, der) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
     let x509 = X509::from_der(&der).unwrap();
@@ -566,13 +585,16 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
     assert_eq!(num_days, 365);
 
     // renew the certificate
-    let renewed_certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        certificate_id_to_re_certify: Some(certificate_id.clone()),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        tags: Some(vec!["renew_a_certificate_test".to_owned()]),
-        days: Some(42),
-        ..Default::default()
-    })?;
+    let renewed_certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            certificate_id_to_re_certify: Some(certificate_id.clone()),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            tags: Some(vec!["renew_a_certificate_test".to_owned()]),
+            days: Some(42),
+            ..Default::default()
+        },
+    )?;
 
     assert_eq!(renewed_certificate_id, certificate_id);
 
@@ -601,14 +623,19 @@ async fn test_certify_issue_with_subject_name() -> CosmianResult<()> {
     let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
 
     // Certify the CSR with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        generate_keypair: true,
-        algorithm: Some(Algorithm::NistP256),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        issuer_private_key_id: Some(issuer_private_key_id.clone()),
-        tags: Some(vec!["certify_a_csr_test".to_owned()]),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            generate_keypair: true,
+            algorithm: Some(Algorithm::NistP256),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            issuer_private_key_id: Some(issuer_private_key_id.clone()),
+            tags: Some(vec!["certify_a_csr_test".to_owned()]),
+            ..Default::default()
+        },
+    )?;
 
     let (_, attributes, _) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
     info!("{attributes:?}");
@@ -640,11 +667,16 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
         create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        public_key_id_to_certify: Some(public_key_id),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            public_key_id_to_certify: Some(public_key_id),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            ..Default::default()
+        },
+    )?;
 
     let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
     // since the certificate is self signed, the Certificate Link should point back to itself
@@ -668,11 +700,16 @@ pub(crate) fn create_self_signed_cert(ctx: &TestsContext) -> CosmianResult<Strin
         create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        public_key_id_to_certify: Some(public_key_id),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            public_key_id_to_certify: Some(public_key_id),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            ..Default::default()
+        },
+    )?;
 
     Ok(certificate_id)
 }
@@ -709,17 +746,22 @@ async fn test_certify_issue_with_subject_name_self_signed_with_extensions() -> C
     let ctx = start_default_test_kms_server().await;
 
     // Certify the CSR without issuer i.e. self signed
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        generate_keypair: true,
-        algorithm: Some(Algorithm::NistP256),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned()),
-        tags: Some(vec!["certify_self_signed".to_owned()]),
-        certificate_extensions: Some(PathBuf::from(
-            "../../test_data/certificates/chain/root/ca/ext_v3_ca_root.cnf",
-        )),
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            generate_keypair: true,
+            algorithm: Some(Algorithm::NistP256),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_owned(),
+            ),
+            tags: Some(vec!["certify_self_signed".to_owned()]),
+            certificate_extensions: Some(PathBuf::from(
+                "../../test_data/certificates/chain/root/ca/ext_v3_ca_root.cnf",
+            )),
 
-        ..Default::default()
-    })?;
+            ..Default::default()
+        },
+    )?;
 
     let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
     // since the certificate is self signed, the Certificate Link should point back to itself
@@ -744,25 +786,35 @@ async fn test_certify_twice() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // Certify the CSR without issuer i.e. self signed
-    let certificate_id = certify(&ctx.owner_client_conf_path, CertifyOp {
-        generate_keypair: true,
-        algorithm: Some(Algorithm::NistP256),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string()),
-        ..Default::default()
-    })?;
+    let certificate_id = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            generate_keypair: true,
+            algorithm: Some(Algorithm::NistP256),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string(),
+            ),
+            ..Default::default()
+        },
+    )?;
 
     let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
     let private_key_id = attributes.get_link(LinkType::PrivateKeyLink).unwrap();
     let public_key_id = attributes.get_link(LinkType::PublicKeyLink).unwrap();
 
     // Certify again with the same certificate id
-    let certificate_id2 = certify(&ctx.owner_client_conf_path, CertifyOp {
-        certificate_id: Some(certificate_id.clone()),
-        generate_keypair: true,
-        algorithm: Some(Algorithm::NistP256),
-        subject_name: Some("C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string()),
-        ..Default::default()
-    })?;
+    let certificate_id2 = certify(
+        &ctx.owner_client_conf_path,
+        CertifyOp {
+            certificate_id: Some(certificate_id.clone()),
+            generate_keypair: true,
+            algorithm: Some(Algorithm::NistP256),
+            subject_name: Some(
+                "C = FR, ST = IdF, L = Paris, O = AcmeTest, CN = Test Leaf".to_string(),
+            ),
+            ..Default::default()
+        },
+    )?;
 
     let (_, attributes2, _) = fetch_certificate(ctx, &certificate_id2);
     let private_key_id2 = attributes2.get_link(LinkType::PrivateKeyLink).unwrap();

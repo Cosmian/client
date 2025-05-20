@@ -46,11 +46,14 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     let mut rng = CsRng::from_entropy();
     let mut wrap_key_bytes = vec![0; 32];
     rng.fill_bytes(&mut wrap_key_bytes);
-    let wrap_key = create_symmetric_key_kmip_object(&wrap_key_bytes, &Attributes {
-        cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+    let wrap_key = create_symmetric_key_kmip_object(
+        &wrap_key_bytes,
+        &Attributes {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
 
-        ..Default::default()
-    })?;
+            ..Default::default()
+        },
+    )?;
     write_kmip_object_to_file(&wrap_key, &wrap_key_path)?;
 
     // import the wrapping key

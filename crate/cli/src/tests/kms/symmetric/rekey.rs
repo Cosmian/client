@@ -58,10 +58,13 @@ pub(crate) async fn test_rekey_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
 
     // AES 256 bit key
-    let id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        number_of_bits: Some(AES_KEY_SIZE),
-        ..Default::default()
-    })?;
+    let id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            number_of_bits: Some(AES_KEY_SIZE),
+            ..Default::default()
+        },
+    )?;
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {

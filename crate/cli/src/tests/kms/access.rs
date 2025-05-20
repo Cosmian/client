@@ -428,9 +428,12 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     );
 
     // this will not error
-    revoke_access(&ctx.owner_client_conf_path, Some(&key_id), "BAD USER", &[
-        "get",
-    ])?;
+    revoke_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "BAD USER",
+        &["get"],
+    )?;
 
     Ok(())
 }
@@ -591,12 +594,18 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant encrypt and decrypt access to user
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "encrypt",
-    ])?;
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "decrypt",
-    ])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["encrypt"],
+    )?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["decrypt"],
+    )?;
 
     // switch to user
     // the user should still not be able to export
@@ -652,9 +661,12 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // switch back to owner
     // grant destroy access to user
-    grant_access(&ctx.owner_client_conf_path, Some(&key_id), "*", &[
-        "destroy",
-    ])?;
+    grant_access(
+        &ctx.owner_client_conf_path,
+        Some(&key_id),
+        "*",
+        &["destroy"],
+    )?;
 
     // switch to user
     // destroy the key

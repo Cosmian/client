@@ -172,8 +172,10 @@ impl CreateKeyPairsAction {
         };
 
         // Export wrapped private key with google CSE key
-        let (_, wrapped_private_key, _attributes) =
-            export_object(&kms_rest_client, &private_key_id, ExportObjectParams {
+        let (_, wrapped_private_key, _attributes) = export_object(
+            &kms_rest_client,
+            &private_key_id,
+            ExportObjectParams {
                 wrapping_key_id: Some(&self.cse_key_id),
                 wrapping_cryptographic_parameters: Some(CryptographicParameters {
                     cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
@@ -181,8 +183,9 @@ impl CreateKeyPairsAction {
                     ..CryptographicParameters::default()
                 }),
                 ..ExportObjectParams::default()
-            })
-            .await?;
+            },
+        )
+        .await?;
 
         let wrapped_key_bytes = wrapped_private_key.key_block()?.wrapped_key_bytes()?;
 

@@ -327,10 +327,13 @@ async fn test_non_revocable_symmetric_key() -> CosmianResult<()> {
     .await;
 
     // sym
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction {
-        key_id: Some(non_revocable_key.clone()),
-        ..Default::default()
-    })?;
+    let key_id = create_symmetric_key(
+        &ctx.owner_client_conf_path,
+        CreateKeyAction {
+            key_id: Some(non_revocable_key.clone()),
+            ..Default::default()
+        },
+    )?;
 
     assert_eq!(key_id, non_revocable_key);
 
