@@ -23,7 +23,8 @@ use tracing::{info, trace};
 use crate::test_jwt::{AUTH0_TOKEN, get_auth0_jwt_config};
 
 const REDIS_DEFAULT_URL: &str = "redis://localhost:6379";
-const SQLITE_DEFAULT_URL: &str = "../../target/sqlite-data.db";
+const SQLITE_DEFAULT_URL: &str = "sqlite-data.db";
+// const SQLITE_DEFAULT_URL: &str = "../../target/sqlite-data.db";
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N Findex servers (one per test)
