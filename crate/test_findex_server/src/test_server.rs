@@ -62,7 +62,7 @@ fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
 
 pub fn get_db_config() -> DBConfig {
     env::var_os("FINDEX_TEST_DB").map_or_else(redis_db_config, |v| match v.to_str().unwrap_or("") {
-        "redis-findex" => redis_db_config(),
+        // "redis-findex" => redis_db_config(),
         "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_URL"),
         _ => redis_db_config(),
     })
