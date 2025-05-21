@@ -24,7 +24,6 @@ use crate::test_jwt::{AUTH0_TOKEN, get_auth0_jwt_config};
 
 const REDIS_DEFAULT_URL: &str = "redis://localhost:6379";
 const SQLITE_DEFAULT_URL: &str = "sqlite-data.db";
-// const SQLITE_DEFAULT_URL: &str = "../../target/sqlite-data.db";
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N Findex servers (one per test)
@@ -62,7 +61,7 @@ fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
 
 pub fn get_db_config() -> DBConfig {
     env::var_os("FINDEX_TEST_DB").map_or_else(redis_db_config, |v| match v.to_str().unwrap_or("") {
-        // "redis-findex" => redis_db_config(),
+        "redis-findex" => redis_db_config(),
         "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_URL"),
         _ => redis_db_config(),
     })
