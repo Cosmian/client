@@ -9,6 +9,8 @@ use crate::error::result::CosmianResult;
 // let us not make other test cases fail
 const PORT: u16 = 6667;
 
+//TODO: please check equivalent - but more detailed - tests in src/tests/kms/auth_tests.rs
+
 #[tokio::test]
 pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     log_init(None);
@@ -69,7 +71,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         use_https: true,
         use_client_cert: true,
         use_api_token: false,
-        with_no_certificate: true, // Don't send the client certificate
+        do_not_send_client_certificate: true, // Don't send the client certificate
         ..Default::default()
     };
 
@@ -83,7 +85,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         use_https: true,
         use_client_cert: true,
         use_api_token: true,
-        with_no_certificate: true, // Don't send client certificate
+        do_not_send_client_certificate: true, // Don't send client certificate
         ..Default::default()
     };
     // Default behavior sends a valid API token
@@ -98,7 +100,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
         use_https: false,
         use_client_cert: false,
         use_api_token: true,
-        with_invalid_jwt_token: true, // Send invalid JWT token
+        do_not_send_jwt_token: true, // Send invalid JWT token
         ..Default::default()
     };
     // Default behavior sends valid API token

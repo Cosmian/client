@@ -293,126 +293,87 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
     ctx.stop_server().await?;
 
-    // // SCENARIO 7: JWT authentication enabled, but invalid token presented (failure case)
-    // info!("Testing server with JWT auth - invalid token (should fail)");
-    // let ctx = start_test_server_with_options(
-    //     default_db_config.clone(),
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: true,
-    //         use_https: false,
-    //         use_client_cert: false,
-    //         api_token_id: None,
-    //         api_token: None,
-    //     },
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
+    // SCENARIO 7: JWT authentication enabled, but no JWT token presented (failure case)
+    info!("===> Testing server with JWT auth - but no JWT token sent (should fail)");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            do_not_send_jwt_token: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
 
-    // // Bad API token auth but JWT auth used at first
-    // info!("Testing server with bad API token auth but JWT auth used at first");
-    // let ctx = start_test_server_with_options(
-    //     default_db_config.clone(),
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: true,
-    //         use_https: true,
-    //         use_client_cert: false,
-    //         api_token_id: Some("my_bad_token_id".to_owned()),
-    //         api_token: Some("my_bad_token".to_owned()),
-    //     },
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
+    // Bad API token auth but JWT auth used at first
+    info!("==> Testing server with bad API token auth but JWT auth used at first");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            use_https: true,
+            api_token_id: Some("my_bad_token_id".to_owned()),
+            api_token: Some("my_bad_token".to_owned()),
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
 
-    // // API token auth
-    // info!("Testing server with API token auth");
-    // let ctx = start_test_server_with_options(
-    //     default_db_config.clone(),
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: false,
-    //         use_https: false,
-    //         use_client_cert: false,
-    //         api_token_id: Some(api_token_id),
-    //         api_token: Some(api_token),
-    //     },
-    //     None,
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
+    // Bad API token auth, but cert auth used at first
+    info!("==> Testing server with bad API token auth but cert auth used at first");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_https: true,
+            use_client_cert: true,
+            api_token_id: Some("my_bad_token_id".to_string()),
+            api_token: Some("my_bad_token".to_string()),
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
 
-    // // tls client cert auth
-    // info!("Testing server with TLS client cert auth");
-    // let ctx = start_test_server_with_options(
-    //     default_db_config.clone(),
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: false,
-    //         use_https: true,
-    //         use_client_cert: true,
-    //         api_token_id: None,
-    //         api_token: None,
-    //     },
-    //     None,
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
-
-    // // Bad API token auth, but cert auth used at first
-    // info!("Testing server with bad API token auth but cert auth used at first");
-    // let ctx = start_test_server_with_options(
-    //     default_db_config.clone(),
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: false,
-    //         use_https: true,
-    //         use_client_cert: true,
-    //         api_token_id: Some("my_bad_token_id".to_string()),
-    //         api_token: Some("my_bad_token".to_string()),
-    //     },
-    //     None,
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
-
-    // // Bad API token and good JWT token auth but still cert auth used at first
-    // info!(
-    //     "Testing server with bad API token and good JWT token auth but still cert auth used at \
-    //      first"
-    // );
-    // let ctx = start_test_server_with_options(
-    //     default_db_config,
-    //     PORT,
-    //     AuthenticationOptions {
-    //         use_jwt_token: true,
-    //         use_https: true,
-    //         use_client_cert: true,
-    //         api_token_id: Some("my_bad_token_id".to_string()),
-    //         api_token: Some("my_bad_token".to_string()),
-    //     },
-    //     None,
-    //     None,
-    //     None,
-    // )
-    // .await?;
-    // run_owned_cli_command(&ctx.owner_client_conf_path);
-    // ctx.stop_server().await?;
+    // Bad API token and good JWT token auth but still cert auth used at first
+    info!(
+        "==> Testing server with bad API token and good JWT token auth but still cert auth used \
+         at first"
+    );
+    let ctx = start_test_server_with_options(
+        default_db_config,
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            use_https: true,
+            use_client_cert: true,
+            api_token_id: Some("my_bad_token_id".to_string()),
+            api_token: Some("my_bad_token".to_string()),
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
 
     // delete the temp db dir
     let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;

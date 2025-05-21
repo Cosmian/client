@@ -59,9 +59,9 @@ pub async fn start_default_test_findex_server() -> &'static TestsContext {
                 use_https: false,
                 use_client_cert: false,
                 use_api_token: false,
-                with_no_certificate: false,
-                with_invalid_api_token: false,
-                with_invalid_jwt_token: false,
+                do_not_send_client_certificate: false,
+                do_not_send_api_token: false,
+                do_not_send_jwt_token: false,
             },
         )
     })
@@ -81,9 +81,9 @@ pub async fn start_default_test_findex_server_with_cert_auth() -> &'static Tests
                     use_https: true,
                     use_client_cert: true,
                     use_api_token: false,
-                    with_no_certificate: false,
-                    with_invalid_api_token: false,
-                    with_invalid_jwt_token: false,
+                    do_not_send_client_certificate: false,
+                    do_not_send_api_token: false,
+                    do_not_send_jwt_token: false,
                 },
             )
         })
@@ -115,10 +115,11 @@ pub struct AuthenticationOptions {
     pub use_client_cert: bool,
     pub use_api_token: bool,
 
+    //TODO check the KMS est Server equivalent to replicate how this used in testing authentication scenarios
     // Client credential configuration (all false by default)
-    pub with_no_certificate: bool, // True = don't send client certificate even when required
-    pub with_invalid_api_token: bool, // True = send invalid API token
-    pub with_invalid_jwt_token: bool, // True = send invalid JWT token
+    pub do_not_send_client_certificate: bool, // True = don't send client certificate even when required
+    pub do_not_send_api_token: bool,          // True = do not send an API token
+    pub do_not_send_jwt_token: bool,          // True = do not send an JWT token
 }
 
 /// Start a Findex server in a thread with the given options
@@ -362,9 +363,9 @@ mod findex_server {
                     use_jwt_token,
                     use_client_cert,
                     use_api_token: false,
-                    with_no_certificate: false,
-                    with_invalid_api_token: false,
-                    with_invalid_jwt_token: false,
+                    do_not_send_client_certificate: false,
+                    do_not_send_api_token: false,
+                    do_not_send_jwt_token: false,
                 },
             )
             .await?;
