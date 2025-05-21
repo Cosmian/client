@@ -1,9 +1,5 @@
-use std::env;
-
 use cosmian_logger::log_init;
-use test_findex_server::{
-    AuthenticationOptions, DBConfig, DatabaseType, start_test_server_with_options,
-};
+use test_findex_server::{AuthenticationOptions, get_db_config, start_test_server_with_options};
 use tracing::{info, trace};
 
 use crate::error::result::CosmianResult;
@@ -16,18 +12,15 @@ const PORT: u16 = 6667;
 #[tokio::test]
 pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     log_init(None);
-    let url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".to_owned());
-    //get_redis_url("REDIS_URL");
-    // TODO: some work needs tbd here
-    trace!("TESTS: using redis on {url}");
+    let test_db = get_db_config();
+    trace!(
+        "TESTS: using db {:?} on {:?}",
+        test_db.database_type, test_db.database_url
+    );
     // plaintext no auth
     info!("Testing server with no auth");
     let ctx = start_test_server_with_options(
-        DBConfig {
-            database_type: DatabaseType::Redis,
-            clear_database: false,
-            database_url: url.clone(),
-        },
+        test_db.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: false,
@@ -38,16 +31,10 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     .await?;
     ctx.stop_server().await?;
 
-    let default_db_config = DBConfig {
-        database_type: DatabaseType::Redis,
-        clear_database: false,
-        database_url: url,
-    };
-
     // plaintext JWT token auth
     info!("Testing server with JWT token auth");
     let ctx = start_test_server_with_options(
-        default_db_config.clone(),
+        test_db.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: true,
@@ -61,7 +48,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     // tls token auth
     info!("Testing server with TLS token auth");
     let ctx = start_test_server_with_options(
-        default_db_config.clone(),
+        test_db.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: true,
@@ -75,7 +62,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     // tls client cert auth
     info!("Testing server with TLS client cert auth");
     let ctx = start_test_server_with_options(
-        default_db_config.clone(),
+        test_db.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: false,
@@ -92,7 +79,7 @@ pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
          first"
     );
     let ctx = start_test_server_with_options(
-        default_db_config,
+        test_db,
         PORT,
         AuthenticationOptions {
             use_jwt_token: true,
