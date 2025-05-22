@@ -400,7 +400,6 @@ async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), Kms
             break;
         }
         if result.is_err() {
-            error!("XXXXXXXX Error while checking the server version: {result:?}");
             timeout -= 1;
             retry = timeout >= 0;
             if retry {
@@ -409,7 +408,7 @@ async fn wait_for_server_to_start(kms_rest_client: &KmsClient) -> Result<(), Kms
                 waiting *= 2;
             } else {
                 info!("The server is still not up, stop trying.");
-                kms_client_bail!("Can't start the kms server to run tests");
+                kms_client_bail!("Can't start the kms server to run tests: {result:?}");
             }
         } else {
             info!("UP!");
