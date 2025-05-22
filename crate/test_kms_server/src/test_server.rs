@@ -517,9 +517,9 @@ fn generate_owner_conf(
         kms_config: KmsClientConfig {
             http_config: HttpClientConfig {
                 server_url: if server_params.tls_params.is_some() {
-                    format!("https://0.0.0.0:{}", server_params.http_port)
+                    format!("https://localhost:{}", server_params.http_port)
                 } else {
-                    format!("http://0.0.0.0:{}", server_params.http_port)
+                    format!("http://localhost:{}", server_params.http_port)
                 },
                 accept_invalid_certs: true,
                 access_token: set_access_token(

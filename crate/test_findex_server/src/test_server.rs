@@ -285,7 +285,7 @@ fn generate_owner_conf(server_params: &ServerParams) -> Result<RestClientConfig,
     let owner_client_conf = RestClientConfig {
         http_config: HttpClientConfig {
             server_url: format!(
-                "{}://0.0.0.0:{}",
+                "{}://localhost:{}",
                 if matches!(server_params.http_params, HttpParams::Https(_)) {
                     "https"
                 } else {
