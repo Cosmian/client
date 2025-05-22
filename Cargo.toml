@@ -91,12 +91,12 @@ cosmian_logger = "0.2"
 # cosmian_kms_server = "5.0"
 # cosmian_kms_server_database = "5.0"
 # Uncomment the following lines to use the latest develop branch of Cosmian KMS
-cosmian_pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
-cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
-cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
-cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
-cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
-cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "fix/debug_cse_import" }
+cosmian_pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
+cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
 
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
