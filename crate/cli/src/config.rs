@@ -33,7 +33,7 @@ impl ClientConfig {
     ///
     /// # Errors
     /// Return an error if the configuration file is not found or if the file is
-    /// not a valid toml file.
+    /// not a valid TOML file.
     pub fn location(conf: Option<PathBuf>) -> Result<PathBuf, CosmianError> {
         Ok(location(
             conf,
@@ -43,10 +43,10 @@ impl ClientConfig {
         )?)
     }
 
-    /// Load the configuration from a toml file.
+    /// Load the configuration from a TOML file.
     /// # Errors
     /// Return an error if the configuration file is not found or if the file is
-    /// not a valid toml file.
+    /// not a valid TOML file.
     pub fn load(conf_path: Option<PathBuf>) -> Result<Self, CosmianError> {
         let conf_path_buf = Self::location(conf_path)?;
         debug!("Loading configuration from: {conf_path_buf:?}");
@@ -60,11 +60,11 @@ impl ClientConfig {
         )?)?)
     }
 
-    /// Save the configuration to a toml file.
+    /// Save the configuration to a TOML file.
     ///
     /// # Errors
     /// Return an error if the configuration file is not found or if the file is
-    /// not a valid toml file.
+    /// not a valid TOML file.
     pub fn save(&self, conf_path: Option<PathBuf>) -> Result<(), CosmianError> {
         let conf_path_buf = Self::location(conf_path)?;
         println!("Saving configuration to: {}", conf_path_buf.display());
