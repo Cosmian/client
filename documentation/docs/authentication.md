@@ -70,7 +70,7 @@ accept_invalid_certs = true
 To authenticate using OAuth2/OIDC:
 
 1. Configure the `oauth2_conf` section in your TOML file
-2. Run `cosmian kms login` to initiate authentication 
+2. Run `cosmian kms login` to initiate authentication
 3. Use `cosmian kms logout` to clear the token
 
 The `oauth2_conf` section requires:
