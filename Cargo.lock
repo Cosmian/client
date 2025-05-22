@@ -2027,8 +2027,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kmip"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1f31d793a09e6b0ecc7d921150d489366c26d80f2a5ceb0202ff2c9276622b1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "bitflags 2.9.1",
  "cosmian_logger 0.1.1",
@@ -2049,8 +2048,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_access"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "246f79db0e5808f1f4bc0c7520e10e8d1039bb01533778c3dcbe7fe6b450017f"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -2059,8 +2057,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_base_hsm"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c10d29462b2672fb73bb3fef4549d773d7403cafac1a40c0e37a34b02bd74fc6"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -2129,8 +2126,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_crypto"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df22427cc548304b81465bb720b951f0995da47353126eb53c9fb96c8466dbac"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2155,8 +2151,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_interfaces"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8c82f652d92d41bdee121a508a11bfd01e6ef1f1594a526ba19ab86719cbcd9"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2171,8 +2166,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b76b219ea368cf669b4a6f2ec51d26e44d49faf1a6f9a400f80e2318bfad7f1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2200,13 +2194,17 @@ dependencies = [
  "dotenvy",
  "futures",
  "hex",
+ "jsonwebtoken",
+ "lazy_static",
  "log",
  "num-bigint-dig",
  "oauth2 5.0.0",
  "openidconnect",
  "openssl",
+ "pem",
  "proteccio_pkcs11_loader",
  "reqwest 0.11.27",
+ "rsa",
  "rustls 0.23.27",
  "serde",
  "serde_json",
@@ -2226,8 +2224,7 @@ dependencies = [
 [[package]]
 name = "cosmian_kms_server_database"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e93a1dad2a73c74bf6d73638868648308eb2576cc84bd94fb2274b6922e01293"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
@@ -2337,8 +2334,7 @@ dependencies = [
 [[package]]
 name = "cosmian_pkcs11_sys"
 version = "0.2.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ee5887bc331eba06478add7025fbc0ed12f6b89e0ad4d67dd3638ac7778a43d"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 
 [[package]]
 name = "cpufeatures"
@@ -4291,6 +4287,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonwebtoken"
+version = "9.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a87cc7a48537badeae96744432de36f4be2b4a34a05a5ef32e9dd8a1c169dde"
+dependencies = [
+ "base64 0.22.1",
+ "js-sys",
+ "pem",
+ "ring",
+ "serde",
+ "serde_json",
+ "simple_asn1",
+]
+
+[[package]]
 name = "jwt-simple"
 version = "0.12.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4373,8 +4384,7 @@ dependencies = [
 [[package]]
 name = "kmip-derive"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f09fc18967a62572fdaf82f2577cd4440d1e337cff30d8b01c846fe00e12f85"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "quote",
  "syn 2.0.101",
@@ -5814,8 +5824,7 @@ dependencies = [
 [[package]]
 name = "proteccio_pkcs11_loader"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb3b270a4fc9051507a0a59c92c05f70b7d2bf8cd2d33329f41c9cd025bf830f"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -6814,6 +6823,18 @@ name = "simd-adler32"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
+
+[[package]]
+name = "simple_asn1"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "297f631f50729c8c99b84667867963997ec0b50f32b2a7dbcab828ef0541e8bb"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "thiserror 2.0.12",
+ "time",
+]
 
 [[package]]
 name = "slab"
@@ -7974,8 +7995,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utimaco_pkcs11_loader"
 version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31ad933f257540e2cb2185f54e5bddf8dccc99aaf56363ced7e86c515387f429"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#e75ebd92dd742f5f37a9fc7aab390b3da75964bf"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
