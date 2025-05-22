@@ -5,6 +5,8 @@ interface AuthContextType {
     setServerUrl: (url: string) => void;
     idToken: string | null;
     setIdToken: (token: string | null) => void;
+    userId: string | null;
+    setUserId: (userId: string | null) => void;
     login: () => Promise<void>;
     logout: () => void;
 }
@@ -13,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [idToken, setIdToken] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
     const [serverUrl, setServerUrl] = useState<string>("");
 
     const login = async () => {
@@ -30,7 +33,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         window.location.href = kmsUrl;
     };
 
-    return <AuthContext.Provider value={{ serverUrl, setServerUrl, idToken, setIdToken, login, logout }}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={{ serverUrl, setServerUrl, idToken, setIdToken, userId, setUserId, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
 export const useAuth = (): AuthContextType => {

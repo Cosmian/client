@@ -6,7 +6,7 @@ import { sendKmipRequest } from "./utils";
 import { parse_revoke_ttlv_response, revoke_ttlv_request } from "./wasm/pkg/cosmian_kms_client_wasm";
 
 interface RevokeFormData {
-    revocationReason: string;
+    revocationReasonMessage: string;
     objectId?: string;
     tags?: string[];
 }
@@ -20,6 +20,11 @@ interface RevokeFormProps {
 type RevokeResponse = {
     UniqueIdentifier: string;
 };
+
+interface RevocationReason {
+    revocation_reason_code: string;
+    revocation_message: string;
+}
 
 const RevokeForm: React.FC<RevokeFormProps> = (props: RevokeFormProps) => {
     const [form] = Form.useForm<RevokeFormData>();
@@ -44,7 +49,11 @@ const RevokeForm: React.FC<RevokeFormProps> = (props: RevokeFormProps) => {
         }
 
         try {
-            const request = revoke_ttlv_request(id, values.revocationReason);
+            const revocationReason: RevocationReason = {
+                revocation_reason_code: "Unspecified",
+                revocation_message: values.revocationReasonMessage,
+            };
+            const request = revoke_ttlv_request(id, revocationReason);
             const result_str = await sendKmipRequest(request, idToken, serverUrl);
             if (result_str) {
                 const result: RevokeResponse = await parse_revoke_ttlv_response(result_str);
@@ -106,8 +115,8 @@ const RevokeForm: React.FC<RevokeFormProps> = (props: RevokeFormProps) => {
                 <Space direction="vertical" size="middle" style={{ display: "flex" }}>
                     <Card>
                         <Form.Item
-                            name="revocationReason"
-                            label="Revocation Reason"
+                            name="revocationReasonMessage"
+                            label="Revocation Reason Message"
                             rules={[
                                 {
                                     required: true,
