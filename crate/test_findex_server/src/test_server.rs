@@ -23,6 +23,7 @@ use tracing::{info, trace};
 use crate::test_jwt::{AUTH0_TOKEN, get_auth0_jwt_config};
 
 const REDIS_DEFAULT_URL: &str = "redis://localhost:6379";
+const SQLITE_DEFAULT_URL: &str = "sqlite-data.db";
 
 /// In order to run most tests in parallel,
 /// we use that to avoid to try to start N Findex servers (one per test)
@@ -32,18 +33,38 @@ const REDIS_DEFAULT_URL: &str = "redis://localhost:6379";
 pub(crate) static ONCE: OnceCell<TestsContext> = OnceCell::const_new();
 pub(crate) static ONCE_SERVER_WITH_AUTH: OnceCell<TestsContext> = OnceCell::const_new();
 
-pub fn get_redis_url(redis_url_var_env: &str) -> String {
-    env::var(redis_url_var_env).unwrap_or_else(|_| REDIS_DEFAULT_URL.to_owned())
-}
-
-fn redis_db_config(redis_url_var_env: &str) -> DBConfig {
-    let url = get_redis_url(redis_url_var_env);
-    trace!("TESTS: using redis on {url}");
+fn redis_db_config() -> DBConfig {
+    let url: String = if let Ok(host_env) = env::var("REDIS_HOST") {
+        format!("redis://{host_env}:6379")
+    } else if let Ok(url_env) = env::var("REDIS_URL") {
+        url_env
+    } else {
+        REDIS_DEFAULT_URL.to_owned()
+    };
+    trace!("TESTS: using redis with findex on {url}");
     DBConfig {
         database_type: DatabaseType::Redis,
         clear_database: false,
         database_url: url,
     }
+}
+
+fn sqlite_db_config(sqlite_url_var_env: &str) -> DBConfig {
+    let url = env::var(sqlite_url_var_env).unwrap_or_else(|_| SQLITE_DEFAULT_URL.to_owned());
+    trace!("TESTS: using sqlite with findex on {url}");
+    DBConfig {
+        database_type: DatabaseType::Sqlite,
+        clear_database: false,
+        database_url: url,
+    }
+}
+
+pub fn get_db_config() -> DBConfig {
+    env::var_os("FINDEX_TEST_DB").map_or_else(redis_db_config, |v| match v.to_str().unwrap_or("") {
+        "redis-findex" => redis_db_config(),
+        "sqlite-findex" => sqlite_db_config("FINDEX_SQLITE_URL"),
+        _ => redis_db_config(),
+    })
 }
 
 /// Start a test Findex server in a thread with the default options:
@@ -52,7 +73,7 @@ pub async fn start_default_test_findex_server() -> &'static TestsContext {
     trace!("Starting default test server");
     ONCE.get_or_try_init(|| {
         start_test_server_with_options(
-            redis_db_config("REDIS_URL"),
+            get_db_config(),
             6668,
             AuthenticationOptions {
                 use_jwt_token: false,
@@ -70,7 +91,7 @@ pub async fn start_default_test_findex_server_with_cert_auth() -> &'static Tests
     ONCE_SERVER_WITH_AUTH
         .get_or_try_init(|| {
             start_test_server_with_options(
-                redis_db_config("REDIS_URL"),
+                get_db_config(),
                 6660,
                 AuthenticationOptions {
                     use_jwt_token: false,
@@ -264,7 +285,7 @@ fn generate_owner_conf(server_params: &ServerParams) -> Result<RestClientConfig,
     let owner_client_conf = RestClientConfig {
         http_config: HttpClientConfig {
             server_url: format!(
-                "{}://0.0.0.0:{}",
+                "{}://localhost:{}",
                 if matches!(server_params.http_params, HttpParams::Https(_)) {
                     "https"
                 } else {
@@ -316,7 +337,7 @@ mod findex_server {
     use tracing::trace;
 
     use crate::{
-        AuthenticationOptions, start_test_server_with_options, test_server::redis_db_config,
+        AuthenticationOptions, start_test_server_with_options, test_server::get_db_config,
     };
 
     #[tokio::test]
@@ -331,7 +352,7 @@ mod findex_server {
         for (use_https, use_jwt_token, use_client_cert, description) in test_cases {
             trace!("Running test case: {}", description);
             let context = start_test_server_with_options(
-                redis_db_config("REDIS_URL"),
+                get_db_config(),
                 6667,
                 AuthenticationOptions {
                     use_https,
