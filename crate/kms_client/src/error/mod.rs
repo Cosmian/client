@@ -43,6 +43,9 @@ pub enum KmsClientError {
     #[error("REST Request Failed: {0}")]
     RequestFailed(String),
 
+    #[error("{0}")]
+    Unauthorized(String),
+
     #[error("REST Response Conversion Failed: {0}")]
     ResponseFailed(String),
 

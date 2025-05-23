@@ -1,4 +1,3 @@
-#![allow(unused)]
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
@@ -36,6 +35,16 @@ fn run_owned_cli_command(owner_client_conf_path: &str) {
     cmd.assert().success();
 }
 
+/// This function runs the CLI command with the provided configuration path and expects it to fail.
+fn run_owned_cli_command_expect_failure(owner_client_conf_path: &str) {
+    let mut cmd = Command::cargo_bin(PROG_NAME).expect(" cargo bin failed");
+    cmd.env(COSMIAN_CLI_CONF_ENV, owner_client_conf_path);
+
+    cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec!["owned"]);
+    recover_cmd_logs(&mut cmd);
+    cmd.assert().failure();
+}
+
 fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
     // Create and export an API token
     let api_token_id =
@@ -70,14 +79,14 @@ const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 5; // +5 since there are other KMS t
 
 #[tokio::test]
 pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
-    // log_init(Some("debug"));
+    // log_init(Some("error,cosmian_kms_server=info,cosmian_cli=info"));
     log_init(option_env!("RUST_LOG"));
 
     // delete the temp db dir holding `sqlite-data-auth-tests/kms.db`
     let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
 
     // plaintext no auth
-    info!("Testing server with no auth");
+    info!("==> Testing server with no auth");
     let ctx = start_test_server_with_options(
         MainDBConfig {
             database_type: Some("sqlite".to_owned()),
@@ -86,13 +95,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
             ..MainDBConfig::default()
         },
         PORT,
-        AuthenticationOptions {
-            use_jwt_token: false,
-            use_https: false,
-            use_client_cert: false,
-            api_token_id: None,
-            api_token: None,
-        },
+        AuthenticationOptions::default(),
         None,
         None,
         None,
@@ -111,16 +114,13 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     };
 
     // plaintext JWT token auth
-    info!("Testing server with JWT token auth");
+    info!("==> Testing server with JWT token over HTTP");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: true,
-            use_https: false,
-            use_client_cert: false,
-            api_token_id: None,
-            api_token: None,
+            ..Default::default()
         },
         None,
         None,
@@ -131,16 +131,56 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     ctx.stop_server().await?;
 
     // tls token auth
-    info!("Testing server with TLS token auth");
+    info!("==> Testing server with JWT token auth over HTTPS");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
         PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
-            use_client_cert: false,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // Client Certificate authentication
+    info!("==> Testing server with Client Certificate auth");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_https: true,
+            use_client_cert: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 1: Both Client Certificates and JWT authentication enabled, user presents JWT token only
+    info!(
+        "==> Testing server with both Client Certificates and JWT auth - User sends JWT token only"
+    );
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            use_https: true,
+            use_client_cert: true,
             api_token_id: None,
             api_token: None,
+            do_not_send_client_certificate: true,
+            ..Default::default()
         },
         None,
         None,
@@ -150,48 +190,11 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     run_owned_cli_command(&ctx.owner_client_conf_path);
     ctx.stop_server().await?;
 
-    // Bad API token auth but JWT auth used at first
-    info!("Testing server with bad API token auth but JWT auth used at first");
-    let ctx = start_test_server_with_options(
-        default_db_config.clone(),
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: true,
-            use_https: true,
-            use_client_cert: false,
-            api_token_id: Some("my_bad_token_id".to_owned()),
-            api_token: Some("my_bad_token".to_owned()),
-        },
-        None,
-        None,
-        None,
-    )
-    .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
-    ctx.stop_server().await?;
-
-    // API token auth
-    info!("Testing server with API token auth");
-    let ctx = start_test_server_with_options(
-        default_db_config.clone(),
-        PORT,
-        AuthenticationOptions {
-            use_jwt_token: false,
-            use_https: false,
-            use_client_cert: false,
-            api_token_id: Some(api_token_id),
-            api_token: Some(api_token),
-        },
-        None,
-        None,
-        None,
-    )
-    .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
-    ctx.stop_server().await?;
-
-    // tls client cert auth
-    info!("Testing server with TLS client cert auth");
+    // SCENARIO 2: Both Client Certificates and API token authentication enabled, user presents API token only
+    info!(
+        "==> Testing server with both Client Certificates and API token auth -User sends API \
+         token only"
+    );
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
         PORT,
@@ -199,8 +202,126 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
             use_jwt_token: false,
             use_https: true,
             use_client_cert: true,
-            api_token_id: None,
-            api_token: None,
+            api_token_id: Some(api_token_id.clone()),
+            api_token: Some(api_token.clone()),
+            do_not_send_client_certificate: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 3: Both JWT and API token authentication enabled, user presents API token only
+    info!("==> Testing server with both JWT and API token auth - User sends the API token only");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            use_https: true,
+            api_token_id: Some(api_token_id.clone()),
+            api_token: Some(api_token.clone()),
+            do_not_send_jwt_token: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 4: JWT authentication enabled, no token provided (failure case)
+    info!("==> Testing server with JWT auth - User does not send the token (should fail)");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            do_not_send_jwt_token: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 5: Client Certificate authentication enabled, no certificate provided (failure case)
+    info!("==> Testing server with Client Certificate auth - missing certificate (should fail)");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_https: true,
+            use_client_cert: true,
+            do_not_send_client_certificate: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 6: API token authentication enabled, no token provided (failure case)
+    info!("==> Testing server with API token auth - missing token (should fail)");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_https: true,
+            api_token_id: Some(api_token_id.clone()),
+            api_token: Some(api_token.clone()),
+            do_not_send_api_token: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // SCENARIO 7: JWT authentication enabled, but no JWT token presented (failure case)
+    info!("===> Testing server with JWT auth - but no JWT token sent (should fail)");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            do_not_send_jwt_token: true,
+            ..Default::default()
+        },
+        None,
+        None,
+        None,
+    )
+    .await?;
+    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    ctx.stop_server().await?;
+
+    // Bad API token auth but JWT auth used at first
+    info!("==> Testing server with bad API token auth but JWT auth used at first");
+    let ctx = start_test_server_with_options(
+        default_db_config.clone(),
+        PORT,
+        AuthenticationOptions {
+            use_jwt_token: true,
+            use_https: true,
+            api_token_id: Some("my_bad_token_id".to_owned()),
+            api_token: Some("my_bad_token".to_owned()),
+            ..Default::default()
         },
         None,
         None,
@@ -211,16 +332,16 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     ctx.stop_server().await?;
 
     // Bad API token auth, but cert auth used at first
-    info!("Testing server with bad API token auth but cert auth used at first");
+    info!("==> Testing server with bad API token auth but cert auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
         PORT,
         AuthenticationOptions {
-            use_jwt_token: false,
             use_https: true,
             use_client_cert: true,
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
+            ..Default::default()
         },
         None,
         None,
@@ -232,8 +353,8 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
 
     // Bad API token and good JWT token auth but still cert auth used at first
     info!(
-        "Testing server with bad API token and good JWT token auth but still cert auth used at \
-         first"
+        "==> Testing server with bad API token and good JWT token auth but still cert auth used \
+         at first"
     );
     let ctx = start_test_server_with_options(
         default_db_config,
@@ -244,6 +365,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
             use_client_cert: true,
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
+            ..Default::default()
         },
         None,
         None,

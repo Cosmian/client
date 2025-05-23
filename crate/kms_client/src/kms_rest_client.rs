@@ -563,6 +563,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -587,6 +590,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -623,6 +629,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -667,6 +676,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -710,6 +722,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 }

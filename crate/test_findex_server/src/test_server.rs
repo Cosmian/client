@@ -58,6 +58,10 @@ pub async fn start_default_test_findex_server() -> &'static TestsContext {
                 use_jwt_token: false,
                 use_https: false,
                 use_client_cert: false,
+                use_api_token: false,
+                do_not_send_client_certificate: false,
+                do_not_send_api_token: false,
+                do_not_send_jwt_token: false,
             },
         )
     })
@@ -76,6 +80,10 @@ pub async fn start_default_test_findex_server_with_cert_auth() -> &'static Tests
                     use_jwt_token: false,
                     use_https: true,
                     use_client_cert: true,
+                    use_api_token: false,
+                    do_not_send_client_certificate: false,
+                    do_not_send_api_token: false,
+                    do_not_send_jwt_token: false,
                 },
             )
         })
@@ -99,10 +107,19 @@ impl TestsContext {
     }
 }
 
+#[derive(Default)]
 pub struct AuthenticationOptions {
+    // Authentication methods to enable on the server
     pub use_jwt_token: bool,
     pub use_https: bool,
     pub use_client_cert: bool,
+    pub use_api_token: bool,
+
+    //TODO check the KMS est Server equivalent to replicate how this used in testing authentication scenarios
+    // Client credential configuration (all false by default)
+    pub do_not_send_client_certificate: bool, // True = don't send client certificate even when required
+    pub do_not_send_api_token: bool,          // True = do not send an API token
+    pub do_not_send_jwt_token: bool,          // True = do not send an JWT token
 }
 
 /// Start a Findex server in a thread with the given options
@@ -237,6 +254,14 @@ fn generate_server_params(
         ),
         ..ClapConfig::default()
     };
+
+    // TODO: Not available on Findex
+    // // Configure API token authentication if requested
+    // if authentication_options.use_api_token {
+    //     // For testing, we use a fixed API token identifier that can be predictably accessed
+    //     clap_config.api_token_id = Some("test_api_token_id".to_string());
+    // }
+
     ServerParams::try_from(clap_config)
         .map_err(|e| ClientError::Default(format!("failed initializing the server config: {e}")))
 }
@@ -337,6 +362,10 @@ mod findex_server {
                     use_https,
                     use_jwt_token,
                     use_client_cert,
+                    use_api_token: false,
+                    do_not_send_client_certificate: false,
+                    do_not_send_api_token: false,
+                    do_not_send_jwt_token: false,
                 },
             )
             .await?;
