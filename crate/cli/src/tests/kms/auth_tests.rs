@@ -79,8 +79,8 @@ const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 5; // +5 since there are other KMS t
 
 #[tokio::test]
 pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
-    log_init(Some("error,cosmian_kms_server=info,cosmian_cli=info"));
-    // log_init(option_env!("RUST_LOG"));
+    // log_init(Some("error,cosmian_kms_server=info,cosmian_cli=info"));
+    log_init(option_env!("RUST_LOG"));
 
     // delete the temp db dir holding `sqlite-data-auth-tests/kms.db`
     let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
