@@ -51,7 +51,7 @@ pub struct DecryptCertificateAction {
 }
 
 impl DecryptCertificateAction {
-    pub async fn run(&self, client_connector: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Read the file to decrypt
         let ciphertext = read_bytes_from_file(&self.input_file)?;
 
@@ -73,7 +73,7 @@ impl DecryptCertificateAction {
         };
 
         // Query the KMS with your kmip data and retrieve the cleartext
-        let decrypt_response = client_connector
+        let decrypt_response = kms_rest_client
             .decrypt(decrypt_request)
             .await
             .with_context(|| "Can't execute the query on the kms server")?;

@@ -25,8 +25,8 @@ impl LoginAction {
     ///
     /// # Errors
     /// - If the `OAuth2` configuration invalid
-    #[allow(clippy::print_stdout)]
-    pub async fn process(&self, config: &mut KmsClientConfig) -> CosmianResult<()> {
+    #[expect(clippy::print_stdout)]
+    pub async fn process(&self, config: KmsClientConfig) -> CosmianResult<String> {
         let login_config = config.http_config.oauth2_conf.as_ref().ok_or_else(|| {
             CosmianError::Default(format!(
                 "The `login` command (only used for JWT authentication) requires an Identity \
@@ -38,9 +38,8 @@ impl LoginAction {
         println!("Browse to: {}", state.auth_url);
         let access_token = state.finalize().await?;
 
-        config.http_config.access_token = Some(access_token);
-        println!("\nSuccess! The access token was saved in the KMS configuration");
+        println!("\nSuccess! The access token was saved in the KMS configuration (in memory)");
 
-        Ok(())
+        Ok(access_token)
     }
 }

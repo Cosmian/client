@@ -11,6 +11,9 @@ description = "Cross-platform PKCS#11 module written in rust, originally forked 
 [lib]
 doctest = false
 
+[features]
+fips = []
+
 [dependencies]
 bincode = "1.3.3"
 const-oid = "0.9.6"

@@ -94,7 +94,7 @@ impl LocateObjectsAction {
     /// # Errors
     ///
     /// Returns an error if there is a problem communicating with the KMS or if the requested key cannot be located.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let request = build_locate_request(
             self.tags.clone(),
             self.cryptographic_algorithm,

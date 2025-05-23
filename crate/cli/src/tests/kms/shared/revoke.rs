@@ -11,6 +11,8 @@ use uuid::Uuid;
 use crate::tests::kms::cover_crypt::{
     master_key_pair::create_cc_master_key_pair, user_decryption_keys::create_user_decryption_key,
 };
+#[cfg(not(feature = "fips"))]
+use crate::tests::kms::elliptic_curve::create_key_pair::create_ec_key_pair;
 use crate::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
@@ -19,7 +21,6 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            elliptic_curve::create_key_pair::create_ec_key_pair,
             shared::{ExportKeyParams, export::export_key},
             symmetric::create_key::create_symmetric_key,
             utils::recover_cmd_logs,
@@ -102,6 +103,7 @@ async fn test_revoke_symmetric_key() -> CosmianResult<()> {
     assert_revoked(&ctx.owner_client_conf_path, &key_id)
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 async fn test_revoke_ec_key() -> CosmianResult<()> {
     // init the test server

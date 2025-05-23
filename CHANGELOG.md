@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-05-22
+
+### 🚀 Features
+
+- Display user_id in the Header UI to help users identify their session context
+- Update server test configuration to align with changes introduced in version 5.1.0
+- Support for PKCE (Proof Key for Code Exchange) authentication from the CLI with the Cosmian KMS
+- Concurrent multi factor authentication with clear cascading rules (OIDC / Client Certificates / API TOken)
+
+### 🐛 Bug Fixes
+
+- Fix Revoke structure on UI for key revocation
+- Unclear cascading rules in multi-factor authentication
+
+### 📚 Documentation
+
+- PKCE documentation with configuration examples
+- Improved authentication documentation both client and server side
+
 ## [0.4.0] - 2025-05-09
 
 ### 🚀 Features

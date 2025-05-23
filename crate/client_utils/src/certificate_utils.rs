@@ -58,7 +58,7 @@ impl Display for Algorithm {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments)]
 pub fn build_certify_request(
     certificate_id: &Option<String>,
     certificate_signing_request_format: &Option<String>,

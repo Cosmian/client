@@ -159,7 +159,7 @@ pub async fn batch_export_objects(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments)]
 async fn batch_get(
     kms_rest_client: &KmsClient,
     object_ids_or_tags: Vec<String>,
@@ -222,7 +222,7 @@ async fn batch_get(
     Ok(results)
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments)]
 async fn batch_export(
     kms_rest_client: &KmsClient,
     object_ids_or_tags: Vec<String>,

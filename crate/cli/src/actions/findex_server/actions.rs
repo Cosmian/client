@@ -7,7 +7,6 @@ use super::{
     encrypt_and_index::EncryptAndIndexAction,
     findex::{insert_or_delete::InsertOrDeleteAction, search::SearchAction},
     login::LoginAction,
-    logout::LogoutAction,
     permissions::PermissionsAction,
     search_and_decrypt::SearchAndDecryptAction,
     version::ServerVersionAction,
@@ -32,7 +31,10 @@ pub enum FindexActions {
     Datasets(DatasetsAction),
 
     Login(LoginAction),
-    Logout(LogoutAction),
+    /// Logout from the Identity Provider.
+    ///
+    /// The access token will be removed from the findex configuration file.
+    Logout,
 
     ServerVersion(ServerVersionAction),
 }
@@ -46,52 +48,52 @@ impl FindexActions {
     ///
     /// # Errors
     /// Returns an error if the action fails
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub async fn run(
         &self,
         findex_client: RestClient,
         kms_client: KmsClient,
-        findex_config: RestClientConfig,
     ) -> CosmianResult<RestClientConfig> {
+        let mut new_config = findex_client.config.clone();
+
         match self {
             // actions that don't edit the configuration
             Self::Datasets(action) => {
                 println!("{}", action.run(findex_client).await?);
-                Ok(findex_config)
             }
             Self::Permissions(action) => {
                 println!("{}", action.run(findex_client).await?);
-                Ok(findex_config)
             }
             Self::ServerVersion(action) => {
                 println!("{}", action.run(findex_client).await?);
-                Ok(findex_config)
             }
             Self::Delete(action) => {
                 println!("{}", action.delete(findex_client, kms_client).await?);
-                Ok(findex_config)
             }
             Self::Index(action) => {
                 println!("{}", action.insert(findex_client, kms_client).await?);
-                Ok(findex_config)
             }
             Self::Search(action) => {
                 println!("{}", action.run(findex_client, kms_client).await?);
-                Ok(findex_config)
             }
             Self::EncryptAndIndex(action) => {
-                println!("{}", action.run(findex_client, &kms_client).await?);
-                Ok(findex_config)
+                println!("{}", action.run(findex_client, kms_client).await?);
             }
             Self::SearchAndDecrypt(action) => {
                 let res = action.run(findex_client, &kms_client).await?;
                 println!("Decrypted records: {res:?}");
-                Ok(findex_config)
             }
 
             // actions that edit the configuration
-            Self::Login(action) => action.run(findex_config).await,
-            Self::Logout(action) => action.run(findex_config),
+            Self::Login(action) => {
+                let access_token = action.run(findex_client.config).await?;
+                new_config.http_config.access_token = Some(access_token);
+            }
+            Self::Logout => {
+                new_config.http_config.access_token = None;
+            }
         }
+
+        Ok(new_config)
     }
 }

@@ -27,7 +27,7 @@ impl Default for ClientConfig {
     }
 }
 
-#[allow(clippy::print_stdout)]
+#[expect(clippy::print_stdout)]
 impl ClientConfig {
     /// Load the default location of the configuration file.
     ///

@@ -117,7 +117,7 @@ pub struct EncryptAction {
 }
 
 impl EncryptAction {
-    pub(crate) async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub(crate) async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Recover the unique identifier or set of tags
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
@@ -160,7 +160,7 @@ impl EncryptAction {
                 .with_context(|| "Cannot read bytes from the file to encrypt")?;
             let (nonce, data, tag) = self
                 .server_side_encrypt(
-                    kms_rest_client,
+                    &kms_rest_client,
                     &id,
                     self.data_encryption_algorithm.into(),
                     nonce,
@@ -240,10 +240,10 @@ impl EncryptAction {
 
     /// Encrypt a file using a symmetric stream cipher
     /// and return the ephemeral key
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     async fn client_side_encrypt_with_file(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         kek_id: &str,
         key_encryption_algorithm: KeyEncryptionAlgorithm,
         data_encryption_algorithm: DataEncryptionAlgorithm,
@@ -330,7 +330,7 @@ impl EncryptAction {
     /// - If the cryptographic algorithm is not specified
     pub async fn server_side_kem_encapsulation(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         kek_id: &str,
         key_encryption_algorithm: KeyEncryptionAlgorithm,
         data_encryption_algorithm: DataEncryptionAlgorithm,
@@ -349,7 +349,7 @@ impl EncryptAction {
         // Wrap the DEK with the KEK
         let (kem_nonce, kem_ciphertext, kem_tag) = self
             .server_side_encrypt(
-                kms_rest_client,
+                &kms_rest_client,
                 kek_id,
                 key_encryption_algorithm.into(),
                 None,
@@ -358,7 +358,7 @@ impl EncryptAction {
             )
             .await?;
 
-        #[allow(clippy::tuple_array_conversions)]
+        #[expect(clippy::tuple_array_conversions)]
         let encapsulation: Vec<u8> = [kem_nonce, kem_ciphertext, kem_tag].concat();
         Ok((dek, encapsulation))
     }
@@ -438,7 +438,6 @@ impl EncryptAction {
     /// - If the nonce cannot be generated
     /// - If the ciphertext cannot be generated
     /// - If the tag cannot be generated
-    #[allow(clippy::too_many_arguments, dead_code)]
     pub fn client_side_encrypt_with_buffer(
         &self,
         dek: &Zeroizing<Vec<u8>>,

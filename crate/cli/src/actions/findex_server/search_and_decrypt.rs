@@ -151,7 +151,7 @@ impl SearchAndDecryptAction {
 
         for decrypted_record in decrypted_records {
             let decrypted_record_str = std::str::from_utf8(&decrypted_record)?;
-            results.push(decrypted_record_str.to_string());
+            results.push(decrypted_record_str.to_owned());
         }
 
         Ok(results)

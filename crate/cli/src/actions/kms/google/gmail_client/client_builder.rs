@@ -55,17 +55,16 @@ pub(crate) struct GmailClient {
 }
 
 impl GmailClient {
-    pub(crate) async fn new(config: &KmsClientConfig, user_id: &str) -> CosmianResult<Self> {
+    pub(crate) async fn new(config: KmsClientConfig, user_id: &str) -> CosmianResult<Self> {
         let gmail_api_conf = config.gmail_api_conf.clone().ok_or_else(|| {
             CosmianError::Default(format!("No gmail_api_conf object in {config:?}",))
         })?;
 
-        GmailClientBuilder::new(gmail_api_conf, user_id.to_string())
+        GmailClientBuilder::new(gmail_api_conf, user_id.to_owned())
             .build()
             .await
     }
 
-    #[allow(clippy::print_stdout)]
     pub(crate) async fn handle_response(response: Response) -> CosmianResult<()> {
         if response.status().is_success() {
             let stdout = response.text().await.map_err(GoogleApiError::Reqwest)?;

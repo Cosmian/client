@@ -1,6 +1,6 @@
 export type AuthMethod = "None" | "JWT" | "CERT";
 
-export const fetchIdToken = async (serverUrl: string): Promise<string | null> => {
+export const fetchIdToken = async (serverUrl: string): Promise<{ id_token: string; user_id: string } | null> => {
     try {
         const kmsUrl = serverUrl + "/ui/token";
         const response = await fetch(kmsUrl, {
@@ -9,8 +9,8 @@ export const fetchIdToken = async (serverUrl: string): Promise<string | null> =>
         });
         if (!response.ok) throw new Error("Failed to fetch token");
 
-        const data: { id_token: string } = await response.json();
-        return data.id_token;
+        const data: { id_token: string; user_id: string } = await response.json();
+        return data;
     } catch (error) {
         console.error(error);
         return null;

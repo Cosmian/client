@@ -14,7 +14,7 @@ pub struct ListIdentitiesAction {
 }
 
 impl ListIdentitiesAction {
-    pub async fn run(&self, config: &KmsClientConfig) -> CosmianResult<()> {
+    pub async fn run(&self, config: KmsClientConfig) -> CosmianResult<()> {
         let gmail_client = GmailClient::new(config, &self.user_id);
         let response = gmail_client.await?.get(IDENTITIES_ENDPOINT).await?;
         GmailClient::handle_response(response).await

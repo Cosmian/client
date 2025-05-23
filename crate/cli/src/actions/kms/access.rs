@@ -29,7 +29,7 @@ impl AccessAction {
     /// # Errors
     ///
     /// Returns an error if there was a problem running the action.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::Grant(action) => action.run(kms_rest_client).await?,
             Self::Revoke(action) => action.run(kms_rest_client).await?,
@@ -76,18 +76,18 @@ impl GrantAccess {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let requires_object_uid = self
             .operations
             .iter()
             .any(|op| *op != KmipOperation::Create);
 
         let uid = if requires_object_uid {
-            Some(UniqueIdentifier::TextString(
-                self.object_uid
-                    .clone()
-                    .context("Object UID is required for operations other than `create`")?,
-            ))
+            let object_id = self
+                .object_uid
+                .clone()
+                .context("Object UID is required for operations other than `create`")?;
+            Some(UniqueIdentifier::TextString(object_id))
         } else {
             None
         };
@@ -109,7 +109,7 @@ impl GrantAccess {
             self.operations,
             self.user,
             uid.as_ref()
-                .map_or("N/A".to_string(), std::string::ToString::to_string)
+                .map_or("N/A".to_owned(), std::string::ToString::to_string)
         );
         console::Stdout::new(&stdout).write()?;
 
@@ -151,18 +151,18 @@ impl RevokeAccess {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let requires_object_uid = self
             .operations
             .iter()
             .any(|op| *op != KmipOperation::Create);
 
         let uid = if requires_object_uid {
-            Some(UniqueIdentifier::TextString(
-                self.object_uid
-                    .clone()
-                    .context("Object UID is required for operations other than `create`")?,
-            ))
+            let object_id = self
+                .object_uid
+                .clone()
+                .context("Object UID is required for operations other than `create`")?;
+            Some(UniqueIdentifier::TextString(object_id))
         } else {
             None
         };
@@ -183,7 +183,7 @@ impl RevokeAccess {
             self.operations,
             self.user,
             uid.as_ref()
-                .map_or("N/A".to_string(), std::string::ToString::to_string)
+                .map_or("N/A".to_owned(), std::string::ToString::to_string)
         );
         console::Stdout::new(&stdout).write()?;
 
@@ -213,7 +213,7 @@ impl ListAccessesGranted {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let accesses = kms_rest_client
             .list_access(&self.object_uid)
             .await
@@ -249,7 +249,7 @@ impl ListOwnedObjects {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let objects = kms_rest_client
             .list_owned_objects()
             .await
@@ -285,7 +285,7 @@ impl ListAccessRightsObtained {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let objects = kms_rest_client
             .list_access_rights_obtained()
             .await

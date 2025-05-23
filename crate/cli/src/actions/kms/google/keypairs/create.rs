@@ -83,20 +83,20 @@ pub(crate) struct KeyFile {
 }
 
 #[derive(Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[expect(non_snake_case)]
 struct KeyPairInfo {
     pkcs7: String,
     privateKeyMetadata: Vec<PrivateKeyMetadata>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[expect(non_snake_case)]
 struct PrivateKeyMetadata {
     kaclsKeyMetadata: KaclsKeyMetadata,
 }
 
 #[derive(Serialize, Deserialize)]
-#[allow(non_snake_case)]
+#[expect(non_snake_case)]
 struct KaclsKeyMetadata {
     kaclsUri: String,
     kaclsData: String,
@@ -125,9 +125,9 @@ impl CreateKeyPairsAction {
         GmailClient::handle_response(response).await
     }
 
-    #[allow(clippy::print_stdout)]
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> Result<(), CosmianError> {
-        let gmail_client = GmailClient::new(&kms_rest_client.config, &self.user_id);
+    #[expect(clippy::print_stdout)]
+    pub async fn run(&self, kms_rest_client: KmsClient) -> Result<(), CosmianError> {
+        let gmail_client = GmailClient::new(kms_rest_client.config.clone(), &self.user_id);
 
         let kacls_url = kms_rest_client.google_cse_status();
 
@@ -147,12 +147,12 @@ impl CreateKeyPairsAction {
                     (id.to_string(), linked_public_key_id.to_string())
                 } else {
                     return Err(CosmianError::ServerError(
-                        "Invalid private-key-id  - no linked public key found".to_string(),
+                        "Invalid private-key-id  - no linked public key found".to_owned(),
                     ));
                 }
             } else {
                 return Err(CosmianError::ServerError(
-                    "Invalid private-key-id - must be of PrivateKey type".to_string(),
+                    "Invalid private-key-id - must be of PrivateKey type".to_owned(),
                 ));
             }
         } else {
@@ -173,7 +173,7 @@ impl CreateKeyPairsAction {
 
         // Export wrapped private key with google CSE key
         let (_, wrapped_private_key, _attributes) = export_object(
-            kms_rest_client,
+            &kms_rest_client,
             &private_key_id,
             ExportObjectParams {
                 wrapping_key_id: Some(&self.cse_key_id),
@@ -202,8 +202,8 @@ impl CreateKeyPairsAction {
                 ),
             }]),
             vendor_attributes: Some(vec![VendorAttribute {
-                vendor_identification: VENDOR_ID_COSMIAN.to_string(),
-                attribute_name: VENDOR_ATTR_X509_EXTENSION.to_string(),
+                vendor_identification: VENDOR_ID_COSMIAN.to_owned(),
+                attribute_name: VENDOR_ATTR_X509_EXTENSION.to_owned(),
                 attribute_value: VendorAttributeValue::ByteString(EXTENSION_CONFIG.to_vec()),
             }]),
             ..Attributes::default()
@@ -223,7 +223,7 @@ impl CreateKeyPairsAction {
 
         // From the created leaf certificate, export the associated PKCS7 containing the whole cert chain
         let (_, pkcs7_object, _pkcs7_object_export_attributes) = export_object(
-            kms_rest_client,
+            &kms_rest_client,
             &certificate_unique_identifier.to_string(),
             ExportObjectParams {
                 key_format_type: Some(KeyFormatType::PKCS7),
@@ -265,9 +265,9 @@ impl CreateKeyPairsAction {
                 .await?;
                 tracing::info!("Key pair inserted for {email:?}.");
             } else {
-                Err(CosmianError::ServerError(format!(
+                return Err(CosmianError::ServerError(format!(
                     "Error inserting key pair for {email:?} - exported object is not a Certificate"
-                )))?;
+                )));
             }
         }
         Ok(())

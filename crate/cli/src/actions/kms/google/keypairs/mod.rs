@@ -30,13 +30,13 @@ pub enum KeyPairsCommands {
 }
 
 impl KeyPairsCommands {
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
-            Self::Get(action) => action.run(&kms_rest_client.config).await,
-            Self::List(action) => action.run(&kms_rest_client.config).await,
-            Self::Enable(action) => action.run(&kms_rest_client.config).await,
-            Self::Disable(action) => action.run(&kms_rest_client.config).await,
-            Self::Obliterate(action) => action.run(&kms_rest_client.config).await,
+            Self::Get(action) => action.run(kms_rest_client.config).await,
+            Self::List(action) => action.run(kms_rest_client.config).await,
+            Self::Enable(action) => action.run(kms_rest_client.config).await,
+            Self::Disable(action) => action.run(kms_rest_client.config).await,
+            Self::Obliterate(action) => action.run(kms_rest_client.config).await,
             Self::Create(action) => Box::pin(action.run(kms_rest_client)).await,
         }
     }

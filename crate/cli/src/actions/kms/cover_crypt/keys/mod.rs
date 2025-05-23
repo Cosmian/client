@@ -35,9 +35,9 @@ pub enum KeysCommands {
 }
 
 impl KeysCommands {
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
-            Self::CreateMasterKeyPair(action) => action.run(kms_rest_client).await?,
+            Self::CreateMasterKeyPair(action) => Box::pin(action.run(kms_rest_client)).await?,
             Self::CreateUserKey(action) => action.run(kms_rest_client).await?,
             Self::Export(action) => action.run(kms_rest_client).await?,
             Self::Import(action) => action.run(kms_rest_client).await?,

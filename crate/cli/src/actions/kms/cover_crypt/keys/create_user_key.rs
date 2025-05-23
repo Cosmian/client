@@ -51,7 +51,7 @@ pub struct CreateUserKeyAction {
 }
 
 impl CreateUserKeyAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Validate the access policy: side-effect only.
         AccessPolicy::parse(&self.access_policy).with_context(|| "bad access policy syntax")?;
 

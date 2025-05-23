@@ -1,10 +1,14 @@
-use std::{path::PathBuf, process::Command};
+#[cfg(not(feature = "fips"))]
+use std::path::PathBuf;
+use std::process::Command;
 
 use assert_cmd::prelude::*;
+use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
+    ImportKeyFormat, KeyUsage,
+};
+#[cfg(not(feature = "fips"))]
 use cosmian_kms_client::{
-    cosmian_kmip::kmip_2_1::kmip_types::CryptographicAlgorithm,
-    read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::import_utils::{ImportKeyFormat, KeyUsage},
+    kmip_2_1::kmip_types::CryptographicAlgorithm, read_object_from_json_ttlv_file,
 };
 #[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
@@ -15,6 +19,7 @@ use test_kms_server::start_default_test_kms_server;
 use crate::tests::kms::{
     cover_crypt::master_key_pair::create_cc_master_key_pair,
     elliptic_curve::create_key_pair::create_ec_key_pair,
+    shared::{ExportKeyParams, export_key},
     symmetric::create_key::create_symmetric_key,
 };
 use crate::{
@@ -24,7 +29,6 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            shared::{ExportKeyParams, export::export_key},
             utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
         },
     },
@@ -166,6 +170,8 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
+    use cosmian_kms_client::kmip_2_1::kmip_types::CryptographicAlgorithm;
+
     use crate::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 
     log_init(option_env!("RUST_LOG"));
@@ -210,7 +216,7 @@ pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
+#[cfg(not(feature = "fips"))]
 pub(crate) fn export_import_test(
     cli_conf_path: &str,
     sub_command: &str,
@@ -218,6 +224,7 @@ pub(crate) fn export_import_test(
     algorithm: CryptographicAlgorithm,
 ) -> CosmianResult<()> {
     // Export
+
     export_key(ExportKeyParams {
         cli_conf_path: cli_conf_path.to_string(),
         sub_command: sub_command.to_owned(),

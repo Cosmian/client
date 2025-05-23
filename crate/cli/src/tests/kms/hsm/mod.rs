@@ -7,16 +7,16 @@
 //! ```
 
 #[cfg(not(feature = "fips"))]
-use crate::tests::kms::hsm::encrypt_decrypt::test_rsa_pkcs_v15;
 use crate::{
     error::result::CosmianResult,
-    tests::kms::hsm::encrypt_decrypt::{test_aes_gcm, test_rsa_pkcs_oaep},
+    tests::kms::hsm::encrypt_decrypt::{test_aes_gcm, test_rsa_pkcs_oaep, test_rsa_pkcs_v15},
 };
 
 mod encrypt_decrypt;
 mod revoke_destroy;
 mod wrap_with_hsm_key;
 
+#[cfg(not(feature = "fips"))]
 #[test]
 fn test_all_hsm_cli() -> CosmianResult<()> {
     test_aes_gcm()?;

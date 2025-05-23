@@ -39,7 +39,7 @@ pub struct KmsClient {
     pub config: KmsClientConfig,
 }
 
-#[allow(clippy::missing_errors_doc)]
+#[expect(clippy::missing_errors_doc)]
 impl KmsClient {
     /// Initialize a KMS REST client.
     ///
@@ -563,6 +563,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -587,6 +590,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -623,10 +629,13 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
-    #[allow(clippy::print_stdout)]
+    #[expect(clippy::print_stdout)]
     pub async fn post_ttlv_2_1<O, R>(&self, kmip_request: &O) -> Result<R, KmsClientError>
     where
         O: Serialize + Sync,
@@ -667,6 +676,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 
@@ -710,6 +722,9 @@ impl KmsClient {
 
         // process error
         let p = handle_error(endpoint, response).await?;
+        if status_code == StatusCode::UNAUTHORIZED {
+            return Err(KmsClientError::Unauthorized(p))
+        }
         Err(KmsClientError::RequestFailed(p))
     }
 }

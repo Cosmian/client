@@ -88,7 +88,7 @@ impl CreateKeyPairAction {
     /// * The key pair unique identifiers are empty.
     pub async fn run(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
     ) -> CosmianResult<(UniqueIdentifier, UniqueIdentifier)> {
         let private_key_id = self
             .private_key_id

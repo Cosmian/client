@@ -135,7 +135,7 @@ impl ExportKeyAction {
     /// - Either `--key-id` or one or more `--tag` is not specified.
     /// - There is a server error while exporting the object.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
         let (key_format_type, encode_to_pem, encode_to_ttlv, wrapping_cryptographic_parameters) =
@@ -143,7 +143,7 @@ impl ExportKeyAction {
 
         // export the object
         let (id, object, _) = export_object(
-            kms_rest_client,
+            &kms_rest_client,
             &id,
             ExportObjectParams {
                 unwrap: self.unwrap,

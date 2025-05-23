@@ -110,7 +110,7 @@ pub struct ImportCertificateAction {
 }
 
 impl ImportCertificateAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         trace!("CLI: entering import certificate: {:?}", self);
 
         //generate the leaf certificate attributes if links are specified
@@ -214,7 +214,7 @@ impl ImportCertificateAction {
                 (
                     "The certificate(s) and private key were successfully imported! The private \
                      key has id:"
-                        .to_string(),
+                        .to_owned(),
                     Some(private_key_id),
                 )
             }
@@ -269,7 +269,7 @@ impl ImportCertificateAction {
     }
 
     /// Import the certificate, the chain and the associated private key
-    async fn import_pkcs12(&self, kms_rest_client: &KmsClient) -> CosmianResult<String> {
+    async fn import_pkcs12(&self, kms_rest_client: KmsClient) -> CosmianResult<String> {
         let cryptographic_usage_mask = self
             .key_usage
             .as_deref()
@@ -318,7 +318,7 @@ impl ImportCertificateAction {
     /// linking the child to the parent with `Link` of `LinkType::CertificateLink`
     async fn import_chain(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         mut objects: Vec<Object>,
         replace_existing: bool,
         leaf_certificate_attributes: Option<Attributes>,

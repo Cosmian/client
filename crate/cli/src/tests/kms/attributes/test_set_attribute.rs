@@ -42,7 +42,7 @@ fn get_all_link_types() -> Vec<CLinkType> {
     links
 }
 
-#[allow(clippy::cognitive_complexity)]
+#[expect(clippy::cognitive_complexity)]
 fn get_and_check_attributes(
     ctx: &TestsContext,
     uid: &str,
@@ -156,7 +156,7 @@ fn get_and_check_attributes(
     Ok(())
 }
 
-#[allow(clippy::cognitive_complexity)]
+#[expect(clippy::cognitive_complexity)]
 fn get_and_check_none_attributes(
     ctx: &TestsContext,
     uid: &str,

@@ -1,9 +1,12 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
+#[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server_with_cert_auth;
 
+#[cfg(not(feature = "fips"))]
+use crate::tests::kms::elliptic_curve::create_key_pair::create_ec_key_pair;
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::{
     access::{grant_access, revoke_access},
@@ -20,7 +23,6 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            elliptic_curve::create_key_pair::create_ec_key_pair,
             symmetric::create_key::create_symmetric_key,
             utils::{extract_uids::extract_locate_uids, recover_cmd_logs},
         },
@@ -215,6 +217,7 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_locate_elliptic_curve() -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));

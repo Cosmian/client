@@ -19,7 +19,7 @@ impl ServerVersionAction {
     /// # Errors
     ///
     /// Returns an error if the version query fails or if there is an issue writing to the console.
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let version = kms_rest_client
             .version()
             .await

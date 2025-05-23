@@ -8,6 +8,7 @@ set -ex
 # export DEBUG_OR_RELEASE=debug
 # export OPENSSL_DIR=/usr/local/openssl
 # export SKIP_SERVICES_TESTS="--skip hsm"
+# export FEATURES="fips"
 
 ROOT_FOLDER=$(pwd)
 
@@ -38,6 +39,15 @@ fi
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   RELEASE="--release"
+fi
+
+if [ -n "$FEATURES" ]; then
+  FEATURES="--features $FEATURES"
+fi
+
+if [ -z "$FEATURES" ]; then
+  echo "Info: FEATURES is not set."
+  unset FEATURES
 fi
 
 if [ -z "$SKIP_SERVICES_TESTS" ]; then
@@ -76,23 +86,9 @@ fi
 find . -type d -name cosmian-findex-server -exec rm -rf \{\} \; -print || true
 rm -f /tmp/*.json /tmp/*.toml
 
-# shellcheck disable=SC2086
-cargo build --target $TARGET $RELEASE
-
-# shellcheck disable=SC2086
-cargo test --workspace --bins --target $TARGET $RELEASE
-
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 
-if [ "$DEBUG_OR_RELEASE" = "release" ]; then
-  ### `cargo test` being to too greedy on release, skip tests
-  # shellcheck disable=SC2086
-  # cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES \
-  #   -p cosmian_cli \
-  #   -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
-  echo "No test run in release mode - process is being killed by OS"
-else
-  INCLUDE_IGNORED="--include-ignored"
-  # shellcheck disable=SC2086
-  cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS $INCLUDE_IGNORED
-fi
+cargo install --version 0.6.36 cargo-hack --force
+
+# shellcheck disable=SC2086
+cargo hack test --all --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS

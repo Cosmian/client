@@ -82,7 +82,7 @@ impl UnwrapKeyAction {
     /// - The output file fails to be written.
     /// - The console output fails to be written.
     ///
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // read the key file
         let mut object = read_object_from_json_ttlv_file(&self.key_file_in)?;
 
@@ -104,7 +104,7 @@ impl UnwrapKeyAction {
             )?
         } else if let Some(key_id) = &self.unwrap_key_id {
             trace!("unwrap using the KMS server with the unique identifier of the unwrapping key");
-            export_object(kms_rest_client, key_id, ExportObjectParams::default())
+            export_object(&kms_rest_client, key_id, ExportObjectParams::default())
                 .await?
                 .1
         } else if let Some(key_file) = &self.unwrap_key_file {

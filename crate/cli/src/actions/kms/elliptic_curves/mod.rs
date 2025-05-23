@@ -34,7 +34,7 @@ impl EllipticCurveCommands {
     ///
     /// Returns an error if the query execution on the KMS server fails.
     ///
-    pub async fn process(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn process(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         match self {
             Self::Keys(command) => command.process(kms_rest_client).await?,
             #[cfg(not(feature = "fips"))]

@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub(crate) async fn revoke(
-    kms_rest_client: &KmsClient,
+    kms_rest_client: KmsClient,
     key_id: &str,
     revocation_reason: &str,
 ) -> CosmianResult<()> {
@@ -20,7 +20,7 @@ pub(crate) async fn revoke(
         key_id,
         RevocationReason {
             revocation_reason_code: RevocationReasonCode::Unspecified,
-            revocation_message: Some(revocation_reason.to_string()),
+            revocation_message: Some(revocation_reason.to_owned()),
         },
     )?;
 

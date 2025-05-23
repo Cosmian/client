@@ -40,7 +40,7 @@ pub struct DestroyKeyAction {
 }
 
 impl DestroyKeyAction {
-    pub async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
         destroy(kms_rest_client, &id, self.remove).await
     }

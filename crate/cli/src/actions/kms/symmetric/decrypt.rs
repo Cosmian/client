@@ -114,7 +114,7 @@ pub struct DecryptAction {
 }
 
 impl DecryptAction {
-    pub(crate) async fn run(&self, kms_rest_client: &KmsClient) -> CosmianResult<()> {
+    pub(crate) async fn run(&self, kms_rest_client: KmsClient) -> CosmianResult<()> {
         // Recover the unique identifier or set of tags
         let id = get_key_uid(self.key_id.as_ref(), self.tags.as_ref(), KEY_ID)?;
 
@@ -148,7 +148,7 @@ impl DecryptAction {
             // Decrypt the ciphertext server side
             let plaintext = self
                 .server_side_decrypt(
-                    kms_rest_client,
+                    &kms_rest_client,
                     self.data_encryption_algorithm.into(),
                     &id,
                     ciphertext,
@@ -212,10 +212,10 @@ impl DecryptAction {
         decrypt_response.data.context("the plain text is empty")
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     async fn client_side_decrypt_with_file(
         &self,
-        kms_rest_client: &KmsClient,
+        kms_rest_client: KmsClient,
         key_encryption_algorithm: KeyEncryptionAlgorithm,
         data_encryption_algorithm: DataEncryptionAlgorithm,
         key_id: &str,
@@ -244,13 +244,13 @@ impl DecryptAction {
             ))
         })?;
         // read the encapsulated data
-        #[allow(clippy::cast_possible_truncation)]
+        #[expect(clippy::cast_possible_truncation)]
         let mut encapsulation = vec![0; encaps_length as usize];
         input_file.read_exact(&mut encapsulation)?;
         // recover the DEK
         let dek = self
             .server_side_decrypt(
-                kms_rest_client,
+                &kms_rest_client,
                 key_encryption_algorithm.into(),
                 key_id,
                 encapsulation,
@@ -312,7 +312,6 @@ impl DecryptAction {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments, dead_code)]
     /// Decrypt a buffer using a symmetric key.
     /// # Errors
     /// - If the key encryption algorithm is not supported
@@ -368,7 +367,7 @@ impl DecryptAction {
         })?;
 
         // read the encapsulated data
-        #[allow(clippy::cast_possible_truncation)]
+        #[expect(clippy::cast_possible_truncation)]
         let mut encapsulation = vec![0; encaps_length as usize];
         trace!(
             "client_side_decrypt_with_buffer: encapsulation length {}",

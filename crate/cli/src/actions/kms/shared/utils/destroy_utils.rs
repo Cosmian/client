@@ -17,13 +17,13 @@ use crate::{
 /// # Returns
 /// * `CosmianResult<()>` - The result of the operation
 pub(crate) async fn destroy(
-    kms_rest_client: &KmsClient,
+    kms_rest_client: KmsClient,
     uid: &str,
     remove: bool,
 ) -> CosmianResult<()> {
     // Create the kmip query
     let destroy_query = Destroy {
-        unique_identifier: Some(UniqueIdentifier::TextString(uid.to_string())),
+        unique_identifier: Some(UniqueIdentifier::TextString(uid.to_owned())),
         remove,
     };
 

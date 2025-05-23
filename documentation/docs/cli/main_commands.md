@@ -66,7 +66,7 @@ Handle KMS actions
 
 **`login`** [[1.9]](#19-cosmian-kms-login)  Login to the Identity Provider of the KMS server using the `OAuth2` authorization code flow.
 
-**`logout`** [[1.10]](#110-cosmian-kms-logout)  Logout from the Identity Provider.
+**`logout`** [[1.10]](#110-cosmian-kms-logout)  Logout from the Identity Provider
 
 **`hash`** [[1.11]](#111-cosmian-kms-hash)  Hash arbitrary data.
 
@@ -1734,7 +1734,7 @@ Login to the Identity Provider of the KMS server using the `OAuth2` authorizatio
 
 ## 1.10 cosmian kms logout
 
-Logout from the Identity Provider.
+Logout from the Identity Provider
 
 ### Usage
 `cosmian kms logout`
@@ -2510,7 +2510,7 @@ Handle Findex server actions
 
 **`login`** [[2.8]](#28-cosmian-findex-login)  Login to the Identity Provider of the Findex server using the `OAuth2` authorization code flow.
 
-**`logout`** [[2.9]](#29-cosmian-findex-logout)  Logout from the Identity Provider.
+**`logout`** [[2.9]](#29-cosmian-findex-logout)  Logout from the Identity Provider
 
 **`server-version`** [[2.10]](#210-cosmian-findex-server-version)  Print the version of the server
 
@@ -2802,7 +2802,7 @@ Login to the Identity Provider of the Findex server using the `OAuth2` authoriza
 
 ## 2.9 cosmian findex logout
 
-Logout from the Identity Provider.
+Logout from the Identity Provider
 
 ### Usage
 `cosmian findex logout`
