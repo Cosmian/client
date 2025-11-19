@@ -1728,12 +1728,10 @@ These extensions will be applied to the generated leaf certificate and must
 comply with Google's S/MIME certificate requirements. For example:
 ```text
 [ v3_ca ]
-keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
+keyUsage=nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
 extendedKeyUsage=emailProtection
 subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer
-subjectAltName=email:john.doe@acme.com
-crlDistributionPoints=URI:https://acme.com/crl.pem
 ```
 This parameter is ignored when using an existing leaf certificate.
 
@@ -1746,6 +1744,8 @@ This PKCS12 certificate also holds the private key.
 Cannot be used together with --leaf-certificate-id neither --leaf-certificate-extensions.
 
 `--leaf-certificate-pkcs12-password <LEAF_CERTIFICATE_PKCS12_PASSWORD>` The password for the PKCS12 file containing the leaf certificate.
+
+`--days [-d] <NUMBER_OF_DAYS>` The requested number of validity days The server may grant a different value
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 

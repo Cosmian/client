@@ -32,4 +32,4 @@ SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/installation.md
 SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/pkcs11/oracle/tde.md
 
 cargo build
-git cliff -u -p CHANGELOG.md -t "$NEW_VERSION"
+git cliff -w "$(pwd)" -u -p CHANGELOG.md -t "$NEW_VERSION"
