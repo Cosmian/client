@@ -1287,7 +1287,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "cosmian_cli"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1814,7 +1814,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_pkcs11"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "cosmian_cli",
  "cosmian_config_utils 0.2.0",
@@ -1839,7 +1839,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_pkcs11_module"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "bincode",
  "const-oid",
@@ -5948,7 +5948,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 
 [[package]]
 name = "test_findex_server"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "actix-server",
  "cosmian_findex_client",
