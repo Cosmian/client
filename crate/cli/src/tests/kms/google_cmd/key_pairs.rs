@@ -2,7 +2,7 @@ use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
 use cosmian_kms_cli::actions::kms::{
-    google::keypairs::create::CreateKeyPairsAction, symmetric::keys::create_key::CreateKeyAction,
+    google::key_pairs::create::CreateKeyPairsAction, symmetric::keys::create_key::CreateKeyAction,
 };
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
@@ -127,6 +127,7 @@ async fn cli_create_google_key_pair() -> CosmianResult<()> {
         leaf_certificate_id: None,
         leaf_certificate_pkcs12_file: None,
         leaf_certificate_pkcs12_password: None,
+        number_of_days: 20,
         dry_run: true,
     };
     assert!(create_keypairs(&owner_client_conf_path, action.clone()).is_err());

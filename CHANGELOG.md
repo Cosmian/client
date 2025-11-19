@@ -2,11 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.2] - 2025-11-19
+
+### 🐛 Bug Fixes
+
+- Google key pair remove sanity check - moved to server ([#118](https://github.com/Cosmian/cli/pull/118))
+
+### 🚀 Features
+
+- Add parameter `--days` to configure the certificate expiration date on google key-pair create command ([#118](https://github.com/Cosmian/cli/pull/118))
+
+### 💼 Other
+
+- *(deps)* Bump actions/upload-artifact from 4 to 5 ([#117](https://github.com/Cosmian/cli/pull/117))
+
 ## [1.5.1] - 2025-10-28
 
 ### 🐛 Bug Fixes
 
-- *(google_cse)* Load RSA private as PKCS8 or PKCS1 format (#592)
+- *(google_cse)* Load RSA private as PKCS8 or PKCS1 format ([#592](https://github.com/Cosmian/cli/pull/592))
 
 ### ⚠️ WARNING
 
@@ -16,9 +30,9 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Support wrapping SecretData object (#109)
-- Add derive key subcommand (#111)
-- Create a configuration wizard - add configure subcommand (#116)
+- Support wrapping SecretData object ([#109](https://github.com/Cosmian/cli/pull/109))
+- Add derive key subcommand ([#111](https://github.com/Cosmian/cli/pull/111))
+- Create a configuration wizard - add configure subcommand ([#116](https://github.com/Cosmian/cli/pull/116))
 
 ### 🐛 Bug Fixes
 
@@ -26,18 +40,18 @@ All notable changes to this project will be documented in this file.
 
 ### 🧪 Testing
 
-- Add luks integration script (#108)
+- Add luks integration script ([#108](https://github.com/Cosmian/cli/pull/108))
 
 ### ⚙️ Miscellaneous Tasks
 
 - Configure Dependabot for GitHub Actions updates
-- Add SECURITY.md file (#113)
-- Use cosmian_logger (#110)
-- Split cargo_build.sh into multiple files (#114)
+- Add SECURITY.md file ([#113](https://github.com/Cosmian/cli/pull/113))
+- Use cosmian_logger ([#110](https://github.com/Cosmian/cli/pull/110))
+- Split cargo_build.sh into multiple files ([#114](https://github.com/Cosmian/cli/pull/114))
 
 ### Build
 
-- *(deps)* Bump actions/checkout from 4 to 5 (#112)
+- *(deps)* Bump actions/checkout from 4 to 5 ([#112](https://github.com/Cosmian/cli/pull/112))
 
 ## [1.4.1] - 2025-09-16
 
@@ -49,51 +63,51 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- *CLI*: Added support for SHA1 in RSA key wrapping and add Azure functionality to facilitate BYOK (#105)
+- *CLI*: Added support for SHA1 in RSA key wrapping and add Azure functionality to facilitate BYOK ([#105](https://github.com/Cosmian/cli/pull/105))
 
 ### 🐛 Bug Fixes
 
-- *PKCS11*: Skip unknown key types in search functions (find_*) and update KMS and FS crates (#104)
+- *PKCS11*: Skip unknown key types in search functions (find_*) and update KMS and FS crates ([#104](https://github.com/Cosmian/cli/pull/104))
 - Deliver CLI with all features - including non-FIPS feature
 
 ## [1.3.0] - 2025-08-22
 
 ### 🚀 Features
 
-- Add support for Oracle TDE with direct HSM/KMS connection (#89)
-- *(Google CSE)* Consume KMS Google Key pair action (#100)
-- Support HTTP forward proxy (#102)
-- Create comprehensive .github/copilot-instructions.md with validated build procedures and OpenSSL 3.2.0 requirements (#94)
+- Add support for Oracle TDE with direct HSM/KMS connection ([#89](https://github.com/Cosmian/cli/pull/89))
+- *(Google CSE)* Consume KMS Google Key pair action ([#100](https://github.com/Cosmian/cli/pull/100))
+- Support HTTP forward proxy ([#102](https://github.com/Cosmian/cli/pull/102))
+- Create comprehensive .github/copilot-instructions.md with validated build procedures and OpenSSL 3.2.0 requirements ([#94](https://github.com/Cosmian/cli/pull/94))
 
 ### 🐛 Bug Fixes
 
-- RUSTSEC-2025-0047: Update slab dependency from 0.4.10 to 0.4.11 (#92)
-- README.md: remove UI section and correct formatting issues (#96)
+- RUSTSEC-2025-0047: Update slab dependency from 0.4.10 to 0.4.11 ([#92](https://github.com/Cosmian/cli/pull/92))
+- README.md: remove UI section and correct formatting issues ([#96](https://github.com/Cosmian/cli/pull/96))
 
 ### ⚙️ Miscellaneous Tasks
 
 - Fix publish step
 - Skip debug pipeline on tags
-- Fix audit GitHub action (#99)
+- Fix audit GitHub action ([#99](https://github.com/Cosmian/cli/pull/99))
 
 ## [1.2.0] - 2025-08-08
 
 ### 🚀 Features
 
-- Upgrade findex to v8 and clean some dependency import paths (#87)
+- Upgrade findex to v8 and clean some dependency import paths ([#87](https://github.com/Cosmian/cli/pull/87))
 
 ### 🐛 Bug Fixes
 
-- Rocky package must be NON-FIPS (#83)
-- Reduce binaries size (EXE and DLL) (#84)
+- Rocky package must be NON-FIPS ([#83](https://github.com/Cosmian/cli/pull/83))
+- Reduce binaries size (EXE and DLL) ([#84](https://github.com/Cosmian/cli/pull/84))
 
 ### 📚 Documentation
 
-- Add updated google key-pairs create command (#76)
+- Add updated google key-pairs create command ([#76](https://github.com/Cosmian/cli/pull/76))
 
 ### ⚙️ Miscellaneous Tasks
 
-- Replace test_data folder with git submodule (#86)
+- Replace test_data folder with git submodule ([#86](https://github.com/Cosmian/cli/pull/86))
 
 ## [1.1.0] - 2025-07-23
 
@@ -120,16 +134,16 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Support sqlite3 as database type (#61)
-- Allow KMS/Findex source code edition while modifying CLI (#65)
+- Support sqlite3 as database type ([#61](https://github.com/Cosmian/cli/pull/61))
+- Allow KMS/Findex source code edition while modifying CLI ([#65](https://github.com/Cosmian/cli/pull/65))
 
 ### 🐛 Bug Fixes
 
-- Clap short duplicate (#67)
+- Clap short duplicate ([#67](https://github.com/Cosmian/cli/pull/67))
 
 ### 🚜 Refactor
 
-- Remove client-crates and consume clap actions instead (#64)
+- Remove client-crates and consume clap actions instead ([#64](https://github.com/Cosmian/cli/pull/64))
 
 ## [0.4.1] - 2025-05-22
 
@@ -173,7 +187,7 @@ All notable changes to this project will be documented in this file.
 ### ⚙️ Miscellaneous Tasks
 
 - Reuse GitHub workflow to publish artifacts
-- Centralize subcrates version in root Cargo.toml (#55)
+- Centralize subcrates version in root Cargo.toml ([#55](https://github.com/Cosmian/cli/pull/55))
 - Missing Cargo.toml descriptions
 
 ## [0.3.1] - 2025-04-24
@@ -243,7 +257,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🐛 Bug Fixes
 
-- Save cli configuration if login/logout have been called (#4)
+- Save cli configuration if login/logout have been called ([#4](https://github.com/Cosmian/cli/pull/4))
 
 ### 📚 Documentation
 

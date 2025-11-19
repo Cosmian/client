@@ -21,6 +21,16 @@ SED() {
   fi
 }
 
+SED_EXTENDED() {
+  args=$1
+  file=$2
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    $SED_BINARY -E -i '' "${args}" "$file"
+  else
+    $SED_BINARY -r -i "${args}" "$file"
+  fi
+}
+
 SED "s/$OLD_VERSION/$NEW_VERSION/g" Cargo.toml
 SED "s/$OLD_VERSION/$NEW_VERSION/g" crate/cli/Cargo.toml
 SED "s/$OLD_VERSION/$NEW_VERSION/g" crate/pkcs11/provider/Cargo.toml
@@ -32,4 +42,7 @@ SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/installation.md
 SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/pkcs11/oracle/tde.md
 
 cargo build
-git cliff -u -p CHANGELOG.md -t "$NEW_VERSION"
+git cliff -w "$(pwd)" -u -p CHANGELOG.md -t "$NEW_VERSION"
+
+# Convert (#XXX) references to full GitHub pull request URLs
+SED_EXTENDED 's/\(#([0-9]+)\)/([#\1](https:\/\/github.com\/Cosmian\/cli\/pull\/\1))/g' CHANGELOG.md
