@@ -380,6 +380,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
 dependencies = [
  "cfg-if",
+ "getrandom 0.3.3",
  "once_cell",
  "version_check",
  "zerocopy",
@@ -1353,7 +1354,7 @@ version = "15.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f12eb7e96555b6b8841966fa264e7a6dfe5e39ad0733317c088c52259e99993c"
 dependencies = [
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "ml-kem",
  "serde",
  "serde_json",
@@ -1399,9 +1400,9 @@ dependencies = [
 
 [[package]]
 name = "cosmian_crypto_core"
-version = "10.2.0"
+version = "10.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "539989d6dbd88b6b15a2aaff8325f5621afacaada3b3180ce33d8904a7e8c508"
+checksum = "87ac375aad30335e299f5ab6c1028faca9c3a5aa48180735dae5632622622796"
 dependencies = [
  "aead",
  "aes-gcm",
@@ -1445,7 +1446,7 @@ checksum = "b0b68f0bc9f2fdcdd01cbe32e2061c0a7c670a39b66d4178f394fa108ffbcfe5"
 dependencies = [
  "aes",
  "agnostic-lite",
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "cosmian_sse_memories",
  "criterion",
  "xts-mode",
@@ -1453,7 +1454,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1477,7 +1478,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
@@ -1497,7 +1498,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1509,7 +1510,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "clap",
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "cosmian_findex 8.0.0",
  "cosmian_findex_structs",
  "cosmian_logger",
@@ -1533,10 +1534,10 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "base64 0.22.1",
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "cosmian_findex 8.0.0",
  "cosmian_sse_memories",
  "thiserror 2.0.12",
@@ -1567,7 +1568,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "base64 0.22.1",
  "bitflags 2.9.1",
@@ -1589,7 +1590,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1597,7 +1598,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -1614,7 +1615,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1644,9 +1645,9 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "cosmian_http_client",
  "cosmian_kms_client_utils",
  "cosmian_logger",
@@ -1660,7 +1661,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1679,13 +1680,13 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
  "base64 0.22.1",
  "cosmian_cover_crypt",
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "cosmian_kmip",
  "cosmian_logger",
  "hex",
@@ -1702,7 +1703,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -1715,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -1764,23 +1765,26 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
+ "cosmian_findex 8.0.0",
  "cosmian_kmip",
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
  "cosmian_logger",
- "hex",
+ "cosmian_sse_memories",
  "lru",
  "num-bigint-dig",
  "num_cpus",
  "rawsql",
  "redis 0.23.3",
+ "redis 0.32.4",
  "serde",
  "serde_json",
  "sqlx",
+ "strum",
  "thiserror 2.0.12",
  "tokio",
  "url",
@@ -1862,7 +1866,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f21de5515e966a676e8d85097960e9c69c134eafdb6044b381d7ffff60c6b8c1"
 dependencies = [
  "agnostic-lite",
- "cosmian_crypto_core 10.2.0",
+ "cosmian_crypto_core 10.3.0",
  "redis 0.32.4",
  "tokio",
 ]
@@ -1984,7 +1988,7 @@ checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
 
 [[package]]
 name = "crypt2pay_pkcs11_loader"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kms_base_hsm",
 ]
@@ -3547,7 +3551,7 @@ dependencies = [
 
 [[package]]
 name = "kmip-derive"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "quote",
  "syn",
@@ -4557,7 +4561,7 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kms_base_hsm",
 ]
@@ -4748,6 +4752,7 @@ version = "0.32.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1f66bf4cac9733a23bcdf1e0e01effbaaad208567beba68be8f67e5f4af3ee1"
 dependencies = [
+ "ahash 0.8.12",
  "arc-swap",
  "backon",
  "bytes",
@@ -5508,7 +5513,7 @@ dependencies = [
 
 [[package]]
 name = "smartcardhsm_pkcs11_loader"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kms_base_hsm",
 ]
@@ -5562,7 +5567,7 @@ dependencies = [
 
 [[package]]
 name = "softhsm2_pkcs11_loader"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kms_base_hsm",
 ]
@@ -5955,7 +5960,7 @@ dependencies = [
 
 [[package]]
 name = "test_kms_server"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "actix-server",
  "cosmian_kms_client",
@@ -6601,7 +6606,7 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "5.11.0"
+version = "5.12.0"
 dependencies = [
  "cosmian_kms_base_hsm",
 ]
