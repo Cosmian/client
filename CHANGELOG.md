@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2025-12-08
+
+### 🚀 Features
+
+- KMS CLI additions aligned with KMIP XML vectors:
+  - `rng retrieve` and `rng seed` for RNG operations
+  - `mac verify` to validate message authentication codes
+  - `discover-versions` and `query` for KMIP discovery and server queries
+- Opaque Object subcommands:
+  - `opaque-object create`, `import`, `export` (raw/base64/json), `revoke`, `destroy`
+- Attributes:
+  - Deterministic `attributes get` ordering aligned with server
+  - Expanded attribute flows consistent with KMIP GetAttributeList/ModifyAttribute
+
+### 🧪 Testing
+
+- Added CLI tests: Opaque Object CRUD, RNG Retrieve/Seed, MAC Verify, Query, DiscoverVersions.
+
+### 📚 Documentation
+
+- Updated CLI docs/examples to reflect new subcommands and attribute behavior.
+
 ## [1.5.2] - 2025-11-19
 
 ### 🐛 Bug Fixes
