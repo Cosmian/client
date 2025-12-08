@@ -362,6 +362,7 @@ pub(crate) async fn kms_revoke_object_async(
                 revocation_message: None,
             },
             compromise_occurrence_date: None,
+            cascade: true,
         })
         .await?;
 
@@ -384,6 +385,7 @@ pub(crate) async fn kms_destroy_object_async(
         .destroy(Destroy {
             unique_identifier: Some(UniqueIdentifier::TextString(unique_identifier.to_owned())),
             remove: false,
+            cascade: true,
         })
         .await?;
 

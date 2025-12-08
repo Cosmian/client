@@ -92,7 +92,7 @@ async fn create_keys(
         false,
         true,
         [disk_encryption_tag, "vol1"],
-    );
+    )?;
     let _vol1_id = kms_rest_client
         .import(import_object_request)
         .await?
@@ -112,7 +112,7 @@ async fn create_keys(
         false,
         true,
         [disk_encryption_tag, "vol2"],
-    );
+    )?;
     let _vol2_id = kms_rest_client
         .import(import_object_request_2)
         .await?
@@ -151,7 +151,7 @@ async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
         false,
         true,
         [disk_encryption_tag, "luks_volume"],
-    );
+    )?;
     let p12_id = ctx
         .get_owner_client()
         .import(import_object_request)
