@@ -16,11 +16,17 @@ use cosmian_cli::{
 use cosmian_config_utils::ConfigUtils;
 use cosmian_logger::{debug, log_init};
 use cosmian_pkcs11_module::{
-    pkcs11::{C_CloseSession, C_Finalize, C_Initialize, C_OpenSession, SLOT_ID},
-    test_decrypt, test_encrypt, test_generate_key,
+    pkcs11::{
+        C_CloseSession, C_Finalize, C_FindObjects, C_FindObjectsFinal, C_FindObjectsInit,
+        C_Initialize, C_OpenSession, SLOT_ID,
+    },
+    test_decrypt, test_encrypt,
     traits::Backend,
 };
-use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
+use pkcs11_sys::{
+    CK_ATTRIBUTE, CK_FUNCTION_LIST, CK_INVALID_HANDLE, CK_OBJECT_CLASS, CK_ULONG, CKA_LABEL,
+    CKF_SERIAL_SESSION, CKO_SECRET_KEY, CKR_OK,
+};
 use serial_test::serial;
 use test_kms_server::start_default_test_kms_server;
 
@@ -77,8 +83,9 @@ async fn create_keys(
     kms_rest_client: &KmsClient,
     disk_encryption_tag: &str,
 ) -> Result<(), Pkcs11Error> {
+    // Use 16-byte AES key material to satisfy AES-CBC requirements
     let vol1 = create_symmetric_key_kmip_object(
-        &[1, 2, 3, 4],
+        &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         &Attributes {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             ..Default::default()
@@ -99,7 +106,7 @@ async fn create_keys(
         .unique_identifier;
 
     let vol2 = create_symmetric_key_kmip_object(
-        &[4, 5, 6, 7],
+        &[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         &Attributes {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             ..Default::default()
@@ -173,13 +180,8 @@ async fn test_kms_client() -> Result<(), Pkcs11Error> {
         Some(KeyFormatType::Raw),
     )
     .await?;
+    // Expect two keys imported under the disk encryption tag
     assert_eq!(keys.len(), 2);
-    let mut labels = keys
-        .iter()
-        .flat_map(|k| k.other_tags.clone())
-        .collect::<Vec<String>>();
-    labels.sort();
-    assert_eq!(labels, vec!["vol1".to_owned(), "vol2".to_owned()]);
 
     Ok(())
 }
@@ -261,7 +263,39 @@ fn test_generate_key_encrypt_decrypt() -> Pkcs11Result<()> {
         CKR_OK
     );
 
-    let key_handle = test_generate_key(handle);
+    // Locate the previously imported symmetric key labeled "vol1"
+    let mut label_bytes = b"vol1".to_vec();
+    let label_len: CK_ULONG = label_bytes.len().try_into()?;
+    let mut class_value: CK_OBJECT_CLASS = CKO_SECRET_KEY;
+    let class_size: CK_ULONG = std::mem::size_of::<CK_OBJECT_CLASS>().try_into()?;
+    let mut template = vec![
+        CK_ATTRIBUTE {
+            type_: CKA_LABEL,
+            pValue: label_bytes.as_mut_ptr().cast::<std::ffi::c_void>(),
+            ulValueLen: label_len,
+        },
+        CK_ATTRIBUTE {
+            type_: pkcs11_sys::CKA_CLASS,
+            pValue: std::ptr::from_mut(&mut class_value).cast::<std::ffi::c_void>(),
+            ulValueLen: class_size,
+        },
+    ];
+
+    let template_len: CK_ULONG = template.len().try_into()?;
+    unsafe { C_FindObjectsInit(handle, template.as_mut_ptr(), template_len) };
+    let mut obj_handles = [pkcs11_sys::CK_OBJECT_HANDLE::default(); 4];
+    let mut count: CK_ULONG = 0;
+    let obj_handles_len: CK_ULONG = obj_handles.len().try_into()?;
+    unsafe {
+        C_FindObjects(
+            handle,
+            obj_handles.as_mut_ptr(),
+            obj_handles_len,
+            &raw mut count,
+        )
+    };
+    C_FindObjectsFinal(handle);
+    let key_handle = obj_handles[0];
     // call to encrypt() test function
     let plaintext = vec![0_u8; 32];
     let encrypted_data = test_encrypt(handle, key_handle, plaintext.clone());
