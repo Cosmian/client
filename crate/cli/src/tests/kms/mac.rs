@@ -47,7 +47,11 @@ pub(crate) fn create_mac(cli_conf_path: &str, action: MacAction) -> CosmianResul
         args.push("--final-indicator".to_owned());
     }
 
-    cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
+    // Updated for 5.13.0: `mac` now requires a subcommand; use `compute`.
+    cmd.arg(KMS_SUBCOMMAND)
+        .arg(SUB_COMMAND)
+        .arg("compute")
+        .args(args);
 
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {

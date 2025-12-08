@@ -59,6 +59,7 @@ impl From<KmipError> for Pkcs11Error {
             | KmipError::ObjectNotFound(s) => Self::NotSupported(s),
             KmipError::TryFromSliceError(e) => Self::Conversion(e.to_string()),
             KmipError::SerdeJsonError(e) => Self::Conversion(e.to_string()),
+            KmipError::RegexError(error) => Self::Conversion(error.to_string()),
             KmipError::Deserialization(_) | KmipError::Serialization(_) => {
                 Self::KmipError(ErrorReason::Codec_Error, e.to_string())
             }
