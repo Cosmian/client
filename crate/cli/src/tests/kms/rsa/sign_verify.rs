@@ -12,7 +12,7 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            rsa::create_key_pair::{create_rsa_key_pair, RsaKeyPairOptions},
+            rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
             utils::recover_cmd_logs,
         },
         save_kms_cli_config,
@@ -107,7 +107,8 @@ async fn rsa_digested_sign_verify_cli() -> CosmianResult<()> {
     let digest = openssl::sha::sha256(&data);
     std::fs::write(&digest_file, digest)?;
 
-    let (private_key_id, public_key_id) = create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
+    let (private_key_id, public_key_id) =
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Sign digested input
     fs::remove_file(&sig_file).ok();

@@ -29,7 +29,14 @@ fn ec_sign(
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
-    let mut args = vec!["sign", input_file, "--key-id", key_id, "-s", "ecdsa-with-sha256"];
+    let mut args = vec![
+        "sign",
+        input_file,
+        "--key-id",
+        key_id,
+        "-s",
+        "ecdsa-with-sha256",
+    ];
     if digested {
         args.push("--digested");
     }
