@@ -1,6 +1,7 @@
 use std::{collections::HashMap, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
+use clap::ValueEnum;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::Tag, reexport::cosmian_kms_client_utils::attributes_utils::CLinkType,
 };
@@ -46,7 +47,12 @@ pub(crate) fn get_attributes(
 
     for link_type in attribute_link_types {
         args.push("--link-type".to_owned());
-        args.push(link_type.to_string());
+        let name = link_type
+            .to_possible_value()
+            .expect("valid CLinkType")
+            .get_name()
+            .to_string();
+        args.push(name);
     }
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;

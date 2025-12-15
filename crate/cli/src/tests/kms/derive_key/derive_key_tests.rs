@@ -1,6 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
+use clap::ValueEnum;
 use cosmian_kms_cli::{
     actions::kms::{
         derive_key::DeriveKeyAction, mac::CHashingAlgorithm,
@@ -43,7 +44,12 @@ pub(crate) fn derive_key(cli_conf_path: &str, action: DeriveKeyAction) -> Cosmia
     let mut args: Vec<String> = vec![
         // Algorithm and length are explicit to avoid relying on defaults
         "--algorithm".to_owned(),
-        action.algorithm.to_string(),
+        action
+            .algorithm
+            .to_possible_value()
+            .expect("possible value")
+            .get_name()
+            .to_string(),
         "--length".to_owned(),
         action.cryptographic_length.to_string(),
         "--derivation-method".to_owned(),
