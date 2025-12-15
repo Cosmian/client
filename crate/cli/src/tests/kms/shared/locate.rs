@@ -103,8 +103,7 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     assert!(ids.contains(&master_private_key_id));
     assert!(ids.contains(&master_public_key_id));
 
-    // Locate with cryptographic algorithm
-    // this should be case insensitive
+    // Locate with cryptographic algorithm (CLI expects lowercase names)
     let ids = locate(
         &owner_client_conf_path,
         Some(&["test_cc"]),
@@ -345,7 +344,7 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     let ids = locate(
         &owner_client_conf_path,
         Some(&["test_sym"]),
-        Some("Aes"),
+        Some("aes"),
         None,
         None,
     )?;
@@ -363,11 +362,11 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     assert_eq!(ids.len(), 1);
     assert!(ids.contains(&key_id));
 
-    //locate using tags and cryptographic algorithm and key format type
+    // locate using tags and cryptographic algorithm and key format type
     let ids = locate(
         &owner_client_conf_path,
         Some(&["test_sym"]),
-        Some("AES"),
+        Some("aes"),
         None,
         Some("TransparentSymmetricKey"),
     )?;

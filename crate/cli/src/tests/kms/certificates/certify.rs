@@ -1,6 +1,7 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
+use clap::ValueEnum;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     cosmian_kmip::{
         kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
@@ -91,7 +92,12 @@ pub(crate) fn certify(cli_conf_path: &str, certify_op: CertifyOp) -> CosmianResu
     }
     if let Some(algorithm) = certify_op.algorithm {
         args.push("--algorithm".to_owned());
-        args.push(algorithm.to_string());
+        let name = algorithm
+            .to_possible_value()
+            .expect("valid Algorithm")
+            .get_name()
+            .to_string();
+        args.push(name);
     }
     if let Some(certificate_id) = certify_op.certificate_id {
         args.push("--certificate-id".to_owned());

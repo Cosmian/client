@@ -39,7 +39,7 @@ pub(crate) async fn test_wrap_on_export_unwrap_on_import() -> CosmianResult<()> 
 
     // Export and import the key with different block cipher modes
     for wrapping_algorithm in [WrappingAlgorithm::AesGCM, WrappingAlgorithm::NistKeyWrap] {
-        debug!("wrapping algorithm: {wrapping_algorithm}",);
+        debug!("wrapping algorithm: {:?}", wrapping_algorithm);
         export_key(ExportKeyParams {
             cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
