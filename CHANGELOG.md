@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2025-12-15
+
+### 💼 Other
+
+- *(deps)* Bump actions/checkout from 5 to 6 ([#119](https://github.com/Cosmian/cli/pull/119))
+- *(deps)* Bump actions/upload-artifact from 5 to 6 ([#123](https://github.com/Cosmian/cli/pull/123))
+
+### 🧪 Testing
+
+- Add test on new sign actions ([#122](https://github.com/Cosmian/cli/pull/122))
+
 ## [1.6.0] - 2025-12-08
 
 ### 🚀 Features
