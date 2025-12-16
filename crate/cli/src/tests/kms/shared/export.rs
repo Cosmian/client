@@ -3,6 +3,7 @@ use std::path::Path;
 use std::process::Command;
 
 use assert_cmd::prelude::*;
+use clap::ValueEnum;
 #[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_0::kmip_types::BlockCipherMode,
@@ -102,7 +103,12 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
     }
     if let Some(wrapping_algorithm) = &params.wrapping_algorithm {
         args.push("--wrapping-algorithm".to_owned());
-        args.push(wrapping_algorithm.to_string());
+        let name = wrapping_algorithm
+            .to_possible_value()
+            .expect("valid wrapping algorithm")
+            .get_name()
+            .to_string();
+        args.push(name);
     }
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;

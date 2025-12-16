@@ -1273,6 +1273,10 @@ Manage elliptic curve keys. Encrypt and decrypt data using ECIES
 
 **`decrypt`** [[1.8.3]](#183-cosmian-kms-ec-decrypt)  Decrypts a file with the given private key using ECIES
 
+**`sign`** [[1.8.4]](#184-cosmian-kms-ec-sign)  Sign a file using elliptic curve digital signature algorithms (ECDSA)
+
+**`sign-verify`** [[1.8.5]](#185-cosmian-kms-ec-sign-verify)  Verify an ECDSA signature for a given data file
+
 ---
 
 ## 1.8.1 cosmian kms ec keys
@@ -1560,6 +1564,69 @@ Decrypts a file with the given private key using ECIES
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
+
+
+
+---
+
+## 1.8.4 cosmian kms ec sign
+
+Sign a file using elliptic curve digital signature algorithms (ECDSA)
+
+### Usage
+`cosmian kms ec sign [options] <FILE>
+`
+### Arguments
+`--curve [-c] <CURVE>` The elliptic curve
+
+Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "secp256k1", "secp224k1"` [default: `"nist-p256"`]
+
+` <FILE>` The file to sign
+
+`--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
+
+Possible values:  `"ecdsa-with-sha256", "ecdsa-with-sha384", "ecdsa-with-sha512"` [default: `"ecdsa-with-sha256"`]
+
+`--output-file [-o] <OUTPUT_FILE>` The signature output file path
+
+`--digested <DIGESTED>` Treat input as already-digested data (pre-hash)
+
+Possible values:  `"true", "false"`
+
+
+
+---
+
+## 1.8.5 cosmian kms ec sign-verify
+
+Verify an ECDSA signature for a given data file
+
+### Usage
+`cosmian kms ec sign-verify [options] <FILE>
+ <SIGNATURE_FILE>
+`
+### Arguments
+` <FILE>` The data that was signed
+
+` <SIGNATURE_FILE>` The signature file
+
+`--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
+
+Possible values:  `"ecdsa-with-sha256", "ecdsa-with-sha384", "ecdsa-with-sha512"` [default: `"ecdsa-with-sha256"`]
+
+`--output-file [-o] <OUTPUT_FILE>` Optional output file path
+
+`--digested <DIGESTED>` Treat data input as already-digested (pre-hash)
+
+Possible values:  `"true", "false"`
 
 
 
@@ -2097,6 +2164,10 @@ Manage RSA keys. Encrypt and decrypt data using RSA keys
  - `CKM_RSA_PKCS_OAEP` a.k.a PKCS #1 RSA OAEP as specified in PKCS#11 v2.40
  - `CKM_RSA_AES_KEY_WRAP` as specified in PKCS#11 v2.40
 
+**`sign`** [[1.18.4]](#1184-cosmian-kms-rsa-sign)  Digital signature supported is RSASSA-PSS
+
+**`sign-verify`** [[1.18.5]](#1185-cosmian-kms-rsa-sign-verify)  Verify an RSASSA-PSS signature for a given data file
+
 ---
 
 ## 1.18.1 cosmian kms rsa keys
@@ -2406,6 +2477,65 @@ Possible values:  `"ckm-rsa-pkcs", "ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"` 
 Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `"sha256"`]
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
+
+
+
+---
+
+## 1.18.4 cosmian kms rsa sign
+
+Digital signature supported is RSASSA-PSS
+
+### Usage
+`cosmian kms rsa sign [options] <FILE>
+`
+### Arguments
+` <FILE>` The file to sign
+
+`--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
+
+Possible values:  `"rsassapss"` [default: `"rsassapss"`]
+
+`--output-file [-o] <OUTPUT_FILE>` The signature output file path
+
+`--digested <DIGESTED>` Treat input as already-digested data (pre-hash)
+
+Possible values:  `"true", "false"`
+
+
+
+---
+
+## 1.18.5 cosmian kms rsa sign-verify
+
+Verify an RSASSA-PSS signature for a given data file
+
+### Usage
+`cosmian kms rsa sign-verify [options] <FILE>
+ <SIGNATURE_FILE>
+`
+### Arguments
+` <FILE>` The data that was signed
+
+` <SIGNATURE_FILE>` The signature file
+
+`--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
+
+Possible values:  `"rsassapss"` [default: `"rsassapss"`]
+
+`--output-file [-o] <OUTPUT_FILE>` Optional output file path
+
+`--digested <DIGESTED>` Treat data input as already-digested (pre-hash)
+
+Possible values:  `"true", "false"`
 
 
 

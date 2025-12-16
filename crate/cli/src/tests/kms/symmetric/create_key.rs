@@ -2,6 +2,7 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use base64::{Engine as _, engine::general_purpose};
+use clap::ValueEnum;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::{
@@ -45,7 +46,15 @@ pub(crate) fn create_symmetric_key(
     if let Some(wrap_key_b64) = action.wrap_key_b64.clone() {
         args.extend(vec!["--bytes-b64".to_owned(), wrap_key_b64]);
     }
-    args.extend(vec!["--algorithm".to_owned(), action.algorithm.to_string()]);
+    args.extend(vec![
+        "--algorithm".to_owned(),
+        action
+            .algorithm
+            .to_possible_value()
+            .expect("possible value")
+            .get_name()
+            .to_string(),
+    ]);
 
     // add tags
     for tag in action.tags {

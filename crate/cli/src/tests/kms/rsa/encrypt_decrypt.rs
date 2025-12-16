@@ -1,6 +1,7 @@
 use std::{collections::HashSet, fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
+use clap::ValueEnum;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
@@ -43,9 +44,20 @@ pub(crate) fn encrypt(
     args.push("--key-id");
     args.push(public_key_id);
     args.push("--encryption-algorithm");
-    let encryption_algorithm = encryption_algorithm.to_string();
+    let encryption_algorithm = encryption_algorithm
+        .to_possible_value()
+        .expect("valid RSA algorithm")
+        .get_name()
+        .to_string();
     args.push(&encryption_algorithm);
-    let hash_fn_s = hash_fn.map(|h| h.to_string()).unwrap_or_default();
+    let hash_fn_s = hash_fn
+        .map(|h| {
+            h.to_possible_value()
+                .expect("valid hash")
+                .get_name()
+                .to_string()
+        })
+        .unwrap_or_default();
     if hash_fn.is_some() {
         args.push("--hashing-algorithm");
         args.push(&hash_fn_s);
@@ -81,9 +93,20 @@ pub(crate) fn decrypt(
 
     let mut args = vec!["decrypt", input_file, "--key-id", private_key_id];
     args.push("--encryption-algorithm");
-    let encryption_algorithm = encryption_algorithm.to_string();
+    let encryption_algorithm = encryption_algorithm
+        .to_possible_value()
+        .expect("valid RSA algorithm")
+        .get_name()
+        .to_string();
     args.push(&encryption_algorithm);
-    let hash_fn_str = hash_fn.map(|h| h.to_string()).unwrap_or_default();
+    let hash_fn_str = hash_fn
+        .map(|h| {
+            h.to_possible_value()
+                .expect("valid hash")
+                .get_name()
+                .to_string()
+        })
+        .unwrap_or_default();
     if hash_fn.is_some() {
         args.push("--hashing-algorithm");
         args.push(&hash_fn_str);

@@ -20,8 +20,8 @@ default = ["non-fips"]
 non-fips = ["cosmian_cli/non-fips"]
 
 [dependencies]
-cosmian_cli = { path = "../../cli", version = "1.6.0" }
-cosmian_pkcs11_module = { path = "../module", version = "1.6.0" }
+cosmian_cli = { path = "../../cli", version = "1.7.0" }
+cosmian_pkcs11_module = { path = "../module", version = "1.7.0" }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
