@@ -92,4 +92,4 @@ libloading = "0.8"
 # Findex deps
 cosmian_findex = "8.0"
 cosmian_sse_memories = "8.0"
-async-sqlite = { version = "=0.4" }
+async-sqlite = { version = "0.5" }
