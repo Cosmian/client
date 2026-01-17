@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use cosmian_kms_cli::actions::kms::{hash::HashAction, mac::CHashingAlgorithm};
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
@@ -9,14 +8,14 @@ use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::{PROG_NAME, kms::utils::recover_cmd_logs, save_kms_cli_config},
+    tests::{kms::utils::recover_cmd_logs, save_kms_cli_config},
 };
 
 const SUB_COMMAND: &str = "hash";
 
 /// Create a symmetric key via the CLI
 pub(crate) fn create_hash(cli_conf_path: &str, action: HashAction) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec![

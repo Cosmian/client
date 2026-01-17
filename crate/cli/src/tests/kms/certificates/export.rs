@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::CommandCargoExt;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     cosmian_kmip::ttlv::{TTLV, from_ttlv},
     kmip_2_1::{
@@ -32,7 +31,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             certificates::{
@@ -418,7 +416,7 @@ pub(crate) fn export_certificate(
     if allow_revoked {
         args.push("--allow-revoked".to_owned());
     }
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg("certificates").args(args);

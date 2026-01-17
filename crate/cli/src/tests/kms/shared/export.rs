@@ -2,7 +2,6 @@
 use std::path::Path;
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use clap::ValueEnum;
 #[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
@@ -36,7 +35,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs,
         },
@@ -111,7 +109,7 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
         args.push(name);
     }
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, params.cli_conf_path);
     // Ensure sufficient stack for the child process on Windows
     cmd.env("RUST_MIN_STACK", "16777216");

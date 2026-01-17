@@ -7,9 +7,9 @@ use test_kms_server::TestsContext;
 
 use crate::config::ClientConfig;
 
-pub(crate) mod kms;
-
 pub(crate) const PROG_NAME: &str = "cosmian";
+
+pub(crate) mod kms;
 
 pub(crate) fn save_kms_cli_config(kms_ctx: &TestsContext) -> (String, String) {
     let owner_file_path = env::temp_dir()

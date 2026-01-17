@@ -3,7 +3,6 @@ use std::{
     process::Command,
 };
 
-use assert_cmd::prelude::CommandCargoExt;
 use base64::{Engine as _, engine::general_purpose};
 use cosmian_kms_cli::{
     actions::kms::{
@@ -29,7 +28,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             secret_data::create_secret::create_secret_data,
@@ -47,7 +45,7 @@ pub(crate) fn export_object(
     object_id: &str,
     object_file: &str,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args: Vec<String> = if sub_command == "sym" {
@@ -99,7 +97,7 @@ pub(crate) fn wrap_secret_data(
     wrap_key_id: Option<String>,
     wrap_key_file: Option<PathBuf>,
 ) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args: Vec<String> = vec![
@@ -150,7 +148,7 @@ pub(crate) fn unwrap_secret_data(
     unwrap_key_id: Option<String>,
     unwrap_key_file: Option<PathBuf>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args: Vec<String> = vec![

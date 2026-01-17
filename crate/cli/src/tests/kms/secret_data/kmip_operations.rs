@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use cosmian_kms_cli::actions::kms::secret_data::create_secret::CreateSecretDataAction;
 use cosmian_logger::{info, log_init};
 use tempfile::TempDir;
@@ -11,7 +10,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             secret_data::create_secret::create_secret_data,
@@ -34,7 +32,7 @@ fn run_cosmian_cmd(
     expect_success: bool,
     cli_conf: Option<&str>,
 ) -> Result<String, std::process::Output> {
-    let mut cmd = Command::cargo_bin(PROG_NAME).unwrap();
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     if let Some(conf) = cli_conf {
         cmd.env(COSMIAN_CLI_CONF_ENV, conf);
     }
@@ -496,7 +494,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
     let export_file_path = temp_dir.path().join("keyfile.bin");
     let export_file_str = export_file_path.to_str().unwrap();
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, &owner_client_conf_path);
     cmd.args([
         KMS_SUBCOMMAND,

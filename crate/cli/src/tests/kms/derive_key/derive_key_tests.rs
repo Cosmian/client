@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use clap::ValueEnum;
 use cosmian_kms_cli::{
     actions::kms::{
@@ -27,7 +26,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{secret_data::create_secret::create_secret_data, utils::recover_cmd_logs},
         save_kms_cli_config,
     },
@@ -37,7 +35,7 @@ const SUB_COMMAND: &str = "derive-key";
 
 /// Run `cosmian kms derive-key` via the CLI and return the derived key unique identifier
 pub(crate) fn derive_key(cli_conf_path: &str, action: DeriveKeyAction) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     // Build CLI args from the action

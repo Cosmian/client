@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::{
         mac::{CHashingAlgorithm, MacAction},
@@ -16,7 +15,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs},
         save_kms_cli_config,
     },
@@ -26,7 +24,7 @@ const SUB_COMMAND: &str = "mac";
 
 /// Create a symmetric key via the CLI
 pub(crate) fn create_mac(cli_conf_path: &str, action: MacAction) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["--mac-key-id".to_owned(), action.mac_key_id];

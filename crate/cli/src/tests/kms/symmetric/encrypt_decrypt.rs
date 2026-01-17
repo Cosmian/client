@@ -1,6 +1,5 @@
 use std::{fs, path::PathBuf, process::Command};
 
-use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::symmetric::{
         DecryptAction, EncryptAction, KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
@@ -22,7 +21,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs,
         },
@@ -40,7 +38,7 @@ pub(crate) fn encrypt(
     output_file: Option<&str>,
     authentication_data: Option<&str>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec![
@@ -83,7 +81,7 @@ pub(crate) fn decrypt(
     output_file: Option<&str>,
     authentication_data: Option<&str>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec![

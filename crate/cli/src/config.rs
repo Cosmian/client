@@ -83,6 +83,7 @@ mod tests {
 
     use cosmian_config_utils::{ConfigUtils, get_default_conf_path};
     use cosmian_logger::log_init;
+    use tempfile::tempdir;
 
     use super::ClientConfig;
     use crate::config::{COSMIAN_CLI_CONF_ENV, COSMIAN_CLI_CONF_PATH};
@@ -90,6 +91,9 @@ mod tests {
     #[test]
     pub(crate) fn test_load() {
         log_init(None);
+        let original_conf_env = env::var(COSMIAN_CLI_CONF_ENV).ok();
+        let original_home = env::var("HOME").ok();
+
         // valid conf
         unsafe {
             env::set_var(COSMIAN_CLI_CONF_ENV, "../../test_data/configs/cosmian.toml");
@@ -109,15 +113,15 @@ mod tests {
         unsafe {
             env::remove_var(COSMIAN_CLI_CONF_ENV);
         }
-        drop(fs::remove_file(
-            get_default_conf_path(COSMIAN_CLI_CONF_PATH).unwrap(),
-        ));
+        let home_dir = tempdir().unwrap();
+        unsafe {
+            env::set_var("HOME", home_dir.path());
+        }
+        let default_conf_path = get_default_conf_path(COSMIAN_CLI_CONF_PATH).unwrap();
+        fs::create_dir_all(default_conf_path.parent().unwrap()).unwrap();
+        fs::copy("../../test_data/configs/cosmian.toml", &default_conf_path).unwrap();
         assert!(ClientConfig::load(None).is_ok());
-        assert!(
-            get_default_conf_path(COSMIAN_CLI_CONF_PATH)
-                .unwrap()
-                .exists()
-        );
+        assert!(default_conf_path.exists());
 
         // invalid conf
         unsafe {
@@ -138,5 +142,23 @@ mod tests {
                 .unwrap();
 
         assert!(ClientConfig::from_toml(conf_path.to_str().unwrap()).is_ok());
+
+        // restore env
+        match original_conf_env {
+            Some(v) => unsafe {
+                env::set_var(COSMIAN_CLI_CONF_ENV, v);
+            },
+            None => unsafe {
+                env::remove_var(COSMIAN_CLI_CONF_ENV);
+            },
+        }
+        match original_home {
+            Some(v) => unsafe {
+                env::set_var("HOME", v);
+            },
+            None => unsafe {
+                env::remove_var("HOME");
+            },
+        }
     }
 }

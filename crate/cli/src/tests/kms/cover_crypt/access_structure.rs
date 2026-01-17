@@ -9,7 +9,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             cover_crypt::{
@@ -55,7 +54,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
     // read the bytes from the exported file
     // let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, &owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
@@ -71,7 +70,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
         .stdout(predicate::str::contains("Top Secret"))
         .stdout(predicate::str::contains("RnD"));
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, &owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
@@ -100,7 +99,7 @@ pub(crate) async fn rename(
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
@@ -128,7 +127,7 @@ pub(crate) async fn add(
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
@@ -155,7 +154,7 @@ pub(crate) async fn disable(
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![
@@ -182,7 +181,7 @@ pub(crate) async fn remove(
 ) -> CosmianResult<()> {
     start_default_test_kms_server().await;
 
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let args = vec![

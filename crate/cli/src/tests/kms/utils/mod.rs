@@ -1,4 +1,4 @@
-pub(crate) use cmd_logs::recover_cmd_logs;
+pub(crate) use cmd_logs::{cosmian_exe, recover_cmd_logs};
 
 mod cmd_logs;
 #[expect(dead_code)]

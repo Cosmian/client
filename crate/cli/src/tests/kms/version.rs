@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::prelude::*;
 use cosmian_logger::{error, info, log_init};
 use test_kms_server::start_default_test_kms_server;
 
@@ -8,14 +7,14 @@ use super::KMS_SUBCOMMAND;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::{PROG_NAME, kms::utils::recover_cmd_logs, save_kms_cli_config},
+    tests::{kms::utils::recover_cmd_logs, save_kms_cli_config},
 };
 
 const SUB_COMMAND: &str = "server-version";
 
 /// Request server-version
 pub(crate) fn server_version(cli_conf_path: &str, kms_url: &str) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     // for local test use: export KMS_URL=http://host.docker.internal:9998

@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use assert_cmd::cargo::CommandCargoExt;
 use cosmian_kms_cli::{
     actions::kms::attributes::SetOrDeleteAttributes,
     reexport::cosmian_kms_client::kmip_2_1::kmip_types::Tag,
@@ -10,10 +9,7 @@ use super::set::prepare_attributes;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::{
-        PROG_NAME,
-        kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
-    },
+    tests::kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
 };
 
 pub(crate) fn delete_attributes(
@@ -33,7 +29,7 @@ pub(crate) fn delete_attributes(
             args.push(reference.to_string());
         }
     }
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg("attributes").args(args);

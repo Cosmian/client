@@ -1,6 +1,5 @@
 use std::{path::PathBuf, process::Command};
 
-use assert_cmd::cargo::CommandCargoExt;
 use cosmian_kms_cli::reexport::{
     cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
 };
@@ -12,7 +11,6 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             certificates::{
@@ -94,7 +92,7 @@ pub(crate) fn validate_certificate(
     uids: Vec<String>,
     date: Option<String>,
 ) -> CosmianResult<String> {
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     let mut args: Vec<String> = vec!["validate".to_owned()];
     for uid in uids {
