@@ -1,5 +1,6 @@
 use std::{collections::HashMap, process::Command};
 
+use assert_cmd::cargo::CommandCargoExt;
 use clap::ValueEnum;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::Tag, reexport::cosmian_kms_client_utils::attributes_utils::CLinkType,
@@ -12,7 +13,10 @@ use crate::{
         CosmianError,
         result::{CosmianResult, CosmianResultHelper},
     },
-    tests::kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
+    tests::{
+        PROG_NAME,
+        kms::{KMS_SUBCOMMAND, utils::recover_cmd_logs},
+    },
 };
 
 pub(crate) fn get_attributes(
@@ -51,7 +55,7 @@ pub(crate) fn get_attributes(
         args.push(name);
     }
 
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg("attributes").args(args);

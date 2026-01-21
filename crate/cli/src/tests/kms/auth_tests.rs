@@ -22,7 +22,7 @@ use crate::{
     config::{COSMIAN_CLI_CONF_ENV, ClientConfig},
     error::result::CosmianResult,
     tests::{
-        force_save_kms_cli_config,
+        PROG_NAME, force_save_kms_cli_config,
         kms::{
             access::SUB_COMMAND,
             shared::{ExportKeyParams, export_key},
@@ -51,7 +51,7 @@ fn run_owned_cli_command(owner_client_conf_path: &str) {
             }
         );
     }
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME).expect(" cargo bin failed");
     cmd.env(COSMIAN_CLI_CONF_ENV, owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec!["owned"]);
@@ -80,7 +80,7 @@ fn run_owned_cli_command_expect_failure(owner_client_conf_path: &str) {
             }
         );
     }
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME).expect(" cargo bin failed");
     cmd.env(COSMIAN_CLI_CONF_ENV, owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec!["owned"]);

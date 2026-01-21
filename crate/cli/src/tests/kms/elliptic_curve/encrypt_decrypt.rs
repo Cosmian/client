@@ -11,6 +11,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND, elliptic_curve::create_key_pair::create_ec_key_pair,
             utils::recover_cmd_logs,
@@ -20,14 +21,13 @@ use crate::{
 };
 
 /// Encrypts a file using the given public key and access policy.
-#[allow(clippy::unnecessary_wraps)]
 pub(crate) fn encrypt(
     cli_conf_path: &str,
     input_files: &[&str],
     public_key_id: &str,
     output_file: Option<&str>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["encrypt"];
@@ -54,7 +54,7 @@ pub(crate) fn decrypt(
     private_key_id: &str,
     output_file: Option<&str>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["decrypt", input_file, "--key-id", private_key_id];

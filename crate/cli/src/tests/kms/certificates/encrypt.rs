@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf, process::Command};
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::{
@@ -18,6 +19,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             certificates::import::{ImportCertificateInput, import_certificate},
@@ -37,7 +39,7 @@ pub(crate) fn encrypt(
     authentication_data: Option<&str>,
     encryption_algorithm: Option<RsaEncryptionAlgorithm>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["encrypt", "--certificate-id", certificate_id, input_file];
@@ -72,7 +74,7 @@ pub(crate) fn decrypt(
     authentication_data: Option<&str>,
     encryption_algorithm: Option<RsaEncryptionAlgorithm>,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["decrypt", "--key-id", private_key_id, input_file];

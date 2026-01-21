@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf, process::Command};
 
+use assert_cmd::prelude::*;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 
@@ -8,6 +9,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND, elliptic_curve::create_key_pair::create_ec_key_pair,
             utils::recover_cmd_logs,
@@ -24,7 +26,7 @@ fn ec_sign(
     output_file: Option<&str>,
     digested: bool,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["sign", input_file, "--key-id", key_id];
@@ -57,7 +59,7 @@ fn ec_sign_verify(
     key_id: &str,
     digested: bool,
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["sign-verify", data_file, signature_file, "--key-id", key_id];

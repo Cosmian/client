@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::{
         secret_data::create_secret::CreateSecretDataAction,
@@ -14,6 +15,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             symmetric::create_key::create_symmetric_key,
@@ -27,7 +29,7 @@ pub(crate) fn create_secret_data(
     cli_conf_path: &str,
     action: &CreateSecretDataAction,
 ) -> CosmianResult<String> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["secret-data", "create"];

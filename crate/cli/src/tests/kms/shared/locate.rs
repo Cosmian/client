@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 #[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
@@ -19,6 +20,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             symmetric::create_key::create_symmetric_key,
@@ -55,7 +57,7 @@ pub(crate) fn locate(
         args.push(key_format_type.to_string());
     }
 
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg("locate").args(args);

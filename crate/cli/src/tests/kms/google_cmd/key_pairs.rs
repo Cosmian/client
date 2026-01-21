@@ -1,5 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::actions::kms::{
     google::key_pairs::create::CreateKeyPairsAction, symmetric::keys::create_key::CreateKeyAction,
 };
@@ -10,6 +11,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             certificates::certify::import_root_and_intermediate,
@@ -73,7 +75,7 @@ fn create_keypairs(
     // Finish with user id
     args.push(action.user_id);
 
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")

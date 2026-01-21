@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use assert_cmd::prelude::CommandCargoExt;
 use cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 use tempfile::TempDir;
 use test_kms_server::{
@@ -17,6 +18,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             shared::{ExportKeyParams, export::export_key},
@@ -37,7 +39,7 @@ pub(crate) fn revoke(
         .iter()
         .map(std::string::ToString::to_string)
         .collect();
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(sub_command).args(args);

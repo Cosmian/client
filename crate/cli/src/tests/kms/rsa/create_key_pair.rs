@@ -1,5 +1,6 @@
 use std::{collections::HashSet, process::Command};
 
+use assert_cmd::prelude::*;
 use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
@@ -7,6 +8,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             utils::{
@@ -30,7 +32,7 @@ pub(crate) fn create_rsa_key_pair(
     cli_conf_path: &str,
     options: &RsaKeyPairOptions,
 ) -> CosmianResult<(String, String)> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["keys", "create"];

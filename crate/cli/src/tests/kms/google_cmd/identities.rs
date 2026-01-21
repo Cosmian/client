@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::reexport::{
     cosmian_kms_client::{GmailApiConf, write_json_object_to_file},
     test_kms_server::{TestsContext, start_default_test_kms_server},
@@ -36,7 +37,7 @@ fn list_identities(
         .iter()
         .map(std::string::ToString::to_string)
         .collect();
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")
@@ -64,7 +65,7 @@ fn get_identities(cli_conf_path: &str, user_id: &str) -> Result<Identity, Cosmia
         .iter()
         .map(std::string::ToString::to_string)
         .collect();
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")
@@ -87,7 +88,7 @@ fn delete_identities(cli_conf_path: &str, user_id: &str) -> Result<(), CosmianEr
         .iter()
         .map(std::string::ToString::to_string)
         .collect();
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")
@@ -112,7 +113,7 @@ fn insert_identities(
         .iter()
         .map(std::string::ToString::to_string)
         .collect();
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")

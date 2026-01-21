@@ -4,6 +4,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
@@ -22,6 +23,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             shared::{ExportKeyParams, destroy, export_key, revoke},
             symmetric::encrypt_decrypt::run_encrypt_decrypt_test,
@@ -76,7 +78,7 @@ pub(crate) fn grant_access(
     user: &str,
     operations: &[&str],
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND)
@@ -105,7 +107,7 @@ pub(crate) fn revoke_access(
     user: &str,
     operations: &[&str],
 ) -> CosmianResult<()> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND)
@@ -129,7 +131,7 @@ pub(crate) fn revoke_access(
 
 /// List accesses granted on an object
 fn list_access(cli_conf_path: &str, object_id: &str) -> CosmianResult<String> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND)
@@ -148,7 +150,7 @@ fn list_access(cli_conf_path: &str, object_id: &str) -> CosmianResult<String> {
 
 /// List objects owned by the user
 fn list_owned_objects(cli_conf_path: &str) -> CosmianResult<String> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec!["owned"]);
@@ -165,7 +167,7 @@ fn list_owned_objects(cli_conf_path: &str) -> CosmianResult<String> {
 
 /// List accesses granted
 fn list_accesses_rights_obtained(cli_conf_path: &str) -> CosmianResult<String> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND)

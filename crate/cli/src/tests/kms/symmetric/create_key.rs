@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use assert_cmd::prelude::*;
 use base64::{Engine as _, engine::general_purpose};
 use clap::ValueEnum;
 use cosmian_kms_cli::{
@@ -19,6 +20,7 @@ use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
             utils::{extract_uids::extract_uid, recover_cmd_logs},
@@ -32,7 +34,7 @@ pub(crate) fn create_symmetric_key(
     cli_conf_path: &str,
     action: CreateKeyAction,
 ) -> CosmianResult<String> {
-    let mut cmd = Command::new(crate::tests::kms::utils::cosmian_exe());
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["keys".to_owned(), "create".to_owned()];

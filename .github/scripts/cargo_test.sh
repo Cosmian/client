@@ -30,7 +30,7 @@ fi
 export RUST_LOG="cosmian_cli=error,cosmian_findex_client=debug,cosmian_kms_client=debug"
 
 # shellcheck disable=SC2086
-cargo test --workspace --target $TARGET $RELEASE $FEATURES
+cargo test --workspace --bins --target $TARGET $RELEASE $FEATURES
 
 # shellcheck disable=SC2086
 # cargo bench --target $TARGET $FEATURES --no-run
