@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2026-01-21
+
+### 🚀 Features
+
+- Bump KMS to 5.14.1
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix cargo deny upgrade (#124)
+
 ## [1.7.0] - 2025-12-15
 
 ### 💼 Other
