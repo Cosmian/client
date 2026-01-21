@@ -1,6 +1,6 @@
 [package]
 name = "cosmian_cli"
-version = "1.7.0"
+version = "1.7.1"
 authors.workspace = true
 categories = ["security"]
 edition.workspace = true

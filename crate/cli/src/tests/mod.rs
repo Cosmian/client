@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::{env, path::Path};
 
 use cosmian_config_utils::ConfigUtils;
