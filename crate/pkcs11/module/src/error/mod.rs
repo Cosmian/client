@@ -93,8 +93,6 @@ pub enum ModuleError {
     #[error(transparent)]
     Backend(#[from] Box<dyn std::error::Error>),
     #[error(transparent)]
-    Bincode(#[from] Box<bincode::ErrorKind>),
-    #[error(transparent)]
     Pkcs1DerError(#[from] pkcs1::der::Error),
     #[error(transparent)]
     ReadGuardError(#[from] PoisonError<RwLockReadGuard<'static, ObjectsStore>>),
@@ -139,7 +137,6 @@ impl From<ModuleError> for CK_RV {
             ModuleError::Backend(_)
             | ModuleError::AlgorithmNotSupported(_)
             | ModuleError::Default(_)
-            | ModuleError::Bincode(_)
             | ModuleError::FromUtf8(_)
             | ModuleError::FromVecWithNul(_)
             | ModuleError::NullPtr(_)
