@@ -38,6 +38,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 
 | CLI version | KMS version      | Findex server version |
 | ----------- | ---------------- | --------------------- |
+| 1.8.0       | 5.15.0           | 0.4.12                 |
 | 1.7.1       | 5.14.1           | 0.4.11                 |
 | 1.7.0       | 5.14.0           | 0.4.10                 |
 | 1.6.0       | 5.13.*           | 0.4.*                 |

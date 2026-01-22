@@ -49,7 +49,7 @@ cosmian_config_utils = "0.2"
 cosmian_crypto_core = { version = "10.2", default-features = false, features = [
   "ser",
 ] }
-cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.11" }
+cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.12" }
 cosmian_kms_cli = { path = "kms/crate/cli", version = "5.15.0" }
 test_kms_server = { path = "kms/crate/test_kms_server", version = "5.15.0" }
 cosmian_logger = "0.6"
