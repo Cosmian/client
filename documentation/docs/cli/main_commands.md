@@ -609,6 +609,8 @@ The possible wrapping algorithms are
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
 
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
+
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
 
@@ -1386,6 +1388,8 @@ The possible wrapping algorithms are
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
 
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
+
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
 
@@ -1587,10 +1591,6 @@ Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p52
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
-`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
-
-Possible values:  `"ecdsa-with-sha256", "ecdsa-with-sha384", "ecdsa-with-sha512"` [default: `"ecdsa-with-sha256"`]
-
 `--output-file [-o] <OUTPUT_FILE>` The signature output file path
 
 `--digested <DIGESTED>` Treat input as already-digested data (pre-hash)
@@ -1617,10 +1617,6 @@ Verify an ECDSA signature for a given data file
 `--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
-
-`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
-
-Possible values:  `"ecdsa-with-sha256", "ecdsa-with-sha384", "ecdsa-with-sha512"` [default: `"ecdsa-with-sha256"`]
 
 `--output-file [-o] <OUTPUT_FILE>` Optional output file path
 
@@ -2275,6 +2271,8 @@ The possible wrapping algorithms are
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
 
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
+
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
 
@@ -2496,10 +2494,6 @@ Digital signature supported is RSASSA-PSS
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
-`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
-
-Possible values:  `"rsassapss"` [default: `"rsassapss"`]
-
 `--output-file [-o] <OUTPUT_FILE>` The signature output file path
 
 `--digested <DIGESTED>` Treat input as already-digested data (pre-hash)
@@ -2526,10 +2520,6 @@ Verify an RSASSA-PSS signature for a given data file
 `--key-id [-k] <KEY_ID>` The private key unique identifier If not specified, tags should be specified
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
-
-`--signature-algorithm [-s] <SIGNATURE_ALGORITHM>` The signature algorithm
-
-Possible values:  `"rsassapss"` [default: `"rsassapss"`]
 
 `--output-file [-o] <OUTPUT_FILE>` Optional output file path
 
@@ -2634,6 +2624,8 @@ The possible wrapping algorithms are
     - `rsa-oaep` (default - CKM-RSA-OAEP)
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
+
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -2836,6 +2828,8 @@ The possible wrapping algorithms are
     - `rsa-oaep` (default - CKM-RSA-OAEP)
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
+
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -3133,6 +3127,8 @@ The possible wrapping algorithms are
     - `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
     - `rsa-pkcs-v15` (CKM-RSA v1.5)
 
+Possible values:  `"aes-key-wrap-padding", "nist-key-wrap", "aes-gcm", "rsa-pkcs-v15-sha1", "rsa-pkcs-v15", "rsa-oaep-sha1", "rsa-oaep", "rsa-aes-key-wrap-sha1", "rsa-aes-key-wrap"`
+
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
 
@@ -3294,7 +3290,7 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gc
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to encrypt the data encryption key.
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rfc5649"`
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rfc3394", "rfc5649"`
 
 `--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
 
@@ -3329,7 +3325,7 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gc
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to decrypt the data encryption key.
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rfc5649"`
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rfc3394", "rfc5649"`
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 

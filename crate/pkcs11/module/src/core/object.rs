@@ -21,13 +21,12 @@ use std::sync::Arc;
 
 use cosmian_logger::debug;
 use log::error;
+use openssl::pkey::PKey;
 use p256::{elliptic_curve::sec1::ToEncodedPoint, pkcs8::der::Encode};
-use pkcs1::EncodeRsaPrivateKey;
 use pkcs11_sys::{
     CK_CERTIFICATE_CATEGORY_UNSPECIFIED, CK_PROFILE_ID, CKC_X_509, CKO_CERTIFICATE, CKO_DATA,
     CKO_PRIVATE_KEY, CKO_PROFILE, CKO_PUBLIC_KEY,
 };
-use rsa::{RsaPrivateKey, pkcs8::DecodePrivateKey, traits::PublicKeyParts};
 
 use crate::{
     ModuleError, ModuleResult,
@@ -164,21 +163,33 @@ impl Object {
                 AttributeType::Label => Some(Attribute::Label("Private Key".to_owned())),
                 AttributeType::Modulus => {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
-                    let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
-                        error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                        ModuleError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
+                    let pkey = PKey::private_key_from_der(der_bytes.as_ref()).map_err(|e| {
+                        error!("Failed to parse RSA private key from PKCS#8 DER: {e:?}");
+                        ModuleError::Cryptography(
+                            "Failed to parse RSA private key from PKCS#8 DER".to_owned(),
+                        )
                     })?;
-                    Some(Attribute::Modulus(sk.n().to_bytes_be()))
+                    let rsa = pkey.rsa().map_err(|e| {
+                        error!("Failed to extract RSA key parameters: {e:?}");
+                        ModuleError::Cryptography("Failed to extract RSA key parameters".to_owned())
+                    })?;
+                    Some(Attribute::Modulus(rsa.n().to_vec()))
                 }
                 AttributeType::NeverExtractable => Some(Attribute::NeverExtractable(true)),
                 AttributeType::Private => Some(Attribute::Private(true)),
                 AttributeType::PublicExponent => {
                     let der_bytes = private_key.pkcs8_der_bytes()?;
-                    let sk = RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref()).map_err(|e| {
-                        error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                        ModuleError::Cryptography("Failed to fetch the PKCS1 DER bytes".to_owned())
+                    let pkey = PKey::private_key_from_der(der_bytes.as_ref()).map_err(|e| {
+                        error!("Failed to parse RSA private key from PKCS#8 DER: {e:?}");
+                        ModuleError::Cryptography(
+                            "Failed to parse RSA private key from PKCS#8 DER".to_owned(),
+                        )
                     })?;
-                    Some(Attribute::PublicExponent(sk.e().to_bytes_be()))
+                    let rsa = pkey.rsa().map_err(|e| {
+                        error!("Failed to extract RSA key parameters: {e:?}");
+                        ModuleError::Cryptography("Failed to extract RSA key parameters".to_owned())
+                    })?;
+                    Some(Attribute::PublicExponent(rsa.e().to_vec()))
                 }
                 AttributeType::Sensitive => Some(Attribute::Sensitive(true)),
                 AttributeType::Sign => Some(Attribute::Sign(true)),
@@ -188,16 +199,20 @@ impl Object {
                 AttributeType::Value => match private_key.algorithm() {
                     KeyAlgorithm::Rsa => {
                         let der_bytes = private_key.pkcs8_der_bytes()?;
-                        RsaPrivateKey::from_pkcs8_der(der_bytes.as_ref())
-                            .map(|sk| sk.to_pkcs1_der())
-                            .map_err(|e| {
-                                error!("Failed to fetch the PKCS1 DER bytes: {e:?}");
-                                ModuleError::Cryptography(
-                                    "Failed to fetch the PKCS1 DER bytes".to_owned(),
-                                )
-                            })?
-                            .map(|sd| Attribute::Value(sd.to_bytes().to_vec()))
-                            .ok()
+                        let pkey = PKey::private_key_from_der(der_bytes.as_ref()).map_err(|e| {
+                            error!("Failed to parse RSA private key from PKCS#8 DER: {e:?}");
+                            ModuleError::Cryptography(
+                                "Failed to parse RSA private key from PKCS#8 DER".to_owned(),
+                            )
+                        })?;
+                        let rsa = pkey.rsa().map_err(|e| {
+                            error!("Failed to extract RSA key parameters: {e:?}");
+                            ModuleError::Cryptography(
+                                "Failed to extract RSA key parameters".to_owned(),
+                            )
+                        })?;
+
+                        rsa.private_key_to_der().map(Attribute::Value).ok()
                     }
                     KeyAlgorithm::EccP256
                     | KeyAlgorithm::Secp224k1

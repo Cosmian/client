@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-01-22
+
+### 🚀 Features
+
+- Support KMS 5.15 ([#130](https://github.com/Cosmian/cli/pull/130))
+
 ## [1.7.1] - 2026-01-21
 
 ### 🚀 Features
@@ -10,7 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- Fix cargo deny upgrade (#124)
+- Fix cargo deny upgrade ([#124](https://github.com/Cosmian/cli/pull/124))
 
 ## [1.7.0] - 2025-12-15
 
