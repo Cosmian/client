@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.1] - 2026-01-29
+
+### 🧪 Continuous Integration
+
+- Do not miss Windows artifact `cosmian_pkcs11.dll`
+
 ## [1.8.0] - 2026-01-22
 
 ### 🚀 Features
