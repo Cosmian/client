@@ -25,14 +25,13 @@ pub(crate) const SUB_COMMAND: &str = "kem";
 /// Create a configurable KEM key pair and return the (`private_key_id`, `public_key_id`).
 pub(crate) fn create_kem_key_pair(
     cli_conf_path: &str,
-    kem_tag: usize,
+    kem_algorithm: &str,
     tags: &[&str],
 ) -> CosmianResult<(String, String)> {
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
-    let kem_tag_str = kem_tag.to_string();
-    let mut args = vec!["key-gen", "--kem", &kem_tag_str];
+    let mut args = vec!["key-gen", "--kem", kem_algorithm];
     for tag in tags {
         args.push("--tag");
         args.push(tag);
@@ -114,14 +113,14 @@ pub(crate) fn decaps(
     ))
 }
 
-fn test_kem(cli_conf_path: &str, name: &str, tag: usize) -> CosmianResult<()> {
+fn test_kem(cli_conf_path: &str, name: &str, kem_algorithm: &str) -> CosmianResult<()> {
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     let encapsulation_file = tmp_path.join("encapsulation.enc");
     let session_key_file = tmp_path.join("session_key.plain");
 
     // Key generation
-    let (dk_id, ek_id) = create_kem_key_pair(cli_conf_path, tag, &[name])?;
+    let (dk_id, ek_id) = create_kem_key_pair(cli_conf_path, kem_algorithm, &[name])?;
 
     // Encapsulation
     encaps(cli_conf_path, &ek_id, &encapsulation_file)?;
@@ -146,14 +145,30 @@ pub(crate) async fn test_create_configurable_kem_key_pair() -> CosmianResult<()>
     let ctx = start_default_test_kms_server().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
-    test_kem(&owner_client_conf_path, "ML-KEM512 KEM", 0)?;
-    test_kem(&owner_client_conf_path, "ML-KEM768 KEM", 1)?;
-    test_kem(&owner_client_conf_path, "P256 KEM", 10)?;
-    test_kem(&owner_client_conf_path, "CURVE25519 KEM", 11)?;
-    test_kem(&owner_client_conf_path, "ML-KEM512/P256 KEM", 100)?;
-    test_kem(&owner_client_conf_path, "ML-KEM768/P256 KEM", 101)?;
-    test_kem(&owner_client_conf_path, "ML-KEM512/CURVE25519 KEM", 110)?;
-    test_kem(&owner_client_conf_path, "ML-KEM768/CURVE25519 KEM", 111)?;
+    test_kem(&owner_client_conf_path, "ML-KEM512 KEM", "ml-kem-512")?;
+    test_kem(&owner_client_conf_path, "ML-KEM768 KEM", "ml-kem-768")?;
+    test_kem(&owner_client_conf_path, "P256 KEM", "p256")?;
+    test_kem(&owner_client_conf_path, "CURVE25519 KEM", "curve25519")?;
+    test_kem(
+        &owner_client_conf_path,
+        "ML-KEM512/P256 KEM",
+        "ml-kem-512-p256",
+    )?;
+    test_kem(
+        &owner_client_conf_path,
+        "ML-KEM768/P256 KEM",
+        "ml-kem-768-p256",
+    )?;
+    test_kem(
+        &owner_client_conf_path,
+        "ML-KEM512/CURVE25519 KEM",
+        "ml-kem-512-curve25519",
+    )?;
+    test_kem(
+        &owner_client_conf_path,
+        "ML-KEM768/CURVE25519 KEM",
+        "ml-kem-768-curve25519",
+    )?;
 
     Ok(())
 }

@@ -69,7 +69,8 @@ Handle KMS actions
 
 **`cc`** [[1.5]](#15-cosmian-kms-cc)  Manage Covercrypt keys and policies. Rotate attributes. Encrypt and decrypt data
 
-**`kem`** [[1.6]](#16-cosmian-kms-kem) 
+**`kem`** [[1.6]](#16-cosmian-kms-kem)  Manage Configurable KEM keys. Encrypt and decrypt data
+
 **`certificates`** [[1.7]](#17-cosmian-kms-certificates)  Manage certificates. Create, import, destroy and revoke. Encrypt and decrypt data
 
 **`derive-key`** [[1.8]](#18-cosmian-kms-derive-key)  Derive a new key from an existing key
@@ -960,6 +961,9 @@ Decrypt a file using Covercrypt
 ---
 
 ## 1.6 cosmian kms kem
+
+Manage Configurable KEM keys. Encrypt and decrypt data
+
 ### Usage
 `cosmian kms kem <subcommand>`
 
@@ -988,7 +992,9 @@ Create a new Configurable-KEM keypair and return the key IDs.
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--kem [-k] <KEM_TAG>` The tag specifying which KEM algorithm to use:
+`--kem [-k] <KEM_ALGORITHM>` The KEM algorithm to use for key pair generation
+
+Possible values:  `"ml-kem-512", "ml-kem-768", "p256", "curve25519", "ml-kem-512-p256", "ml-kem-768-p256", "ml-kem-512-curve25519", "ml-kem-768-curve25519", "cover-crypt"`
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
