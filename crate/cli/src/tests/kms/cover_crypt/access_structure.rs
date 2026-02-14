@@ -86,7 +86,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
         .stdout(predicate::str::contains("\"Security Level\""))
         .stdout(predicate::str::contains("\"Top Secret\""))
         .stdout(predicate::str::contains(
-            "Attribute { id: 6, encryption_hint: Classic, write_status: EncryptDecrypt }",
+            "Attribute { id: 6, security_mode: Classic, encryption_status: EncryptDecrypt }",
         ));
 
     Ok(())

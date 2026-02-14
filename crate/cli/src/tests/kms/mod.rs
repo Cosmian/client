@@ -3,6 +3,8 @@ mod attributes;
 mod auth_tests;
 mod certificates;
 #[cfg(feature = "non-fips")]
+mod configurable_kem;
+#[cfg(feature = "non-fips")]
 mod cover_crypt;
 mod derive_key;
 mod elliptic_curve;
