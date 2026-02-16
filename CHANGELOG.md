@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-02-16
+
+### 🚀 Features
+
+- Add KEM subcommand
+
+### 🐛 Bug Fixes
+
+- Cargo audit: time and actix-files
+
+### 💼 Other
+
+- *(deps)* Bump bytes in the cargo group across 1 directory ([#131](https://github.com/Cosmian/cli/pull/131))
+- Release 1.9.0
+
+### ⚙️ Miscellaneous Tasks
+
+- Merge branch 'release/1.8.1' into develop
+- Small refactor on kem_tag
+
+## [1.8.1] - 2026-01-29
+
+### 🧪 Continuous Integration
+
+- Do not miss Windows artifact `cosmian_pkcs11.dll`
+
 ## [1.8.0] - 2026-01-22
 
 ### 🚀 Features

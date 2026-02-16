@@ -10,7 +10,7 @@ exclude = ["kms"]
 resolver = "2"
 
 [workspace.package]
-version = "1.8.0"
+version = "1.9.0"
 edition = "2024"
 rust-version = "1.87.0"
 authors = [
@@ -46,12 +46,12 @@ actix-server = { version = "2.6", default-features = false }
 base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
-cosmian_crypto_core = { version = "10.2", default-features = false, features = [
+cosmian_crypto_core = { version = "11.0", default-features = false, features = [
   "ser",
 ] }
-cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.12" }
-cosmian_kms_cli = { path = "kms/crate/cli", version = "5.15.0" }
-test_kms_server = { path = "kms/crate/test_kms_server", version = "5.15.0" }
+cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.13" }
+cosmian_kms_cli = { path = "kms/crate/cli", version = "5.16.1" }
+test_kms_server = { path = "kms/crate/test_kms_server", version = "5.16.1" }
 cosmian_logger = "0.6"
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
