@@ -27,7 +27,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 !!! info "Download cosmian"
 
     Please download the latest versions for your Operating System from
-    the [Cosmian public packages repository](https://package.cosmian.com/cli/1.8.1/)
+    the [Cosmian public packages repository](https://package.cosmian.com/cli/1.9.0/)
     See below for installation instructions.
 
 ## Version correspondence
