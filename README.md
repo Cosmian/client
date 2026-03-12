@@ -1,3 +1,6 @@
+> [!WARNING]
+> From March 2026, the KMS CLI has been moved into https://github.com/Cosmian/kms and will be published as `ckms` command line tool. The maintenance continues on https://github.com/Cosmian/kms repository.
+
 # Cosmian CLI
 
 ![Build status](https://github.com/Cosmian/cli/actions/workflows/main_release.yml/badge.svg?branch=main)
